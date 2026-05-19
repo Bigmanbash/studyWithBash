@@ -1,0 +1,36 @@
+@import "tailwindcss";
+@config "../tailwind.config.ts";
+
+@layer base {
+  :root {
+    --background: #FFFFFF;
+    --foreground: #676E85;
+    
+    --card: #F7F9FC;
+    --card-foreground: #676E85;
+
+    --border: #E4E7EC;
+    --input: #E4E7EC;
+    --ring: #17A546;
+
+    --radius: 12px;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans text-body;
+  }
+  h1 {
+    @apply text-h1 text-[#0A1B39] tracking-tight;
+  }
+  h2 {
+    @apply text-h2 text-[#485066] tracking-tight;
+  }
+  h3 {
+    @apply text-h3 text-[#485066] tracking-tight;
+  }
+}
