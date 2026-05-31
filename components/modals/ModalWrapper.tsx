@@ -29,24 +29,26 @@ export function ModalWrapper({ isOpen, onClose, children, size = "md" }: ModalWr
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200"
+        className="absolute inset-0 bg-[#0A1B39]/40 backdrop-blur-sm animate-in fade-in duration-200"
         onClick={onClose}
       />
 
       {/* Modal */}
       <div
-        className={`relative w-full ${sizeClasses[size]} bg-white rounded-2xl sm:rounded-3xl shadow-2xl p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-300`}
+        className={`relative w-full ${sizeClasses[size]} bg-white rounded-2xl sm:rounded-3xl shadow-2xl p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-300 max-h-[90vh] flex flex-col`}
       >
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-[#98A2B3] hover:text-[#0A1B39] transition-colors h-8 w-8 rounded-lg hover:bg-neutral-100 flex items-center justify-center"
+          className="absolute top-4 right-4 text-[#98A2B3] hover:text-[#0A1B39] transition-colors h-8 w-8 rounded-lg hover:bg-neutral-100 flex items-center justify-center z-10"
         >
           <X className="h-5 w-5" />
         </button>
-        {children}
+        <div className="overflow-y-auto custom-scrollbar flex-1 -mx-2 px-2 sm:-mx-4 sm:px-4">
+          {children}
+        </div>
       </div>
     </div>
   );
