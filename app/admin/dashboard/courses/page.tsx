@@ -144,10 +144,34 @@ const courses: Course[] = [
 ];
 
 const stats = [
-  { label: "Total Courses", value: "24", icon: BookOpen, color: "text-[#17A546]", bg: "bg-[#17A546]/10" },
-  { label: "Active Courses", value: "18", icon: Eye, color: "text-blue-500", bg: "bg-blue-500/10" },
-  { label: "Inactive Courses", value: "6", icon: EyeOff, color: "text-[#98A2B3]", bg: "bg-neutral-100" },
-  { label: "Total Students", value: "2,535", icon: Users, color: "text-purple-500", bg: "bg-purple-500/10" },
+  {
+    label: "Total Courses",
+    value: "24",
+    icon: BookOpen,
+    color: "text-[#17A546]",
+    bg: "bg-[#17A546]/10",
+  },
+  {
+    label: "Active Courses",
+    value: "18",
+    icon: Eye,
+    color: "text-blue-500",
+    bg: "bg-blue-500/10",
+  },
+  {
+    label: "Inactive Courses",
+    value: "6",
+    icon: EyeOff,
+    color: "text-[#98A2B3]",
+    bg: "bg-neutral-100",
+  },
+  {
+    label: "Total Students",
+    value: "2,535",
+    icon: Users,
+    color: "text-purple-500",
+    bg: "bg-purple-500/10",
+  },
 ];
 
 export default function AdminCoursesPage() {
@@ -179,10 +203,12 @@ export default function AdminCoursesPage() {
               Manage and monitor all courses on the platform.
             </p>
           </div>
-          <Button className="bg-[#17A546] hover:bg-[#17A546]/90 text-white rounded-xl h-11 px-5 font-semibold shadow-lg shadow-[#17A546]/20 w-fit">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Course
-          </Button>
+          <Link href="/admin/dashboard/courses/add">
+            <Button className="bg-[#17A546] hover:bg-[#17A546]/90 text-white rounded-xl h-11 px-5 font-semibold shadow-lg shadow-[#17A546]/20 w-fit">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Course
+            </Button>
+          </Link>
         </div>
 
         {/* Quick Stats */}
@@ -210,8 +236,16 @@ export default function AdminCoursesPage() {
             <div className="flex items-center bg-neutral-50 rounded-xl p-1 border border-neutral-100">
               {[
                 { key: "all" as const, label: "All", count: courses.length },
-                { key: "active" as const, label: "Active", count: activeCourses.length },
-                { key: "inactive" as const, label: "Inactive", count: inactiveCourses.length },
+                {
+                  key: "active" as const,
+                  label: "Active",
+                  count: activeCourses.length,
+                },
+                {
+                  key: "inactive" as const,
+                  label: "Inactive",
+                  count: inactiveCourses.length,
+                },
               ].map((tab) => (
                 <button
                   key={tab.key}
@@ -220,7 +254,7 @@ export default function AdminCoursesPage() {
                     "flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200",
                     activeTab === tab.key
                       ? "bg-white text-[#0A1B39] shadow-sm"
-                      : "text-[#98A2B3] hover:text-[#676E85]"
+                      : "text-[#98A2B3] hover:text-[#676E85]",
                   )}
                 >
                   {tab.label}
@@ -229,7 +263,7 @@ export default function AdminCoursesPage() {
                       "text-[10px] font-bold px-1.5 py-0.5 rounded-full",
                       activeTab === tab.key
                         ? "bg-[#17A546]/10 text-[#17A546]"
-                        : "bg-neutral-100 text-[#98A2B3]"
+                        : "bg-neutral-100 text-[#98A2B3]",
                     )}
                   >
                     {tab.count}
@@ -267,7 +301,7 @@ export default function AdminCoursesPage() {
                 "bg-white rounded-2xl sm:rounded-3xl border shadow-sm hover:shadow-md transition-all duration-200 group overflow-hidden block",
                 course.status === "inactive"
                   ? "border-neutral-200 opacity-75 hover:opacity-100"
-                  : "border-neutral-100"
+                  : "border-neutral-100",
               )}
             >
               {/* Color Strip */}
