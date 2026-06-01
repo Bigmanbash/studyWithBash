@@ -1,4 +1,4 @@
-import { Headphones, ArrowRight, MessageCircle, Clock, AlertTriangle } from "lucide-react";
+import { ArrowRight, MessageCircle, Clock, AlertTriangle } from "lucide-react";
 
 const tickets = [
   {
@@ -86,7 +86,7 @@ export function SupportOverview() {
               key={ticket.id}
               className="flex items-center gap-3 p-3 rounded-xl hover:bg-neutral-50 transition-colors group cursor-pointer"
             >
-              <div className="relative flex-shrink-0">
+              <div className="relative shrink-0">
                 <div className="h-9 w-9 rounded-full bg-[#030E36]/5 flex items-center justify-center text-[#030E36] font-bold text-[10px]">
                   {ticket.initials}
                 </div>
@@ -102,7 +102,7 @@ export function SupportOverview() {
                   {ticket.student} · {ticket.id}
                 </p>
               </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="flex items-center gap-2 shrink-0">
                 <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${priority.color} ${priority.bg}`}>
                   {priority.label}
                 </span>

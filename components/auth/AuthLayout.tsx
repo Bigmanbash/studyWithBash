@@ -89,7 +89,7 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
       </div>
 
       {/* Right Form Panel — scrollable */}
-      <div className="flex-1 h-full overflow-y-auto bg-[#F7F9FC]">
+      <div className="flex-1 h-full overflow-y-auto bg-(--card)">
         <div className="flex items-center justify-center min-h-full px-5 sm:px-8 py-10">
           <div className="w-full max-w-[420px]">
             {/* Mobile logo */}
@@ -99,24 +99,24 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
                   Bash Academy
                 </span>
               </Link>
-              <p className="text-xs text-[#98A2B3] mt-1">
+              <p className="text-xs text-(--muted) mt-1">
                 Your journey to 300+ starts here
               </p>
             </div>
 
             {/* Form card */}
-            <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-xl shadow-[#0A1B39]/5 border border-neutral-100">
+            <div className="bg-(--card) p-6 sm:p-8 rounded-2xl shadow-xl shadow-[#0A1B39]/5 border border-border">
               <div className="mb-6">
-                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[#0A1B39]">
+                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-(--heading)">
                   {title}
                 </h2>
-                <p className="mt-2 text-sm text-[#676E85]">{subtitle}</p>
+                <p className="mt-2 text-sm text-(--muted)">{subtitle}</p>
               </div>
               {children}
             </div>
 
             {/* Mobile footer */}
-            <p className="lg:hidden mt-6 text-center text-xs text-[#98A2B3]">
+            <p className="lg:hidden mt-6 text-center text-xs text-(--muted)">
               © {new Date().getFullYear()} Bash Academy. All rights reserved.
             </p>
           </div>

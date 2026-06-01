@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { BookOpen, TrendingUp, Target } from "lucide-react";
 
 export function ProblemSolution() {
@@ -23,14 +24,17 @@ export function ProblemSolution() {
   ];
 
   return (
-    <section className="py-24 bg-neutral-100 relative overflow-hidden">
+    <section className="py-24 bg-(--card) relative overflow-hidden">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <div className="relative w-full h-full min-h-[400px] lg:min-h-[600px] rounded-3xl overflow-hidden shadow-2xl">
-            <img
+            <Image
+              unoptimized
               src="https://images.unsplash.com/photo-1577896851231-70ef18881754?q=80&w=2070&auto=format&fit=crop"
               alt="Student celebrating success"
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+              width={2070}
+              height={1380}
             />
             <div className="absolute inset-0 bg-gradient-to-tr from-[#0A1B39]/80 to-transparent"></div>
 
@@ -47,19 +51,19 @@ export function ProblemSolution() {
             </div>
           </div>
           <div className="max-w-2xl">
-            <h2 className="text-3xl font-bold tracking-tight text-[#0A1B39] sm:text-4xl lg:text-5xl">
+            <h2 className="text-3xl font-bold tracking-tight text-(--heading) sm:text-4xl lg:text-5xl">
               The Mission: Solving the <span className="text-[#17A546]">Sub-200</span> Dilemma
             </h2>
-            <p className="mt-6 text-base md:text-lg leading-8 text-[#676E85]">
+            <p className="mt-6 text-base md:text-lg leading-8 text-(--muted)">
               Traditional learning methods are leaving brilliant students behind.
-              We've analyzed years of JAMB data to build a platform that focuses precisely
+              We&apos;ve analyzed years of JAMB data to build a platform that focuses precisely
               on what you need to break past the 200 mark barrier.
             </p>
 
             <div className="mt-10 space-y-8">
               {problems.map((item, index) => (
                 <div key={index} className="flex gap-4 items-start group">
-                  <div className={`flex-shrink-0 h-12 w-12 rounded-xl flex items-center justify-center ${item.bgColor} transition-transform group-hover:scale-110`}>
+                  <div className={`shrink-0 h-12 w-12 rounded-xl flex items-center justify-center ${item.bgColor} transition-transform group-hover:scale-110`}>
                     {item.icon}
                   </div>
                   <div>

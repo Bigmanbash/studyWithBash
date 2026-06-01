@@ -1,7 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, type RefObject } from "react";
 
-
-export function useHorizontalScroll<T extends HTMLElement>(ref: React.RefObject<T>) {
+export function useHorizontalScroll<T extends HTMLElement>(ref: RefObject<T>) {
 
     useEffect(() => {
         const el = ref.current;
@@ -21,5 +20,5 @@ export function useHorizontalScroll<T extends HTMLElement>(ref: React.RefObject<
 
             return () => el.removeEventListener('wheel', onWheel);
         }
-    }, []);
+    }, [ref]);
 }

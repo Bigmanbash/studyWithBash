@@ -58,27 +58,27 @@ export function TopicList({ courseSlug = "ss1-physics" }: TopicListProps) {
         <div key={term.term}>
           {/* Term header */}
           <div className="flex items-center gap-4 mb-5">
-            <h3 className="text-lg font-bold text-[#0A1B39] bg-white px-4 py-1.5 rounded-xl border border-neutral-200/60 shadow-sm">{term.term}</h3>
-            <div className="flex-1 h-px bg-neutral-200/60" />
-            <span className="text-[13px] text-[#676E85] font-medium bg-white px-3 py-1 rounded-lg border border-neutral-200/60">{term.topics.length} topics</span>
+            <h3 className="text-lg font-bold text-(--heading) bg-(--card) px-4 py-1.5 rounded-xl border border-border/60 shadow-sm">{term.term}</h3>
+            <div className="flex-1 h-px bg-(--card)/60" />
+            <span className="text-[13px] text-(--muted) font-medium bg-(--card) px-3 py-1 rounded-lg border border-border/60">{term.topics.length} topics</span>
           </div>
 
           {/* Topics */}
           <div className="space-y-3">
-            {term.topics.map((topic, i) => {
+            {term.topics.map((topic) => {
               const isLocked = topic.status === "locked";
               const content = (
                 <div
                   className={`w-full flex items-center gap-4 p-4 sm:p-5 rounded-[20px] text-left transition-all duration-300 group ${
                     topic.status === "current"
-                      ? "bg-white border-2 border-[#17A546]/30 shadow-[0_4px_20px_-4px_rgba(23,165,70,0.15)] transform hover:-translate-y-0.5"
+                      ? "bg-(--card) border-2 border-[#17A546]/30 shadow-[0_4px_20px_-4px_rgba(23,165,70,0.15)] transform hover:-translate-y-0.5"
                       : topic.status === "completed"
-                      ? "bg-white border border-neutral-200/60 shadow-sm hover:shadow-md hover:border-[#17A546]/30 hover:-translate-y-0.5"
-                      : "bg-neutral-50/50 border border-neutral-200/40 opacity-75 cursor-not-allowed"
+                      ? "bg-(--card) border border-border/60 shadow-sm hover:shadow-md hover:border-[#17A546]/30 hover:-translate-y-0.5"
+                      : "bg-[rgba(148,163,184,0.08)]/50 border border-border/40 opacity-75 cursor-not-allowed"
                   }`}
                 >
                   {/* Status icon */}
-                  <div className="flex-shrink-0">
+                  <div className="shrink-0">
                     {topic.status === "completed" ? (
                       <div className="h-10 w-10 rounded-full bg-[#17A546]/10 flex items-center justify-center">
                         <CheckCircle2 className="h-5 w-5 text-[#17A546]" />
@@ -88,8 +88,8 @@ export function TopicList({ courseSlug = "ss1-physics" }: TopicListProps) {
                         <PlayCircle className="h-5 w-5 text-white ml-0.5" />
                       </div>
                     ) : (
-                      <div className="h-10 w-10 rounded-full bg-neutral-200/50 flex items-center justify-center">
-                        <Lock className="h-5 w-5 text-[#98A2B3]" />
+                      <div className="h-10 w-10 rounded-full bg-(--card)/50 flex items-center justify-center">
+                        <Lock className="h-5 w-5 text-(--muted)" />
                       </div>
                     )}
                   </div>
@@ -97,11 +97,11 @@ export function TopicList({ courseSlug = "ss1-physics" }: TopicListProps) {
                   {/* Content */}
                   <div className="flex-1 min-w-0 pl-1">
                     <p className={`text-[15px] font-bold truncate ${
-                      isLocked ? "text-[#676E85]" : "text-[#0A1B39]"
+                      isLocked ? "text-(--muted)" : "text-(--heading)"
                     } group-hover:${!isLocked ? "text-[#17A546]" : ""} transition-colors duration-200`}>
                       {topic.title}
                     </p>
-                    <p className="text-[13px] text-[#676E85] mt-1 font-medium">
+                    <p className="text-[13px] text-(--muted) mt-1 font-medium">
                       {topic.duration} <span className="mx-1.5 text-neutral-300">•</span> {topic.exercises} exercises
                     </p>
                   </div>

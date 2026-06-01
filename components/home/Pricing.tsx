@@ -36,14 +36,14 @@ function classNames(...classes: string[]) {
 
 export function Pricing() {
   return (
-    <section className="py-24 bg-neutral-100">
+    <section className="py-24 bg-(--card)">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="text-[#17A546] font-bold tracking-wide uppercase text-sm mb-2">Pricing</h2>
-          <p className="text-3xl font-bold tracking-tight text-[#0A1B39] sm:text-4xl lg:text-5xl">
+          <p className="text-3xl font-bold tracking-tight text-(--heading) sm:text-4xl lg:text-5xl">
             Simple, transparent pricing
           </p>
-          <p className="mt-6 text-base md:text-lg leading-8 text-[#676E85]">
+          <p className="mt-6 text-base md:text-lg leading-8 text-(--muted)">
             Choose the plan that best fits your study needs. No hidden fees, cancel anytime.
           </p>
         </div>
@@ -54,7 +54,7 @@ export function Pricing() {
               className={classNames(
                 tier.featured
                   ? "relative bg-[#0A1B39] shadow-2xl ring-1 ring-[#17A546]/30"
-                  : "bg-white ring-1 ring-neutral-200",
+                  : "bg-(--card) ring-1 ring-neutral-200",
                 "rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-10"
               )}
             >
@@ -68,7 +68,7 @@ export function Pricing() {
               <h3
                 id={tier.id}
                 className={classNames(
-                  tier.featured ? "text-brand-green" : "text-[#0A1B39]",
+                  tier.featured ? "text-brand-green" : "text-(--heading)",
                   "text-base font-semibold leading-7"
                 )}
               >
@@ -77,7 +77,7 @@ export function Pricing() {
               <p className="mt-4 flex items-baseline gap-x-2">
                 <span
                   className={classNames(
-                    tier.featured ? "text-white" : "text-[#0A1B39]",
+                    tier.featured ? "text-white" : "text-(--heading)",
                     "text-4xl sm:text-5xl font-bold tracking-tight"
                   )}
                 >
@@ -87,13 +87,13 @@ export function Pricing() {
                   /month
                 </span>
               </p>
-              <p className={classNames(tier.featured ? "text-neutral-300" : "text-[#676E85]", "mt-6 text-sm sm:text-base leading-7")}>
+              <p className={classNames(tier.featured ? "text-neutral-300" : "text-(--muted)", "mt-6 text-sm sm:text-base leading-7")}>
                 {tier.description}
               </p>
               <ul
                 role="list"
                 className={classNames(
-                  tier.featured ? "text-neutral-300" : "text-[#676E85]",
+                  tier.featured ? "text-neutral-300" : "text-(--muted)",
                   "mt-8 space-y-3 text-sm leading-6"
                 )}
               >

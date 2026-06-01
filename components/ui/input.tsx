@@ -36,7 +36,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="flex flex-col gap-1.5 w-full">
         {label && (
-          <label className="text-sm font-medium text-[#485066] uppercase tracking-wide">
+          <label className="text-sm font-medium text-(--muted) uppercase tracking-wide">
             {label}
           </label>
         )}
@@ -47,7 +47,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             </span>
           )}
           {iconType === "money" && currencyPrefix && (
-            <span className="absolute left-3 text-base text-[#676E85] flex items-center justify-center font-medium">
+            <span className="absolute left-3 text-base text-(--muted) flex items-center justify-center font-medium">
               {currencyPrefix}
             </span>
           )}
@@ -55,11 +55,11 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           <input
             type={currentType}
             className={cn(
-              "flex h-[44px] w-full rounded-lg border border-[#D1D5DB] bg-white px-3 py-2 text-base text-[#070D17] transition-colors",
+              "flex h-[44px] w-full rounded-lg border border-input bg-(--card) px-3 py-2 text-base text-foreground transition-colors",
               "file:border-0 file:bg-transparent file:text-sm file:font-medium",
-              "placeholder:text-[#98A2B3] placeholder:italic",
+              "placeholder:text-(--muted) placeholder:italic",
               "focus-visible:outline-none focus-visible:border-[#3B82F6] focus-visible:ring-1 focus-visible:ring-[#3B82F6]",
-              "disabled:cursor-not-allowed disabled:bg-[#F3F4F6] disabled:text-[#98A2B3]",
+              "disabled:cursor-not-allowed disabled:bg-[#F3F4F6] disabled:text-(--muted)",
               error && "border-[#EF4444] placeholder:text-[#EF4444] text-[#EF4444] focus-visible:border-[#EF4444] focus-visible:ring-[#EF4444]",
               iconType === "phone" && flagEmoji ? "pl-10" : "",
               iconType === "money" && currencyPrefix ? "pl-8" : "",
@@ -77,7 +77,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="text-[#98A2B3] hover:text-[#485066] focus:outline-none"
+                  className="text-(--muted) hover:text-(--muted) focus:outline-none"
                   disabled={disabled}
                 >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -86,7 +86,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                 <ScanBarcode 
                   size={16} 
                   className={cn(
-                    "text-[#98A2B3]", 
+                    "text-(--muted)", 
                     error && "text-[#EF4444]"
                   )} 
                 />
@@ -98,7 +98,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           <p
             className={cn(
               "text-xs mt-1",
-              error ? "text-[#EF4444]" : "text-[#676E85]"
+              error ? "text-[#EF4444]" : "text-(--muted)"
             )}
           >
             {helperText}

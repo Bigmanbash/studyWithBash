@@ -42,14 +42,14 @@ export function ContactInfo() {
         <a
           key={method.title}
           href={method.href}
-          className="bg-white rounded-2xl p-6 border border-neutral-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group block"
+          className="bg-(--card) rounded-2xl p-6 border border-border shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group block"
         >
           <div className={`h-11 w-11 rounded-xl ${method.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
             <method.icon className="h-5 w-5" />
           </div>
-          <h3 className="text-base font-bold text-[#0A1B39]">{method.title}</h3>
-          <p className="text-xs text-[#98A2B3] mt-1">{method.description}</p>
-          <p className="text-sm font-medium text-[#0A1B39] mt-3">{method.value}</p>
+          <h3 className="text-base font-bold text-(--heading)">{method.title}</h3>
+          <p className="text-xs text-(--muted) mt-1">{method.description}</p>
+          <p className="text-sm font-medium text-(--heading) mt-3">{method.value}</p>
         </a>
       ))}
     </div>

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { AdminDashboardHeader } from "@/components/admin/dashboard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Bell, Lock, Shield, User, Globe, CreditCard } from "lucide-react";
+import { Bell, Lock, User, CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function AdminSettingsPage() {

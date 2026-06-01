@@ -82,13 +82,13 @@ export function OTPInput({
             onKeyDown={(e) => handleKeyDown(e, index)}
             disabled={disabled}
             className={cn(
-              "w-[48px] h-[56px] text-center text-lg font-semibold rounded-lg border bg-white text-[#070D17] transition-colors focus:outline-none",
+              "w-[48px] h-[56px] text-center text-lg font-semibold rounded-lg border bg-(--card) text-foreground transition-colors focus:outline-none",
               // Default border
-              "border-[#D1D5DB]",
+              "border-input",
               // Focus state
               "focus:border-[#3B82F6] focus:ring-1 focus:ring-[#3B82F6]",
               // Disabled state
-              "disabled:bg-[#F3F4F6] disabled:text-[#98A2B3] disabled:cursor-not-allowed",
+              "disabled:bg-[#F3F4F6] disabled:text-(--muted) disabled:cursor-not-allowed",
               // Error state
               error && "border-[#EF4444] text-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444]",
               // Mixed active + error state

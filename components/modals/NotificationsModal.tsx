@@ -35,8 +35,8 @@ const notifications = [
     message: "The platform will undergo maintenance tonight at 2 AM.",
     time: "1 day ago",
     icon: Bell,
-    color: "text-[#676E85]",
-    bg: "bg-neutral-100",
+    color: "text-(--muted)",
+    bg: "bg-(--card)",
     read: true,
   },
 ];
@@ -46,12 +46,12 @@ export function NotificationsModal({ isOpen, onClose }: NotificationsModalProps)
     <ModalWrapper isOpen={isOpen} onClose={onClose} size="md">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-neutral-100 flex items-center justify-center">
-            <Bell className="h-5 w-5 text-[#0A1B39]" />
+          <div className="h-10 w-10 rounded-xl bg-(--card) flex items-center justify-center">
+            <Bell className="h-5 w-5 text-(--heading)" />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-[#0A1B39]">Notifications</h3>
-            <p className="text-xs text-[#676E85]">You have 1 unread notification</p>
+            <h3 className="text-lg font-bold text-(--heading)">Notifications</h3>
+            <p className="text-xs text-(--muted)">You have 1 unread notification</p>
           </div>
         </div>
         <button className="text-xs font-medium text-[#17A546] hover:underline">
@@ -65,21 +65,21 @@ export function NotificationsModal({ isOpen, onClose }: NotificationsModalProps)
             key={notification.id}
             className={`flex items-start gap-4 p-4 rounded-2xl sm:rounded-3xl border transition-colors ${
               notification.read
-                ? "bg-white border-neutral-100"
-                : "bg-neutral-50 border-[#17A546]/20"
+                ? "bg-(--card) border-border"
+                : "bg-[rgba(148,163,184,0.08)] border-[#17A546]/20"
             }`}
           >
             <div className={`h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0 ${notification.bg}`}>
               <notification.icon className={`h-5 w-5 ${notification.color}`} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className={`text-sm font-semibold truncate ${notification.read ? "text-[#0A1B39]" : "text-[#0A1B39]"}`}>
+              <p className={`text-sm font-semibold truncate ${notification.read ? "text-(--heading)" : "text-(--heading)"}`}>
                 {notification.title}
               </p>
-              <p className="text-xs text-[#676E85] mt-1 line-clamp-2">
+              <p className="text-xs text-(--muted) mt-1 line-clamp-2">
                 {notification.message}
               </p>
-              <p className="text-[10px] font-medium text-[#98A2B3] mt-2 flex items-center gap-1">
+              <p className="text-[10px] font-medium text-(--muted) mt-2 flex items-center gap-1">
                 <Clock className="h-3 w-3" />
                 {notification.time}
               </p>

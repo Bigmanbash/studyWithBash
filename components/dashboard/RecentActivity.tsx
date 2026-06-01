@@ -37,9 +37,9 @@ const activities = [
 
 export function RecentActivity() {
   return (
-    <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-5 sm:p-6">
+    <div className="bg-(--card) rounded-2xl border border-border shadow-sm p-5 sm:p-6">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-bold text-[#0A1B39]">Recent Activity</h3>
+        <h3 className="text-lg font-bold text-(--heading)">Recent Activity</h3>
         <button className="text-xs font-medium text-[#17A546] hover:underline">View all</button>
       </div>
 
@@ -47,16 +47,16 @@ export function RecentActivity() {
         {activities.map((activity, i) => (
           <div
             key={i}
-            className="flex items-start gap-3 sm:gap-4 p-3 rounded-xl hover:bg-neutral-50 transition-colors group"
+            className="flex items-start gap-3 sm:gap-4 p-3 rounded-xl hover:bg-[rgba(255,255,255,0.08)] transition-colors group"
           >
             <div className={`${activity.iconBg} rounded-xl p-2.5 flex-shrink-0 group-hover:scale-110 transition-transform`}>
               <activity.icon className={`h-4 w-4 ${activity.iconColor}`} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-[#0A1B39] truncate">{activity.title}</p>
-              <p className="text-xs text-[#98A2B3] mt-0.5">{activity.subject}</p>
+              <p className="text-sm font-semibold text-(--heading) truncate">{activity.title}</p>
+              <p className="text-xs text-(--muted) mt-0.5">{activity.subject}</p>
             </div>
-            <span className="text-xs text-[#98A2B3] flex-shrink-0">{activity.time}</span>
+            <span className="text-xs text-(--muted) flex-shrink-0">{activity.time}</span>
           </div>
         ))}
       </div>

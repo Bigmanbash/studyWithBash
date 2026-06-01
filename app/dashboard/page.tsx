@@ -15,10 +15,10 @@ export default function DashboardPage() {
       <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
         {/* Greeting */}
         <div>
-          <h2 className="text-2xl sm:text-3xl font-bold text-[#0A1B39]">
+          <h2 className="text-2xl sm:text-3xl font-bold text-(--heading)">
             Welcome back, Chioma! 👋
           </h2>
-          <p className="text-sm sm:text-base text-[#676E85] mt-1">
+          <p className="text-sm sm:text-base text-(--muted) mt-1">
             Here&apos;s how your preparation is going this week.
           </p>
         </div>

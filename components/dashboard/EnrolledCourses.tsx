@@ -9,9 +9,9 @@ const enrolledCourses = [
 
 export function EnrolledCourses() {
   return (
-    <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-5 sm:p-6">
+    <div className="bg-(--card) rounded-2xl border border-border shadow-sm p-5 sm:p-6">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-bold text-[#0A1B39]">My Courses</h3>
+        <h3 className="text-lg font-bold text-(--heading)">My Courses</h3>
         <Link href="/courses" className="text-xs font-medium text-[#17A546] hover:underline flex items-center gap-1">
           View all <ArrowRight className="h-3 w-3" />
         </Link>
@@ -22,20 +22,20 @@ export function EnrolledCourses() {
           <Link
             key={course.slug}
             href={`/courses/${course.slug}`}
-            className="flex items-center gap-4 p-3 rounded-xl hover:bg-neutral-50 transition-colors group"
+            className="flex items-center gap-4 p-3 rounded-xl hover:bg-[rgba(255,255,255,0.08)] transition-colors group"
           >
             <div className={`h-10 w-10 rounded-xl ${course.color} flex-shrink-0 flex items-center justify-center text-white text-xs font-bold`}>
               {course.title[0]}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-[#0A1B39] truncate group-hover:text-[#17A546] transition-colors">{course.title}</p>
-              <p className="text-xs text-[#98A2B3] mt-0.5">{course.topics}</p>
+              <p className="text-sm font-semibold text-(--heading) truncate group-hover:text-[#17A546] transition-colors">{course.title}</p>
+              <p className="text-xs text-(--muted) mt-0.5">{course.topics}</p>
             </div>
             <div className="flex items-center gap-3 flex-shrink-0">
-              <div className="w-16 bg-neutral-100 h-1.5 rounded-full overflow-hidden hidden sm:block">
+              <div className="w-16 bg-(--card) h-1.5 rounded-full overflow-hidden hidden sm:block">
                 <div className={`h-full rounded-full ${course.color}`} style={{ width: `${course.progress}%` }} />
               </div>
-              <span className="text-xs font-bold text-[#0A1B39]">{course.progress}%</span>
+              <span className="text-xs font-bold text-(--heading)">{course.progress}%</span>
             </div>
           </Link>
         ))}

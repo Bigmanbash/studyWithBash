@@ -7,9 +7,9 @@ import { Send } from "lucide-react";
 
 export function ContactForm() {
   return (
-    <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-xl shadow-[#0A1B39]/5 border border-neutral-100">
-      <h3 className="text-xl font-bold text-[#0A1B39] mb-1">Send us a message</h3>
-      <p className="text-sm text-[#676E85] mb-6">Fill out the form below and we&apos;ll get back to you shortly.</p>
+    <div className="bg-(--card) rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-xl shadow-[#0A1B39]/5 border border-border">
+      <h3 className="text-xl font-bold text-(--heading) mb-1">Send us a message</h3>
+      <p className="text-sm text-(--muted) mb-6">Fill out the form below and we&apos;ll get back to you shortly.</p>
 
       <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -18,8 +18,8 @@ export function ContactForm() {
         </div>
         <Input label="Email" type="email" id="email" placeholder="john@example.com" />
         <div className="flex flex-col gap-1.5 w-full">
-          <label className="text-sm font-medium text-[#485066] uppercase tracking-wide">Subject</label>
-          <select className="flex h-12 w-full items-center rounded-xl border border-[#D1D5DB] bg-white px-3 py-2 text-base text-[#070D17] transition-colors focus-visible:outline-none focus-visible:border-[#3B82F6] focus-visible:ring-1 focus-visible:ring-[#3B82F6] appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2398A2B3%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-[length:20px] bg-[right_12px_center] bg-no-repeat pr-10">
+          <label className="text-sm font-medium text-(--muted) uppercase tracking-wide">Subject</label>
+          <select className="flex h-12 w-full items-center rounded-xl border border-input bg-(--card) px-3 py-2 text-base text-foreground transition-colors focus-visible:outline-none focus-visible:border-[#3B82F6] focus-visible:ring-1 focus-visible:ring-[#3B82F6] appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2398A2B3%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-[length:20px] bg-[right_12px_center] bg-no-repeat pr-10">
             <option value="">Select a topic</option>
             <option value="courses">Courses & Content</option>
             <option value="billing">Billing & Payments</option>

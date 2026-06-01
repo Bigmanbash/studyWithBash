@@ -26,15 +26,15 @@ import { Quote } from "lucide-react";
 
 export function Testimonials() {
   return (
-    <section className="py-24 bg-[#F7FCF9] relative">
+    <section className="py-24 bg-(--card) relative">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="text-[#17A546] font-bold tracking-wide uppercase text-sm mb-2">Testimonials</h2>
-          <p className="text-3xl font-bold tracking-tight text-[#0A1B39] sm:text-4xl lg:text-5xl">
+          <p className="text-3xl font-bold tracking-tight text-(--heading) sm:text-4xl lg:text-5xl">
             Trusted by students nationwide
           </p>
-          <p className="mt-6 text-base md:text-lg leading-8 text-[#676E85]">
-            Don't just take our word for it. Here is what our students have to say about their journey to 300+.
+          <p className="mt-6 text-base md:text-lg leading-8 text-(--muted)">
+            Don&apos;t just take our word for it. Here is what our students have to say about their journey to 300+.
           </p>
         </div>
         
@@ -43,19 +43,19 @@ export function Testimonials() {
             {testimonials.map((testimonial, index) => (
               <div 
                 key={testimonial.author.name} 
-                className={`flex flex-col justify-between bg-white p-8 md:p-10 shadow-xl shadow-[#0A1B39]/5 rounded-3xl border border-gray-100 hover:-translate-y-2 transition-transform duration-300 ${index === 1 ? 'md:mt-8' : ''} ${index === 2 ? 'lg:mt-16' : ''}`}
+                className={`flex flex-col justify-between bg-(--card) p-8 md:p-10 shadow-xl rounded-3xl border border-border hover:-translate-y-2 transition-transform duration-300 ${index === 1 ? 'md:mt-8' : ''} ${index === 2 ? 'lg:mt-16' : ''}`}
               >
                 <Quote className="h-10 w-10 text-[#17A546]/20 mb-6" />
-                <blockquote className="text-[#0A1B39] text-base md:text-lg leading-relaxed font-medium">
-                  "{testimonial.body}"
+                <blockquote className="text-(--heading) text-base md:text-lg leading-relaxed font-medium">
+                  “{testimonial.body}”
                 </blockquote>
-                <div className="mt-8 flex items-center gap-x-4 border-t border-gray-100 pt-6">
+                <div className="mt-8 flex items-center gap-x-4 border-t border-border pt-6">
                   <div className="h-12 w-12 rounded-full bg-[#17A546]/10 flex items-center justify-center text-[#17A546] font-bold text-lg ring-2 ring-white shadow-sm">
                     {testimonial.author.name[0]}
                   </div>
                   <div>
-                    <div className="font-bold text-[#0A1B39]">{testimonial.author.name}</div>
-                    <div className="text-sm font-medium text-[#676E85]">{testimonial.author.handle}</div>
+                    <div className="font-bold text-(--heading)">{testimonial.author.name}</div>
+                    <div className="text-sm font-medium text-(--muted)">{testimonial.author.handle}</div>
                   </div>
                 </div>
               </div>

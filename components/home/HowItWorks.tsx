@@ -29,14 +29,14 @@ const steps = [
 
 export function HowItWorks() {
   return (
-    <section className="py-24 bg-white relative overflow-hidden">
+    <section className="py-24 bg-(--card) relative overflow-hidden">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="mx-auto max-w-2xl lg:text-center animate-in fade-in slide-in-from-bottom-8 duration-1000">
           <h2 className="text-[#17A546] font-bold tracking-wide uppercase text-sm">Step by Step</h2>
-          <p className="mt-2 text-3xl font-bold tracking-tight text-[#0A1B39] sm:text-4xl lg:text-5xl">
+          <p className="mt-2 text-3xl font-bold tracking-tight text-(--heading) sm:text-4xl lg:text-5xl">
             How Bash Academy Works
           </p>
-          <p className="mt-6 text-base md:text-lg leading-8 text-[#676E85]">
+          <p className="mt-6 text-base md:text-lg leading-8 text-(--muted)">
             A simple, proven process designed specifically to take you from struggling with concepts to mastering your exams effortlessly.
           </p>
         </div>
@@ -55,16 +55,16 @@ export function HowItWorks() {
                   )}
                   
                   <div className="flex flex-col items-center lg:items-start">
-                    <div className={`relative flex h-16 w-16 items-center justify-center rounded-2xl border ${step.color} shadow-sm transition-transform duration-300 group-hover:scale-110 group-hover:shadow-md bg-white z-10`}>
+                    <div className={`relative flex h-16 w-16 items-center justify-center rounded-2xl border ${step.color} shadow-sm transition-transform duration-300 group-hover:scale-110 group-hover:shadow-md bg-(--card) z-10`}>
                       <Icon className="h-8 w-8" />
                       <div className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-[#0A1B39] text-white text-xs font-bold ring-2 ring-white shadow-sm">
                         {index + 1}
                       </div>
                     </div>
-                    <h3 className="mt-6 text-xl font-bold leading-7 text-[#0A1B39]">
+                    <h3 className="mt-6 text-xl font-bold leading-7 text-(--heading)">
                       {step.name}
                     </h3>
-                    <p className="mt-2 text-sm leading-relaxed text-[#676E85]">
+                    <p className="mt-2 text-sm leading-relaxed text-(--muted)">
                       {step.description}
                     </p>
                   </div>

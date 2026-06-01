@@ -29,14 +29,14 @@ const values = [
 
 export function AboutValues() {
   return (
-    <section className="py-20 sm:py-28 bg-[#F7F9FC]">
+    <section className="py-20 sm:py-28 bg-(--card)">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-2xl mx-auto">
           <span className="text-[#17A546] font-bold tracking-wide uppercase text-sm">Our Values</span>
-          <h2 className="mt-2 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-[#0A1B39]">
+          <h2 className="mt-2 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-(--heading)">
             What drives everything we do
           </h2>
-          <p className="mt-6 text-base md:text-lg leading-relaxed text-[#676E85]">
+          <p className="mt-6 text-base md:text-lg leading-relaxed text-(--muted)">
             Four principles that guide us in building the best learning platform for Nigerian students.
           </p>
         </div>
@@ -45,13 +45,13 @@ export function AboutValues() {
           {values.map((value) => (
             <div
               key={value.name}
-              className="bg-white rounded-2xl p-6 sm:p-8 border border-neutral-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group"
+              className="bg-(--card) rounded-2xl p-6 sm:p-8 border border-border shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group"
             >
               <div className={`h-12 w-12 rounded-2xl ${value.color} flex items-center justify-center mb-5 group-hover:scale-110 transition-transform`}>
                 <value.icon className="h-6 w-6" />
               </div>
-              <h3 className="text-lg font-bold text-[#0A1B39] mb-2">{value.name}</h3>
-              <p className="text-sm leading-relaxed text-[#676E85]">{value.description}</p>
+              <h3 className="text-lg font-bold text-(--heading) mb-2">{value.name}</h3>
+              <p className="text-sm leading-relaxed text-(--muted)">{value.description}</p>
             </div>
           ))}
         </div>

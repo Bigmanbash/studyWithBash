@@ -204,7 +204,7 @@ function RichTextEditor({ value, onChange, placeholder }: { value: string; onCha
 
 function EditableTheory({ block, updateBlock, actions }: { block: TheoryBlock; updateBlock: (b: TheoryBlock) => void; actions: BlockActionProps }) {
   return (
-    <div className="relative group bg-white rounded-[16px] sm:rounded-[24px] border border-neutral-200/60 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] p-5 sm:p-10 mb-6 sm:mb-10 transition-all hover:border-brand-green/40">
+    <div className="relative group bg-white rounded-2xl sm:rounded-3xl border border-neutral-200/60 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] p-5 sm:p-10 mb-6 sm:mb-10 transition-all hover:border-brand-green/40">
       <BlockActions {...actions} />
 
       <div className="flex items-center gap-3 mb-5 sm:mb-8 pb-4 border-b border-neutral-100">
@@ -243,7 +243,7 @@ function EditableImages({ block, updateBlock, actions }: { block: ImagesBlock; u
   };
 
   return (
-    <div className="relative group bg-white rounded-[16px] sm:rounded-[24px] border border-neutral-200/60 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] p-5 sm:p-10 mb-6 sm:mb-10 transition-all hover:border-brand-green/40 overflow-hidden">
+    <div className="relative group bg-white rounded-2xl sm:rounded-3xl border border-neutral-200/60 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] p-5 sm:p-10 mb-6 sm:mb-10 transition-all hover:border-brand-green/40 overflow-hidden">
       <BlockActions {...actions} />
 
       <div className="flex items-center gap-3 mb-5 sm:mb-8 pb-4 border-b border-neutral-100">
@@ -344,7 +344,7 @@ function EditableFormula({ block, updateBlock, actions }: { block: FormulaBlock;
   };
 
   return (
-    <div className="relative group bg-[#F7F9FC] rounded-[16px] sm:rounded-[24px] border border-neutral-200/60 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] p-5 sm:p-10 mb-6 sm:mb-10 transition-all hover:border-brand-green/40">
+    <div className="relative group bg-[#F7F9FC] rounded-2xl sm:rounded-3xl border border-neutral-200/60 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] p-5 sm:p-10 mb-6 sm:mb-10 transition-all hover:border-brand-green/40">
       <BlockActions {...actions} />
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5 pb-4 border-b border-neutral-200/50">
@@ -447,7 +447,7 @@ function EditableExample({ block, updateBlock, actions }: { block: ExampleBlock;
   };
 
   return (
-    <div className="relative group bg-white rounded-[16px] sm:rounded-[24px] border border-neutral-200/60 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] p-5 sm:p-10 mb-6 sm:mb-10 transition-all hover:border-brand-green/40">
+    <div className="relative group bg-white rounded-2xl sm:rounded-3xl border border-neutral-200/60 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] p-5 sm:p-10 mb-6 sm:mb-10 transition-all hover:border-brand-green/40">
       <BlockActions {...actions} />
 
       <div className="flex items-center gap-3 mb-5 sm:mb-8 pb-4 border-b border-neutral-100">
@@ -457,7 +457,7 @@ function EditableExample({ block, updateBlock, actions }: { block: ExampleBlock;
         <h2 className="text-[19px] sm:text-[22px] font-bold text-[#0A1B39]">Worked Example</h2>
       </div>
 
-      <div className="border border-neutral-200/60 rounded-[12px] sm:rounded-[16px] overflow-hidden focus-within:border-brand-green/40 transition-colors">
+      <div className="border border-neutral-200/60 rounded-[12px] sm:rounded-2xl overflow-hidden focus-within:border-brand-green/40 transition-colors">
         <div className="bg-neutral-50 px-4 py-3.5 sm:px-5 sm:py-4 border-b border-neutral-200/60 flex items-center gap-3 relative">
           <select
             className={cn("appearance-none px-2.5 py-1 rounded-md text-[10px] sm:text-[11px] font-bold uppercase tracking-wider outline-none cursor-pointer pr-6", getDifficultyStyles(block.difficulty))}
@@ -468,7 +468,7 @@ function EditableExample({ block, updateBlock, actions }: { block: ExampleBlock;
             <option value="Medium">Medium</option>
             <option value="Hard">Hard</option>
           </select>
-          <div className="pointer-events-none absolute left-[4.5rem] flex items-center px-2 text-current opacity-50">
+          <div className="pointer-events-none absolute left-18 flex items-center px-2 text-current opacity-50">
             <ChevronDown className="h-3 w-3" />
           </div>
 
@@ -506,7 +506,7 @@ function EditableExample({ block, updateBlock, actions }: { block: ExampleBlock;
 
 function EditableQuiz({ block, updateBlock, actions }: { block: QuizBlock; updateBlock: (b: QuizBlock) => void; actions: BlockActionProps }) {
   return (
-    <div className="relative group bg-white rounded-[16px] sm:rounded-[24px] border border-brand-green/20 shadow-[0_8px_30px_-4px_rgba(23,165,70,0.08)] p-5 sm:p-10 mb-8 transition-all hover:border-brand-green/40">
+    <div className="relative group bg-white rounded-2xl sm:rounded-3xl border border-brand-green/20 shadow-[0_8px_30px_-4px_rgba(23,165,70,0.08)] p-5 sm:p-10 mb-8 transition-all hover:border-brand-green/40">
       <BlockActions {...actions} />
 
       <div className="flex items-center justify-between mb-6 sm:mb-8 pb-4 border-b border-neutral-100">

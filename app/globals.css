@@ -3,17 +3,41 @@
 
 @layer base {
   :root {
-    --background: #FFFFFF;
-    --foreground: #676E85;
-    
-    --card: #F7F9FC;
-    --card-foreground: #676E85;
+    --background: #ffffff;
+    --foreground: #0f172a;
+    --muted: #676e85;
+    --heading: #0a1b39;
 
-    --border: #E4E7EC;
-    --input: #E4E7EC;
-    --ring: #17A546;
+    --card: #f7f9fc;
+    --card-foreground: #0f172a;
+
+    --border: #e4e7ec;
+    --input: #e4e7ec;
+    --ring: #17a546;
 
     --radius: 12px;
+  }
+
+  .dark {
+    --background: #020617;
+    --foreground: #e2e8f0;
+    --muted: #94a3b8;
+    --heading: #f8fafc;
+
+    --card: #111827;
+    --card-foreground: #e5e7eb;
+
+    --border: #334155;
+    --input: #334155;
+    --ring: #40b869;
+  }
+
+  html {
+    color-scheme: light dark;
+  }
+
+  html.dark {
+    color-scheme: dark;
   }
 }
 
@@ -25,12 +49,74 @@
     @apply bg-background text-foreground font-sans text-body;
   }
   h1 {
-    @apply text-h1 text-[#0A1B39] tracking-tight;
+    @apply text-h1 tracking-tight;
+    color: var(--heading);
   }
   h2 {
-    @apply text-h2 text-[#485066] tracking-tight;
+    @apply text-h2 tracking-tight;
+    color: var(--heading);
   }
   h3 {
-    @apply text-h3 text-[#485066] tracking-tight;
+    @apply text-h3 tracking-tight;
+    color: var(--heading);
+  }
+}
+
+@layer utilities {
+  .dark .bg-white {
+    background-color: var(--card) !important;
+  }
+
+  .dark .bg-\[\#F7F9FC\] {
+    background-color: var(--card) !important;
+  }
+
+  .dark .bg-neutral-100,
+  .dark .bg-neutral-200,
+  .dark .bg-neutral-50 {
+    background-color: rgba(148, 163, 184, 0.08) !important;
+  }
+
+  .dark .border-neutral-100,
+  .dark .border-neutral-200 {
+    border-color: var(--border) !important;
+  }
+
+  .dark .text-\[\#0A1B39\] {
+    color: var(--heading) !important;
+  }
+
+  .dark .text-\[\#676E85\] {
+    color: var(--muted) !important;
+  }
+
+  .dark .text-\[\#98A2B3\] {
+    color: var(--muted) !important;
+  }
+
+  .dark .bg-white\/5 {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+  }
+
+  .dark .bg-white\/10 {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .dark .bg-white\/20 {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+  }
+
+  .dark .border-white\/10 {
+    border-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  /* Utility to preserve dark text color on light backgrounds even in dark mode */
+  .preserve-dark-text {
+    color: #0A1B39 !important;
+  }
+
+  /* Explicitly ensure the utility wins in dark mode too */
+  .dark .preserve-dark-text {
+    color: #0A1B39 !important;
   }
 }

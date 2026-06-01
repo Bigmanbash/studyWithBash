@@ -41,16 +41,16 @@ export function StatsCards() {
       {stats.map((stat) => (
         <div
           key={stat.label}
-          className="bg-white rounded-2xl p-5 sm:p-6 border border-neutral-100 shadow-sm hover:shadow-md transition-shadow group"
+          className="bg-(--card) rounded-2xl p-5 sm:p-6 border border-border shadow-sm hover:shadow-md transition-shadow group"
         >
           <div className="flex items-start justify-between mb-4">
             <div className={`${stat.bg} rounded-xl p-2.5 group-hover:scale-110 transition-transform`}>
               <stat.icon className={`h-5 w-5 ${stat.color}`} />
             </div>
           </div>
-          <p className="text-2xl sm:text-3xl font-bold text-[#0A1B39]">{stat.value}</p>
-          <p className="text-sm text-[#676E85] mt-1">{stat.label}</p>
-          <p className="text-xs text-[#98A2B3] mt-2">{stat.change}</p>
+          <p className="text-2xl sm:text-3xl font-bold text-(--heading)">{stat.value}</p>
+          <p className="text-sm text-(--muted) mt-1">{stat.label}</p>
+          <p className="text-xs text-(--muted) mt-2">{stat.change}</p>
         </div>
       ))}
     </div>

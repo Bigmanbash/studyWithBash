@@ -3,7 +3,7 @@ import { ArrowRight, Sparkles } from "lucide-react";
 
 export function CTASection() {
   return (
-    <section className="bg-white py-12 md:py-24">
+    <section className="bg-(--card) py-12 md:py-24">
       <div className="px-4 sm:px-6 lg:px-8 w-full max-w-7xl mx-auto">
         <div className="relative overflow-hidden bg-gradient-to-br from-[#0A1B39] via-[#0A1B39] to-[#17A546]/30 px-6 py-16 sm:px-10 sm:py-20 md:px-16 md:py-24 shadow-2xl rounded-2xl sm:rounded-3xl">
 

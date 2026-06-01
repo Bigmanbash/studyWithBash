@@ -47,10 +47,10 @@ export function SignupForm() {
           iconType="password"
         />
         <div className="flex flex-col gap-1.5 w-full">
-          <label className="text-sm font-medium text-[#485066] uppercase tracking-wide">
+          <label className="text-sm font-medium text-(--muted) uppercase tracking-wide">
             Target Exam
           </label>
-          <select className="flex h-12 w-full items-center rounded-xl border border-[#D1D5DB] bg-white px-3 py-2 text-base text-[#070D17] transition-colors focus-visible:outline-none focus-visible:border-[#3B82F6] focus-visible:ring-1 focus-visible:ring-[#3B82F6] appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2398A2B3%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-[length:20px] bg-[right_12px_center] bg-no-repeat pr-10">
+          <select className="flex h-12 w-full items-center rounded-xl border border-input bg-(--card) px-3 py-2 text-base text-foreground transition-colors focus-visible:outline-none focus-visible:border-[#3B82F6] focus-visible:ring-1 focus-visible:ring-[#3B82F6] appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2398A2B3%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-size-[20px] bg-position-[right_12px_center] bg-no-repeat pr-10">
             <option value="">Select your exam</option>
             <option value="jamb">JAMB</option>
             <option value="waec">WAEC</option>
@@ -66,17 +66,17 @@ export function SignupForm() {
       {/* Divider */}
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-neutral-200" />
+          <div className="w-full border-t border-border" />
         </div>
         <div className="relative flex justify-center text-xs">
-          <span className="bg-white px-3 text-[#98A2B3]">or continue with</span>
+          <span className="bg-(--card) px-3 text-(--muted)">or continue with</span>
         </div>
       </div>
 
       {/* Social login */}
       <button
         type="button"
-        className="w-full h-12 rounded-xl border border-neutral-200 bg-white text-sm font-medium text-[#0A1B39] hover:bg-neutral-50 transition-colors flex items-center justify-center gap-3"
+        className="w-full h-12 rounded-xl border border-border bg-(--card) text-sm font-medium text-(--heading) hover:bg-[rgba(255,255,255,0.08)] transition-colors flex items-center justify-center gap-3"
       >
         <svg className="h-5 w-5" viewBox="0 0 24 24">
           <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
@@ -87,7 +87,7 @@ export function SignupForm() {
         Continue with Google
       </button>
 
-      <p className="text-xs text-center text-[#98A2B3]">
+      <p className="text-xs text-center text-(--muted)">
         By signing up, you agree to our{" "}
         <a href="#" className="text-brand-green hover:underline">Terms</a> and{" "}
         <a href="#" className="text-brand-green hover:underline">Privacy Policy</a>.

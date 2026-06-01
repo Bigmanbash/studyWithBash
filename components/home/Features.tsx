@@ -41,7 +41,7 @@ export function Features() {
             Everything you need to excel
           </p>
           <p className="mt-6 text-base md:text-lg leading-8 text-neutral-300">
-            We've built a platform that combines deep learning theory with intense practice, designed specifically to help Nigerian students beat the JAMB algorithm.
+            We&apos;ve built a platform that combines deep learning theory with intense practice, designed specifically to help Nigerian students beat the JAMB algorithm.
           </p>
         </div>
 

@@ -38,8 +38,8 @@ export function SuccessModal({
           <Sparkles className="h-4 w-4 text-brand-gold" />
         </div>
 
-        <h3 className="text-xl sm:text-2xl font-bold text-[#0A1B39] mb-3">{title}</h3>
-        <p className="text-sm text-[#676E85] leading-relaxed mb-8 max-w-xs mx-auto">{message}</p>
+        <h3 className="text-xl sm:text-2xl font-bold text-(--heading) mb-3">{title}</h3>
+        <p className="text-sm text-(--muted) leading-relaxed mb-8 max-w-xs mx-auto">{message}</p>
 
         <Button
           className="w-full bg-[#17A546] hover:bg-[#17A546]/90 text-white h-12 rounded-xl font-bold shadow-lg shadow-[#17A546]/20"

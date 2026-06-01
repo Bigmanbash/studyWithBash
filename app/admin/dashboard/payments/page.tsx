@@ -8,16 +8,12 @@ import {
   Clock,
   CheckCircle2,
   XCircle,
-  AlertCircle,
   Filter,
   Download,
   Eye,
   Check,
   X,
-  ArrowUpRight,
-  ArrowDownRight,
   Banknote,
-  Users,
   Receipt,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -338,7 +334,7 @@ export default function AdminPaymentsPage() {
                       onChange={(e) => setSearchQuery(e.target.value)}
                     />
                   </div>
-                  <button className="h-9 w-9 rounded-xl bg-neutral-50 border border-neutral-100 flex items-center justify-center hover:bg-neutral-100 transition-colors flex-shrink-0">
+                  <button className="h-9 w-9 rounded-xl bg-neutral-50 border border-neutral-100 flex items-center justify-center hover:bg-neutral-100 transition-colors shrink-0">
                     <Filter className="h-3.5 w-3.5 text-[#676E85]" />
                   </button>
                 </div>
@@ -378,13 +374,13 @@ export default function AdminPaymentsPage() {
                         key={payment.id}
                         className={cn(
                           "hover:bg-neutral-50/50 transition-colors cursor-pointer",
-                          selectedPayment === payment.id && "bg-[#17A546]/[0.02]"
+                          selectedPayment === payment.id && "bg-[#17A546]/2"
                         )}
                         onClick={() => setSelectedPayment(payment.id)}
                       >
                         <td className="px-5 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="h-9 w-9 rounded-full bg-[#030E36]/5 flex items-center justify-center text-[#030E36] font-bold text-[10px] flex-shrink-0">
+                            <div className="h-9 w-9 rounded-full bg-[#030E36]/5 flex items-center justify-center text-[#030E36] font-bold text-[10px] shrink-0">
                               {payment.initials}
                             </div>
                             <div className="min-w-0">

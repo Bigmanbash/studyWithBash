@@ -17,14 +17,14 @@ export default function CourseDetailPage({ params }: { params: { slug: string } 
           color="bg-blue-500"
         />
 
-        <section className="py-10 sm:py-14 bg-[#F7F9FC]">
+        <section className="py-10 sm:py-14 bg-(--card)">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 lg:items-start">
               {/* Main content — topics */}
               <div className="lg:col-span-2">
                 <div className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#0A1B39]">Course Content</h2>
-                  <p className="text-sm text-[#676E85] mt-2">Master the syllabus step-by-step with interactive modules.</p>
+                  <h2 className="text-2xl font-bold text-(--heading)">Course Content</h2>
+                  <p className="text-sm text-(--muted) mt-2">Master the syllabus step-by-step with interactive modules.</p>
                 </div>
                 <TopicList courseSlug={params.slug} />
               </div>

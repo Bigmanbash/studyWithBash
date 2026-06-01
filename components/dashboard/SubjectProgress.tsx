@@ -6,9 +6,9 @@ const subjects = [
 
 export function SubjectProgress() {
   return (
-    <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-5 sm:p-6">
+    <div className="bg-(--card) rounded-2xl border border-border shadow-sm p-5 sm:p-6">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-bold text-[#0A1B39]">Subject Progress</h3>
+        <h3 className="text-lg font-bold text-(--heading)">Subject Progress</h3>
         <span className="text-xs font-medium text-[#17A546] bg-[#17A546]/10 px-3 py-1 rounded-full">This Term</span>
       </div>
 
@@ -18,19 +18,19 @@ export function SubjectProgress() {
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-3">
                 <div className={`h-3 w-3 rounded-full ${subject.color}`}></div>
-                <span className="text-sm font-semibold text-[#0A1B39]">{subject.name}</span>
+                <span className="text-sm font-semibold text-(--heading)">{subject.name}</span>
               </div>
-              <span className="text-sm text-[#676E85]">
+              <span className="text-sm text-(--muted)">
                 {subject.completed}/{subject.total} topics
               </span>
             </div>
-            <div className="w-full bg-neutral-100 h-2.5 rounded-full overflow-hidden">
+            <div className="w-full bg-(--card) h-2.5 rounded-full overflow-hidden">
               <div
                 className={`${subject.color} h-full rounded-full transition-all duration-1000`}
                 style={{ width: `${subject.progress}%` }}
               ></div>
             </div>
-            <p className="text-xs text-[#98A2B3] mt-1.5">{subject.progress}% complete</p>
+            <p className="text-xs text-(--muted) mt-1.5">{subject.progress}% complete</p>
           </div>
         ))}
       </div>

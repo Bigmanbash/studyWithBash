@@ -4,8 +4,8 @@ export function CourseSidebar() {
   return (
     <div className="space-y-6">
       {/* Progress Card */}
-      <div className="bg-white rounded-[24px] border border-neutral-200/60 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] p-6 sm:p-8">
-        <h4 className="text-base font-bold text-[#0A1B39] mb-6">Your Progress</h4>
+      <div className="bg-(--card) rounded-3xl border border-border/60 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] p-6 sm:p-8">
+        <h4 className="text-base font-bold text-(--heading) mb-6">Your Progress</h4>
         <div className="relative h-32 w-32 mx-auto mb-6">
           <svg className="h-32 w-32 -rotate-90 drop-shadow-sm" viewBox="0 0 100 100">
             <circle cx="50" cy="50" r="42" fill="none" stroke="#F3F4F6" strokeWidth="10" />
@@ -24,15 +24,15 @@ export function CourseSidebar() {
             </defs>
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-3xl font-extrabold text-[#0A1B39]">22%</span>
+            <span className="text-3xl font-extrabold text-(--heading)">22%</span>
           </div>
         </div>
-        <p className="text-sm text-center font-medium text-[#676E85]">3 of 14 topics completed</p>
+        <p className="text-sm text-center font-medium text-(--muted)">3 of 14 topics completed</p>
       </div>
 
       {/* Quick Stats */}
-      <div className="bg-white rounded-[24px] border border-neutral-200/60 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] p-6 sm:p-8">
-        <h4 className="text-base font-bold text-[#0A1B39] mb-6">Quick Stats</h4>
+      <div className="bg-(--card) rounded-3xl border border-border/60 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] p-6 sm:p-8">
+        <h4 className="text-base font-bold text-(--heading) mb-6">Quick Stats</h4>
         <div className="space-y-5">
           {[
             { icon: Trophy, label: "Best Score", value: "85%", color: "text-amber-500", bg: "bg-amber-50" },
@@ -44,8 +44,8 @@ export function CourseSidebar() {
                 <stat.icon className={`h-5 w-5 ${stat.color}`} />
               </div>
               <div className="flex-1">
-                <p className="text-[13px] font-medium text-[#676E85]">{stat.label}</p>
-                <p className="text-[17px] font-bold text-[#0A1B39]">{stat.value}</p>
+                <p className="text-[13px] font-medium text-(--muted)">{stat.label}</p>
+                <p className="text-[17px] font-bold text-(--heading)">{stat.value}</p>
               </div>
             </div>
           ))}

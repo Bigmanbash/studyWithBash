@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Preloader } from "@/components/modals";
+import { ConditionalThemeProvider } from "@/components/theme/ConditionalThemeProvider";
 
 export const metadata: Metadata = {
   title: "Bash Academy",
@@ -15,10 +16,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased">
-        <Preloader />
-        <main className="min-h-screen w-full overflow-x-hidden">
-          {children}
-        </main>
+        <ConditionalThemeProvider>
+          <Preloader />
+          <main className="min-h-screen w-full overflow-x-hidden">
+            {children}
+          </main>
+        </ConditionalThemeProvider>
       </body>
     </html>
   );

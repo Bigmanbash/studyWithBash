@@ -17,19 +17,19 @@ export function PaymentModal({ isOpen, onClose, plan = { name: "Pro", price: "â‚
         <div className="mx-auto h-14 w-14 rounded-2xl bg-[#17A546]/10 flex items-center justify-center mb-4">
           <CreditCard className="h-7 w-7 text-[#17A546]" />
         </div>
-        <h3 className="text-xl sm:text-2xl font-bold text-[#0A1B39]">Upgrade to {plan.name}</h3>
-        <p className="text-sm text-[#676E85] mt-2">Unlock full access to all courses and features</p>
+        <h3 className="text-xl sm:text-2xl font-bold text-(--heading)">Upgrade to {plan.name}</h3>
+        <p className="text-sm text-(--muted) mt-2">Unlock full access to all courses and features</p>
       </div>
 
       {/* Plan summary */}
-      <div className="bg-neutral-50 rounded-2xl p-5 mb-6 border border-neutral-100">
+      <div className="bg-[rgba(148,163,184,0.08)] rounded-2xl p-5 mb-6 border border-border">
         <div className="flex items-center justify-between mb-3">
-          <span className="text-sm font-semibold text-[#0A1B39]">{plan.name} Plan</span>
-          <span className="text-lg font-bold text-[#0A1B39]">{plan.price}<span className="text-sm font-normal text-[#676E85]">/mo</span></span>
+          <span className="text-sm font-semibold text-(--heading)">{plan.name} Plan</span>
+          <span className="text-lg font-bold text-(--heading)">{plan.price}<span className="text-sm font-normal text-(--muted)">/mo</span></span>
         </div>
         <ul className="space-y-2">
           {["Full SS1-SS3 & JAMB curriculum", "Unlimited practice questions", "Mock exams & analytics"].map((f) => (
-            <li key={f} className="flex items-center gap-2 text-sm text-[#676E85]">
+            <li key={f} className="flex items-center gap-2 text-sm text-(--muted)">
               <div className="h-1.5 w-1.5 rounded-full bg-[#17A546]"></div>
               {f}
             </li>
@@ -40,28 +40,28 @@ export function PaymentModal({ isOpen, onClose, plan = { name: "Pro", price: "â‚
       {/* Payment fields */}
       <div className="space-y-4 mb-6">
         <div>
-          <label className="text-xs font-medium text-[#485066] uppercase tracking-wide mb-1.5 block">Card Number</label>
+          <label className="text-xs font-medium text-(--muted) uppercase tracking-wide mb-1.5 block">Card Number</label>
           <input
             type="text"
             placeholder="0000 0000 0000 0000"
-            className="flex h-12 w-full rounded-xl border border-[#D1D5DB] bg-white px-4 py-2 text-base text-[#070D17] placeholder:text-[#98A2B3] focus-visible:outline-none focus-visible:border-[#3B82F6] focus-visible:ring-1 focus-visible:ring-[#3B82F6]"
+            className="flex h-12 w-full rounded-xl border border-input bg-(--card) px-4 py-2 text-base text-foreground placeholder:text-(--muted) focus-visible:outline-none focus-visible:border-[#3B82F6] focus-visible:ring-1 focus-visible:ring-[#3B82F6]"
           />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="text-xs font-medium text-[#485066] uppercase tracking-wide mb-1.5 block">Expiry</label>
+            <label className="text-xs font-medium text-(--muted) uppercase tracking-wide mb-1.5 block">Expiry</label>
             <input
               type="text"
               placeholder="MM/YY"
-              className="flex h-12 w-full rounded-xl border border-[#D1D5DB] bg-white px-4 py-2 text-base text-[#070D17] placeholder:text-[#98A2B3] focus-visible:outline-none focus-visible:border-[#3B82F6] focus-visible:ring-1 focus-visible:ring-[#3B82F6]"
+              className="flex h-12 w-full rounded-xl border border-input bg-(--card) px-4 py-2 text-base text-foreground placeholder:text-(--muted) focus-visible:outline-none focus-visible:border-[#3B82F6] focus-visible:ring-1 focus-visible:ring-[#3B82F6]"
             />
           </div>
           <div>
-            <label className="text-xs font-medium text-[#485066] uppercase tracking-wide mb-1.5 block">CVV</label>
+            <label className="text-xs font-medium text-(--muted) uppercase tracking-wide mb-1.5 block">CVV</label>
             <input
               type="text"
               placeholder="123"
-              className="flex h-12 w-full rounded-xl border border-[#D1D5DB] bg-white px-4 py-2 text-base text-[#070D17] placeholder:text-[#98A2B3] focus-visible:outline-none focus-visible:border-[#3B82F6] focus-visible:ring-1 focus-visible:ring-[#3B82F6]"
+              className="flex h-12 w-full rounded-xl border border-input bg-(--card) px-4 py-2 text-base text-foreground placeholder:text-(--muted) focus-visible:outline-none focus-visible:border-[#3B82F6] focus-visible:ring-1 focus-visible:ring-[#3B82F6]"
             />
           </div>
         </div>
@@ -72,8 +72,8 @@ export function PaymentModal({ isOpen, onClose, plan = { name: "Pro", price: "â‚
       </Button>
 
       <div className="flex items-center justify-center gap-1.5 mt-4">
-        <Shield className="h-3.5 w-3.5 text-[#98A2B3]" />
-        <span className="text-xs text-[#98A2B3]">Secured by Paystack Â· 256-bit SSL</span>
+        <Shield className="h-3.5 w-3.5 text-(--muted)" />
+        <span className="text-xs text-(--muted)">Secured by Paystack Â· 256-bit SSL</span>
       </div>
     </ModalWrapper>
   );

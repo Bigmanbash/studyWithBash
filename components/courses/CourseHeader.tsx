@@ -9,10 +9,9 @@ interface CourseHeaderProps {
   topics: number;
   duration: string;
   students: string;
-  color: string;
 }
 
-export function CourseHeader({ title, subject, level, topics, duration, students, color }: CourseHeaderProps) {
+export function CourseHeader({ title, subject, level, topics, duration, students }: CourseHeaderProps) {
   return (
     <section className="relative overflow-hidden py-16 sm:py-20 bg-[#0A1B39]">
       {/* Decorative background glows */}
@@ -60,7 +59,7 @@ export function CourseHeader({ title, subject, level, topics, duration, students
             </div>
           </div>
 
-          <Button size="lg" className="w-full sm:w-auto bg-gradient-to-r from-[#17A546] to-[#14933E] hover:from-[#14933E] hover:to-[#117a33] text-white font-bold px-10 py-6 text-[15px] rounded-2xl shadow-[0_8px_30px_-4px_rgba(23,165,70,0.4)] hover:shadow-[0_12px_40px_-4px_rgba(23,165,70,0.5)] transform hover:-translate-y-1 transition-all duration-300 border border-[#17A546]/50">
+          <Button size="lg" className="w-full sm:w-auto bg-linear-to-r from-[#17A546] to-[#14933E] hover:from-[#14933E] hover:to-[#117a33] text-white font-bold px-10 py-6 text-[15px] rounded-2xl shadow-[0_8px_30px_-4px_rgba(23,165,70,0.4)] hover:shadow-[0_12px_40px_-4px_rgba(23,165,70,0.5)] transform hover:-translate-y-1 transition-all duration-300 border border-[#17A546]/50">
             Start Learning Now
           </Button>
         </div>

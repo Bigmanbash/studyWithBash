@@ -9,8 +9,6 @@ import {
   Clock, 
   Users, 
   MoreHorizontal,
-  CheckCircle2,
-  XCircle,
   FileText,
   Video,
   FileQuestion,
@@ -219,7 +217,7 @@ export default function CourseDetailsPage() {
                         <BookOpen className="h-5 w-5 md:h-6 md:w-6 text-neutral-300" />
                       </div>
                       <p className="text-sm md:text-body font-semibold text-brand-navy">No modules yet</p>
-                      <p className="text-xs md:text-sm text-neutral-300 mt-1 md:mt-1.5 mb-4 md:mb-5 max-w-sm mx-auto">Build out this term's curriculum by adding videos, reading materials, or quizzes.</p>
+                      <p className="text-xs md:text-sm text-neutral-300 mt-1 md:mt-1.5 mb-4 md:mb-5 max-w-sm mx-auto">Build out this term&apos;s curriculum by adding videos, reading materials, or quizzes.</p>
                       <Button variant="outline" size="sm" className="h-9 md:h-10 text-xs md:text-sm font-medium border-neutral-200 text-brand-navy rounded-md hover:bg-neutral-100 shadow-sm">
                         <Plus className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />
                         Add First Module

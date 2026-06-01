@@ -9,10 +9,8 @@ import {
   Clock,
   AlertTriangle,
   CheckCircle2,
-  User,
   ChevronRight,
   Filter,
-  ArrowUpRight,
   XCircle,
   MailOpen,
 } from "lucide-react";
@@ -250,7 +248,7 @@ export default function AdminSupportPage() {
                       onChange={(e) => setSearchQuery(e.target.value)}
                     />
                   </div>
-                  <button className="h-9 w-9 rounded-xl bg-neutral-50 border border-neutral-100 flex items-center justify-center hover:bg-neutral-100 transition-colors flex-shrink-0">
+                  <button className="h-9 w-9 rounded-xl bg-neutral-50 border border-neutral-100 flex items-center justify-center hover:bg-neutral-100 transition-colors shrink-0">
                     <Filter className="h-3.5 w-3.5 text-[#676E85]" />
                   </button>
                 </div>
@@ -270,11 +268,11 @@ export default function AdminSupportPage() {
                     onClick={() => setSelectedTicket(ticket.id)}
                     className={cn(
                       "w-full text-left px-4 sm:px-5 py-4 hover:bg-neutral-50/80 transition-colors group",
-                      isSelected && "bg-[#17A546]/[0.03] border-l-2 border-l-[#17A546]"
+                      isSelected && "bg-[#17A546]/3 border-l-2 border-l-[#17A546]"
                     )}
                   >
                     <div className="flex items-start gap-3">
-                      <div className="relative flex-shrink-0 mt-0.5">
+                      <div className="relative shrink-0 mt-0.5">
                         <div className="h-9 w-9 rounded-full bg-[#030E36]/5 flex items-center justify-center text-[#030E36] font-bold text-[10px]">
                           {ticket.initials}
                         </div>
@@ -310,7 +308,7 @@ export default function AdminSupportPage() {
                         </div>
                       </div>
 
-                      <ChevronRight className="h-4 w-4 text-[#98A2B3] flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity mt-1" />
+                      <ChevronRight className="h-4 w-4 text-[#98A2B3] shrink-0 opacity-0 group-hover:opacity-100 transition-opacity mt-1" />
                     </div>
                   </button>
                 );

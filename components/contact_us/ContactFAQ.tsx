@@ -19,14 +19,14 @@ export function ContactFAQ() {
   ];
 
   return (
-    <section className="py-20 sm:py-28 bg-[#F7F9FC]">
+    <section className="py-20 sm:py-28 bg-(--card)">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-2xl mx-auto mb-16">
           <span className="text-[#17A546] font-bold tracking-wide uppercase text-sm">FAQ</span>
-          <h2 className="mt-2 text-3xl sm:text-4xl font-bold tracking-tight text-[#0A1B39]">
+          <h2 className="mt-2 text-3xl sm:text-4xl font-bold tracking-tight text-(--heading)">
             Frequently asked questions
           </h2>
-          <p className="mt-4 text-base text-[#676E85]">
+          <p className="mt-4 text-base text-(--muted)">
             Can&apos;t find the answer? Reach out through the form above.
           </p>
         </div>
@@ -35,10 +35,10 @@ export function ContactFAQ() {
           {faqs.map((faq) => (
             <div
               key={faq.question}
-              className="bg-white rounded-2xl p-6 border border-neutral-100 shadow-sm"
+              className="bg-(--card) rounded-2xl p-6 border border-border shadow-sm"
             >
-              <h3 className="text-base font-bold text-[#0A1B39]">{faq.question}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-[#676E85]">{faq.answer}</p>
+              <h3 className="text-base font-bold text-(--heading)">{faq.question}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-(--muted)">{faq.answer}</p>
             </div>
           ))}
         </div>
