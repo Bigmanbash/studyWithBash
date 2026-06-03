@@ -37,9 +37,9 @@ export function QuickActions() {
           <Link
             key={i}
             href={action.href}
-            className="flex items-start gap-4 p-5 rounded-2xl border border-neutral-100 bg-white hover:border-[#17A546]/30 hover:shadow-sm transition-all group"
+            className="flex items-start gap-4 p-5 rounded-md border border-neutral-100 bg-white hover:border-[#17A546]/30 hover:shadow-sm transition-all group"
           >
-            <div className={`p-3 rounded-xl ${action.bg} ${action.color} group-hover:scale-110 transition-transform`}>
+            <div className={`p-3 rounded-md ${action.bg} ${action.color} group-hover:scale-110 transition-transform`}>
               <action.icon className="w-6 h-6" />
             </div>
             <div>

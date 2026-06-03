@@ -3,30 +3,35 @@ import { Button } from "@/components/ui/button";
 
 const tiers = [
   {
-    name: "Free",
-    id: "tier-free",
-    priceMonthly: "₦0",
-    description: "Get started with basic access to our core curriculum.",
+    name: "Single course",
+    id: "tier-single",
+    priceMonthly: "₦2,500",
+    description: "Pick exactly what you need. Buy any subject for any term and own it forever.",
     features: [
-      "Access to SS1 curriculum",
-      "Basic practice questions",
-      "Community forum access",
+      "One subject, one term",
+      "Full PDF reading material",
+      "Lifetime access after purchase",
+      "Available for SS1 – SS3",
     ],
     featured: false,
+    cta: "Browse courses",
+    priceLabel: "/course",
   },
   {
-    name: "Pro",
-    id: "tier-pro",
-    priceMonthly: "₦2,500",
-    description: "Everything you need to ace your exams.",
+    name: "Full term bundle",
+    id: "tier-bundle",
+    priceMonthly: "₦9,999",
+    description: "Get all subjects for an entire term at a fraction of the individual price.",
     features: [
-      "Full access to SS1-SS3 & JAMB curriculum",
-      "Unlimited tiered practice questions",
-      "Detailed performance analytics",
-      "Priority community support",
-      "Mock exams access",
+      "All subjects for one full term",
+      "Full PDF reading materials",
+      "Lifetime access after purchase",
+      "Available for SS1 – SS3",
+      "Save over 60% vs buying separately",
     ],
     featured: true,
+    cta: "Get the bundle",
+    priceLabel: "/term",
   },
 ];
 
@@ -84,7 +89,7 @@ export function Pricing() {
                   {tier.priceMonthly}
                 </span>
                 <span className={classNames(tier.featured ? "text-neutral-400" : "text-neutral-500", "text-sm sm:text-base")}>
-                  /month
+                  {tier.priceLabel} 
                 </span>
               </p>
               <p className={classNames(tier.featured ? "text-neutral-300" : "text-[#676E85]", "mt-6 text-sm sm:text-base leading-7")}>
@@ -116,7 +121,7 @@ export function Pricing() {
                     : "hover:border-[#17A546] hover:text-[#17A546]"
                 )}
               >
-                Get started today
+                {tier.cta}
               </Button>
             </div>
           ))}
