@@ -1,8 +1,8 @@
 export { Sidebar } from "./Sidebar";
 export { DashboardHeader } from "./DashboardHeader";
-export { StatsCards } from "./StatsCards";
-export { SubjectProgress } from "./SubjectProgress";
-export { PerformanceChart } from "./PerformanceChart";
-export { RecentActivity } from "./RecentActivity";
-export { EnrolledCourses } from "./EnrolledCourses";
-export { UpcomingTasks } from "./UpcomingTasks";
+export { MinimalStats } from "./MinimalStats";
+export { ContinueReading } from "./ContinueReading";
+export { RecentlyPurchased } from "./RecentlyPurchased";
+export { CourseCard } from "./CourseCard";
+export { AvailableCourses } from "./AvailableCourses";
+export { QuickActions } from "./QuickActions";

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 export function Hero() {
@@ -31,12 +32,16 @@ export function Hero() {
               Access simplified learning materials, tiered exercises, and targeted practice for Physics, Chemistry, and Math.
             </p>
             <div className="mt-10 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 sm:gap-6 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300 fill-mode-both">
-              <Button size="lg" className="w-full sm:w-auto shadow-lg shadow-[#17A546]/20 hover:-translate-y-1 transition-transform">
-                Start Learning Free
-              </Button>
-              <Button variant="ghost" size="lg" className="w-full sm:w-auto hover:bg-[#17A546]/5">
-                View Courses Catalog
-              </Button>
+              <Link href="/signup" className="w-full sm:w-auto">
+                <Button size="lg" className="w-full shadow-lg shadow-[#17A546]/20 hover:-translate-y-1 transition-transform">
+                  Start Learning Now
+                </Button>
+              </Link>
+              <Link href="/signup" className="w-full sm:w-auto">
+                <Button variant="ghost" size="lg" className="w-full hover:bg-[#17A546]/5">
+                  View Courses Catalog
+                </Button>
+              </Link>
             </div>
           </div>
 

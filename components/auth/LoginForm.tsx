@@ -1,31 +1,64 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Mail, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
+const loginSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(1, "Password is required"),
+  rememberMe: z.boolean().optional(),
+});
+
+type LoginFormValues = z.infer<typeof loginSchema>;
+
 export function LoginForm() {
+  const router = useRouter();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    mode: "onChange",
+  });
+
+  const onSubmit = async (data: LoginFormValues) => {
+    console.log(data);
+    // Handle login logic here
+    router.push("/dashboard");
+  };
+
   return (
-    <form className="space-y-5" action="#" method="POST">
+    <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
       <div className="space-y-4">
         <Input
           label="Email address"
           id="email-address"
-          name="email"
           type="email"
           autoComplete="email"
-          required
           placeholder="Enter your email"
+          icon={<Mail size={18} />}
+          error={!!errors.email}
+          helperText={errors.email?.message}
+          {...register("email")}
         />
         <Input
           label="Password"
           id="password"
-          name="password"
           type="password"
           autoComplete="current-password"
-          required
           placeholder="Enter your password"
           iconType="password"
+          icon={<Lock size={18} />}
+          error={!!errors.password}
+          helperText={errors.password?.message}
+          {...register("password")}
         />
       </div>
 
@@ -33,9 +66,9 @@ export function LoginForm() {
         <div className="flex items-center">
           <input
             id="remember-me"
-            name="remember-me"
             type="checkbox"
             className="h-4 w-4 rounded border-neutral-300 text-brand-green focus:ring-brand-green accent-[#17A546]"
+            {...register("rememberMe")}
           />
           <label htmlFor="remember-me" className="ml-2 block text-[#0A1B39]">
             Remember me
@@ -46,8 +79,12 @@ export function LoginForm() {
         </Link>
       </div>
 
-      <Button type="submit" className="w-full bg-brand-green hover:bg-brand-green/90 text-white rounded-xl h-12 font-bold shadow-lg shadow-[#17A546]/20">
-        Sign in
+      <Button 
+        type="submit" 
+        disabled={isSubmitting}
+        className="w-full bg-brand-green hover:bg-brand-green/90 text-white rounded-xl h-12 font-bold shadow-lg shadow-[#17A546]/20 disabled:opacity-70"
+      >
+        {isSubmitting ? "Signing in..." : "Sign in"}
       </Button>
 
       {/* Divider */}

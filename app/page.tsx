@@ -8,6 +8,7 @@ export default function Home() {
       <Header />
       <main className="flex-1 overflow-x-hidden">
         <HomeComponents.Hero />
+        <HomeComponents.Courses />
         <HomeComponents.ProblemSolution />
         <HomeComponents.HowItWorks />
         <HomeComponents.Features />

@@ -1,66 +1,160 @@
 "use client";
 
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { User, Mail, Phone, Lock, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
+const signupSchema = z.object({
+  firstName: z.string().min(2, "First name must be at least 2 characters"),
+  lastName: z.string().min(2, "Last name must be at least 2 characters"),
+  email: z.string().email("Please enter a valid email address"),
+  whatsappNumber: z.string().min(10, "Please enter a valid WhatsApp number"),
+  howDidYouFindUs: z.string().min(1, "Please select an option"),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(/[a-zA-Z]/, "Password must contain at least one letter")
+    .regex(/[0-9]/, "Password must contain at least one number"),
+  confirmPassword: z.string()
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
+});
+
+type SignupFormValues = z.infer<typeof signupSchema>;
+
 export function SignupForm() {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<SignupFormValues>({
+    resolver: zodResolver(signupSchema),
+    mode: "onChange",
+  });
+
+  const onSubmit = async (data: SignupFormValues) => {
+    console.log(data);
+    // Handle signup logic here
+  };
+
   return (
-    <form className="space-y-5" action="#" method="POST">
+    <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
       <div className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Input
             label="First Name"
-            id="first-name"
-            name="first-name"
+            id="firstName"
             type="text"
             autoComplete="given-name"
-            required
             placeholder="John"
+            icon={<User size={18} />}
+            error={!!errors.firstName}
+            helperText={errors.firstName?.message}
+            {...register("firstName")}
           />
           <Input
             label="Last Name"
-            id="last-name"
-            name="last-name"
+            id="lastName"
             type="text"
             autoComplete="family-name"
-            required
             placeholder="Doe"
+            icon={<User size={18} />}
+            error={!!errors.lastName}
+            helperText={errors.lastName?.message}
+            {...register("lastName")}
           />
         </div>
+
         <Input
           label="Email address"
-          id="email-address"
-          name="email"
+          id="email"
           type="email"
           autoComplete="email"
-          required
           placeholder="john@example.com"
+          icon={<Mail size={18} />}
+          error={!!errors.email}
+          helperText={errors.email?.message}
+          {...register("email")}
         />
+
+        <Input
+          label="WhatsApp Number"
+          id="whatsappNumber"
+          type="tel"
+          placeholder="e.g. 08012345678"
+          icon={<Phone size={18} />}
+          error={!!errors.whatsappNumber}
+          helperText={errors.whatsappNumber?.message}
+          {...register("whatsappNumber")}
+        />
+
+        <div className="flex flex-col gap-1.5 w-full">
+          <label className="text-sm font-medium text-[#485066] uppercase tracking-wide">
+            How you found us
+          </label>
+          <div className="relative">
+            <select
+              className={`w-full appearance-none rounded-lg border bg-white px-3 py-2 text-base transition-colors focus-visible:outline-none focus-visible:ring-1 h-[44px] cursor-pointer ${
+                errors.howDidYouFindUs
+                  ? "border-[#EF4444] text-[#EF4444] focus-visible:border-[#EF4444] focus-visible:ring-[#EF4444]"
+                  : "border-[#D1D5DB] text-[#070D17] focus-visible:border-[#3B82F6] focus-visible:ring-[#3B82F6]"
+              }`}
+              {...register("howDidYouFindUs")}
+            >
+              <option value="" disabled>Select an option</option>
+              <option value="social-media">Social Media (Facebook, Instagram, Twitter)</option>
+              <option value="friend">Referred by a friend</option>
+              <option value="search-engine">Search Engine (Google)</option>
+              <option value="other">Other</option>
+            </select>
+            <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-neutral-400">
+              <ChevronDown className="h-4 w-4" />
+            </div>
+          </div>
+          {errors.howDidYouFindUs && (
+            <p className="text-xs mt-1 text-[#EF4444]">
+              {errors.howDidYouFindUs.message}
+            </p>
+          )}
+        </div>
+
         <Input
           label="Password"
           id="password"
-          name="password"
           type="password"
           autoComplete="new-password"
-          required
           placeholder="Min. 8 characters"
           iconType="password"
+          icon={<Lock size={18} />}
+          error={!!errors.password}
+          helperText={errors.password?.message}
+          {...register("password")}
         />
-        <div className="flex flex-col gap-1.5 w-full">
-          <label className="text-sm font-medium text-[#485066] uppercase tracking-wide">
-            Target Exam
-          </label>
-          <select className="flex h-12 w-full items-center rounded-xl border border-[#D1D5DB] bg-white px-3 py-2 text-base text-[#070D17] transition-colors focus-visible:outline-none focus-visible:border-[#3B82F6] focus-visible:ring-1 focus-visible:ring-[#3B82F6] appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2398A2B3%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-[length:20px] bg-[right_12px_center] bg-no-repeat pr-10">
-            <option value="">Select your exam</option>
-            <option value="jamb">JAMB</option>
-            <option value="waec">WAEC</option>
-            <option value="both">Both (JAMB & WAEC)</option>
-          </select>
-        </div>
+
+        <Input
+          label="Confirm Password"
+          id="confirmPassword"
+          type="password"
+          autoComplete="new-password"
+          placeholder="Confirm your password"
+          iconType="password"
+          icon={<Lock size={18} />}
+          error={!!errors.confirmPassword}
+          helperText={errors.confirmPassword?.message}
+          {...register("confirmPassword")}
+        />
       </div>
 
-      <Button type="submit" className="w-full bg-brand-green hover:bg-brand-green/90 text-white rounded-xl h-12 font-bold shadow-lg shadow-[#17A546]/20">
-        Create account
+      <Button 
+        type="submit" 
+        disabled={isSubmitting}
+        className="w-full bg-brand-green hover:bg-brand-green/90 text-white rounded-xl h-12 font-bold shadow-lg shadow-[#17A546]/20 disabled:opacity-70"
+      >
+        {isSubmitting ? "Creating account..." : "Create account"}
       </Button>
 
       {/* Divider */}

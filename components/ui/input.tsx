@@ -10,6 +10,7 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
   iconType?: "scan" | "password" | "phone" | "money" | "none"
   flagEmoji?: string
   currencyPrefix?: string
+  icon?: React.ReactNode
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
@@ -23,6 +24,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       iconType = "none",
       flagEmoji,
       currencyPrefix,
+      icon,
       disabled,
       ...props
     },
@@ -51,6 +53,11 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
               {currencyPrefix}
             </span>
           )}
+          {icon && (
+            <span className="absolute left-3 text-[#98A2B3] flex items-center justify-center">
+              {icon}
+            </span>
+          )}
 
           <input
             type={currentType}
@@ -63,6 +70,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
               error && "border-[#EF4444] placeholder:text-[#EF4444] text-[#EF4444] focus-visible:border-[#EF4444] focus-visible:ring-[#EF4444]",
               iconType === "phone" && flagEmoji ? "pl-10" : "",
               iconType === "money" && currencyPrefix ? "pl-8" : "",
+              icon ? "pl-10" : "",
               (iconType === "scan" || iconType === "password" || iconType === "phone" || iconType === "money") ? "pr-10" : "",
               className
             )}
