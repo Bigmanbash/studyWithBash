@@ -8,14 +8,14 @@ export default async function ExamCategoryPage({ params }: { params: Promise<{ e
 
   const availableCourses = [
     {
-      id: `${(await params).examId}-maths`,
+      id: `${resolvedParams.examId}-maths`,
       title: `Mathematics Past Questions & Answers`,
       image: "/collection-accessories.png",
       price: 3500,
       originalPrice: 5000,
     },
     {
-      id: `${(await params).examId}-english`,
+      id: `${resolvedParams.examId}-english`,
       title: `English Language Intensive Guide`,
       image: "/collection-suits.png",
       price: 3500,

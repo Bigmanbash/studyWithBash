@@ -2,7 +2,8 @@ import { Header } from "@/components/app_components/Header";
 import { Footer } from "@/components/app_components/Footer";
 import { CourseHeader, TopicList, CourseSidebar } from "@/components/courses";
 
-export default function CourseDetailPage({ params }: { params: { slug: string } }) {
+export default async function CourseDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const resolvedParams = await params;
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
@@ -26,7 +27,7 @@ export default function CourseDetailPage({ params }: { params: { slug: string } 
                   <h2 className="text-2xl font-bold text-[#0A1B39]">Course Content</h2>
                   <p className="text-sm text-[#676E85] mt-2">Master the syllabus step-by-step with interactive modules.</p>
                 </div>
-                <TopicList courseSlug={params.slug} />
+                <TopicList courseSlug={resolvedParams.slug} />
               </div>
 
               {/* Sidebar */}
