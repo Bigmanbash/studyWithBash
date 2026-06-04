@@ -35,7 +35,7 @@ export default function DashboardPage() {
             <ContinueReading />
 
             {/* Minimal Stats */}
-            <MinimalStats />
+            {/* <MinimalStats /> */}
 
             {/* Recently Purchased */}
             <RecentlyPurchased />

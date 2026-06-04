@@ -20,10 +20,10 @@ export function DashboardHeader() {
           </div>
 
           {/* Notifications */}
-          <button className="relative h-10 w-10 rounded-xl bg-neutral-50 border border-neutral-100 flex items-center justify-center hover:bg-neutral-100 transition-colors">
+          {/* <button className="relative h-10 w-10 rounded-xl bg-neutral-50 border border-neutral-100 flex items-center justify-center hover:bg-neutral-100 transition-colors">
             <Bell className="h-5 w-5 text-[#676E85]" />
             <span className="absolute -top-1 -right-1 h-4 w-4 bg-[#17A546] rounded-full text-white text-[10px] flex items-center justify-center font-bold">3</span>
-          </button>
+          </button> */}
         </div>
       </div>
     </header>

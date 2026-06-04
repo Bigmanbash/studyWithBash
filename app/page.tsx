@@ -9,11 +9,11 @@ export default function Home() {
       <main className="flex-1 overflow-x-hidden">
         <HomeComponents.Hero />
         <HomeComponents.Courses />
-        <HomeComponents.ProblemSolution />
-        <HomeComponents.HowItWorks />
-        <HomeComponents.Features />
-        <HomeComponents.Testimonials />
-        <HomeComponents.Pricing />
+        {/* <HomeComponents.ProblemSolution /> */}
+        {/* <HomeComponents.HowItWorks /> */}
+        {/* <HomeComponents.Features /> */}
+        {/* <HomeComponents.Testimonials /> */}
+        {/* <HomeComponents.Pricing /> */}
         <HomeComponents.CTASection />
       </main>
       <Footer />

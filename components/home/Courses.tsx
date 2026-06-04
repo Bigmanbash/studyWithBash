@@ -3,7 +3,7 @@ import { CourseCard, CourseData } from "@/components/courses/CourseCard";
 const courses: CourseData[] = [
   {
     slug: "sss1-first-term",
-    title: "SSS1 First Term",
+    title: "SSS1",
     subject: "Comprehensive Physics",
     level: "SSS 1",
     materialsCount: 15,
@@ -14,7 +14,7 @@ const courses: CourseData[] = [
   },
   {
     slug: "sss1-second-term",
-    title: "SSS1 Second Term",
+    title: "SSS1",
     subject: "All Subjects Bundle",
     level: "SSS 1",
     materialsCount: 42,
@@ -25,7 +25,7 @@ const courses: CourseData[] = [
   },
   {
     slug: "sss1-third-term",
-    title: "SSS1 Third Term",
+    title: "SSS1",
     subject: "All Subjects Bundle",
     level: "SSS 1",
     materialsCount: 45,

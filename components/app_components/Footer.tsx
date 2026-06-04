@@ -8,10 +8,10 @@ export function Footer() {
                     <div className="space-y-4">
                         <h3 className="text-lg font-bold text-[#17A546]">Bash Academy</h3>
                         <p className="text-sm text-muted-foreground">
-                            The #1 platform for SS1-SS2 and JAMB candidates. Demystifying complex subjects to guarantee your success.
+                            The #1 platform for Senior Secondary School , Waec , Neco and JAMB candidates. Demystifying complex subjects to guarantee your success.
                         </p>
                     </div>
-                    <div className="space-y-4">
+                    {/* <div className="space-y-4">
                         <h4 className="text-sm font-semibold">Platform</h4>
                         <ul className="space-y-2 text-sm text-muted-foreground">
                             <li><Link href="/courses/math" className="hover:text-foreground transition-colors">Mathematics</Link></li>
@@ -19,14 +19,14 @@ export function Footer() {
                             <li><Link href="/courses/chemistry" className="hover:text-foreground transition-colors">Chemistry</Link></li>
                             <li><Link href="/pricing" className="hover:text-foreground transition-colors">Pricing</Link></li>
                         </ul>
-                    </div>
+                    </div> */}
                     <div className="space-y-4">
                         <h4 className="text-sm font-semibold">Company</h4>
                         <ul className="space-y-2 text-sm text-muted-foreground">
                             <li><Link href="/about" className="hover:text-foreground transition-colors">About Us</Link></li>
                             <li><Link href="/contact" className="hover:text-foreground transition-colors">Contact</Link></li>
-                            <li><Link href="/careers" className="hover:text-foreground transition-colors">Careers</Link></li>
-                            <li><Link href="/terms" className="hover:text-foreground transition-colors">Terms & Conditions</Link></li>
+                            {/* <li><Link href="/careers" className="hover:text-foreground transition-colors">Careers</Link></li> */}
+                            {/* <li><Link href="/terms" className="hover:text-foreground transition-colors">Terms & Conditions</Link></li> */}
                         </ul>
                     </div>
                     <div className="space-y-4">
