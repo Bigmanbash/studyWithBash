@@ -7,6 +7,7 @@ export interface CourseData {
   title: string;
   subject: string;
   level: string;
+  materialsCount?: number;
   originalPrice: number;
   price: number;
   color: string;
