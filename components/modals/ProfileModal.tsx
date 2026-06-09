@@ -1,8 +1,11 @@
 "use client";
 
 import { ModalWrapper } from "./ModalWrapper";
-import { User, Mail, Shield, LogOut } from "lucide-react";
+import { User, Mail, Shield, LogOut, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { signOut } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 interface ProfileModalProps {
   isOpen: boolean;
@@ -10,6 +13,15 @@ interface ProfileModalProps {
 }
 
 export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
+  const router = useRouter();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    await signOut();
+    router.push("/admin/login");
+  };
+
   return (
     <ModalWrapper isOpen={isOpen} onClose={onClose} size="md">
       <div className="text-center mb-6">
@@ -56,8 +68,13 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
         <Button variant="outline" className="flex-1 border-neutral-200 text-[#0A1B39] font-semibold hover:bg-neutral-50">
           Edit Profile
         </Button>
-        <Button variant="outline" className="flex-1 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 font-semibold gap-2">
-          <LogOut className="h-4 w-4" />
+        <Button 
+          variant="outline" 
+          className="flex-1 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 font-semibold gap-2"
+          onClick={handleLogout}
+          disabled={isLoggingOut}
+        >
+          {isLoggingOut ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />}
           Log Out
         </Button>
       </div>

@@ -8,7 +8,7 @@ export default function Login() {
       subtitle={
         <>
           Don&apos;t have an account?{" "}
-          <Link href="/sign_up" className="font-semibold text-brand-green hover:text-brand-green/80 transition-colors">
+          <Link href="/signup" className="font-semibold text-brand-green hover:text-brand-green/80 transition-colors">
             Sign up for free
           </Link>
         </>

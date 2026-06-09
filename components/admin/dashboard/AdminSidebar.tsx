@@ -16,6 +16,10 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { authClient } from "@/lib/auth-client";
+import { logout } from "@/app/api/auth";
+import type { AuthUser } from "@/app/api/auth";
+import { useRouter } from "next/navigation";
 
 const navSections = [
   {
@@ -43,21 +47,23 @@ const navSections = [
 
 export function AdminSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const { data: session } = authClient.useSession();
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
       {/* Logo */}
-      <div className="px-6 py-6 border-b border-white/[0.06]">
+      <div className="px-6 py-6 border-b border-neutral-100">
         <Link href="/admin/dashboard" className="flex items-center gap-2.5">
           <div className="h-9 w-9 rounded-lg bg-[#17A546] flex items-center justify-center text-white font-bold text-xs shadow-lg shadow-[#17A546]/20">
             B
           </div>
           <div>
-            <span className="text-base font-bold tracking-tight text-white">
+            <span className="text-base font-bold tracking-tight text-[#0A1B39]">
               Bash Academy
             </span>
-            <span className="block text-[10px] uppercase tracking-[0.12em] text-white/40 font-medium">
+            <span className="block text-[10px] uppercase tracking-[0.12em] text-[#676E85] font-medium">
               Admin
             </span>
           </div>
@@ -68,7 +74,7 @@ export function AdminSidebar() {
       <nav className="flex-1 py-4 px-3 overflow-y-auto">
         {navSections.map((section) => (
           <div key={section.title} className="mb-6">
-            <p className="px-4 mb-2 text-[10px] uppercase tracking-[0.14em] font-semibold text-white/30">
+            <p className="px-4 mb-2 text-[10px] uppercase tracking-[0.14em] font-semibold text-neutral-400">
               {section.title}
             </p>
             <div className="space-y-0.5">
@@ -85,19 +91,19 @@ export function AdminSidebar() {
                     className={cn(
                       "flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group",
                       isActive
-                        ? "bg-[#17A546]/15 text-[#22C55E]"
-                        : "text-white/50 hover:bg-white/[0.04] hover:text-white/80"
+                        ? "bg-[#17A546]/10 text-[#17A546]"
+                        : "text-[#676E85] hover:bg-neutral-50 hover:text-[#0A1B39]"
                     )}
                   >
                     <item.icon
                       className={cn(
                         "h-[18px] w-[18px]",
-                        isActive ? "text-[#22C55E]" : "text-white/30 group-hover:text-white/60"
+                        isActive ? "text-[#17A546]" : "text-[#98A2B3] group-hover:text-[#676E85]"
                       )}
                     />
                     <span className="flex-1">{item.label}</span>
                     {isActive && (
-                      <ChevronRight className="h-3.5 w-3.5 text-[#22C55E]/60" />
+                      <ChevronRight className="h-3.5 w-3.5 text-[#17A546]" />
                     )}
                   </Link>
                 );
@@ -108,16 +114,27 @@ export function AdminSidebar() {
       </nav>
 
       {/* Bottom — Admin Profile */}
-      <div className="p-4 border-t border-white/[0.06]">
-        <div className="flex items-center gap-3 px-3 py-3 rounded-xl bg-white/[0.03]">
-          <div className="h-9 w-9 rounded-full bg-[#17A546]/20 flex items-center justify-center text-[#22C55E] font-bold text-sm">
-            A
+      <div className="p-4 border-t border-neutral-100">
+        <div className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-neutral-50 transition-colors group">
+          <div className="h-9 w-9 rounded-full bg-[#17A546]/10 flex items-center justify-center text-[#17A546] font-bold text-sm uppercase shrink-0">
+            {(session?.user as unknown as AuthUser)?.name?.charAt(0) || "A"}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-white/90 truncate">Admin User</p>
-            <p className="text-xs text-white/40 truncate">Super Admin</p>
+            <p className="text-sm font-semibold text-[#0A1B39] truncate">
+              {(session?.user as unknown as AuthUser)?.name || "Admin User"}
+            </p>
+            <p className="text-xs text-[#676E85] truncate capitalize">
+              {(session?.user as unknown as AuthUser)?.role || "Admin"}
+            </p>
           </div>
-          <button className="text-white/30 hover:text-red-400 transition-colors">
+          <button 
+            className="text-[#98A2B3] hover:text-semantic-error-main transition-colors p-1"
+            title="Log Out"
+            onClick={async () => {
+              await logout();
+              router.push("/admin/login");
+            }}
+          >
             <LogOut className="h-4 w-4" />
           </button>
         </div>
@@ -130,22 +147,22 @@ export function AdminSidebar() {
       {/* Mobile toggle */}
       <button
         onClick={() => setIsMobileOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-50 h-10 w-10 rounded-lg bg-[#030E36] shadow-lg border border-white/10 flex items-center justify-center"
+        className="lg:hidden fixed top-4 left-4 z-50 h-10 w-10 rounded-lg bg-white shadow-md border border-neutral-200 flex items-center justify-center"
       >
-        <Menu className="h-5 w-5 text-white" />
+        <Menu className="h-5 w-5 text-[#0A1B39]" />
       </button>
 
       {/* Mobile overlay */}
       {isMobileOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             onClick={() => setIsMobileOpen(false)}
           />
-          <div className="absolute left-0 top-0 h-full w-72 bg-[#030E36] shadow-2xl animate-in slide-in-from-left duration-300">
+          <div className="absolute left-0 top-0 h-full w-72 bg-white shadow-2xl animate-in slide-in-from-left duration-300">
             <button
               onClick={() => setIsMobileOpen(false)}
-              className="absolute top-5 right-5 text-white/40 hover:text-white"
+              className="absolute top-5 right-5 text-[#676E85] hover:text-[#0A1B39] bg-neutral-100 rounded-full p-1"
             >
               <X className="h-5 w-5" />
             </button>
@@ -155,7 +172,7 @@ export function AdminSidebar() {
       )}
 
       {/* Desktop sidebar */}
-      <aside className="hidden lg:flex lg:w-[260px] lg:flex-col lg:fixed lg:inset-y-0 bg-[#030E36]">
+      <aside className="hidden lg:flex lg:w-[260px] lg:flex-col lg:fixed lg:inset-y-0 bg-white border-r border-neutral-100">
         <SidebarContent />
       </aside>
     </>

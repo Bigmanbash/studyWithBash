@@ -1,22 +1,12 @@
 "use client";
 
-const revenueData = [
-  { month: "Jan", revenue: 1200000, students: 320 },
-  { month: "Feb", revenue: 1450000, students: 380 },
-  { month: "Mar", revenue: 1800000, students: 420 },
-  { month: "Apr", revenue: 2100000, students: 510 },
-  { month: "May", revenue: 2400000, students: 580 },
-  { month: "Jun", revenue: 2800000, students: 640 },
-  { month: "Jul", revenue: 3200000, students: 720 },
-  { month: "Aug", revenue: 3600000, students: 810 },
-  { month: "Sep", revenue: 3900000, students: 890 },
-  { month: "Oct", revenue: 4100000, students: 950 },
-  { month: "Nov", revenue: 3800000, students: 920 },
-  { month: "Dec", revenue: 4200000, students: 1020 },
-];
+import type { RevenueData } from "@/app/api/adminUser/dashboard/queries";
 
-export function RevenueChart() {
-  const maxRevenue = Math.max(...revenueData.map((d) => d.revenue));
+export function RevenueChart({ revenueData = [] }: { revenueData?: RevenueData[] }) {
+  // If we have no data, fallback to empty state handling
+  const displayData = revenueData.length > 0 ? revenueData : [];
+
+  const maxRevenue = displayData.length > 0 ? Math.max(...displayData.map((d) => d.revenue)) : 1;
 
   return (
     <div className="bg-white rounded-2xl sm:rounded-3xl border border-neutral-100 shadow-sm p-5 sm:p-6">
@@ -43,8 +33,11 @@ export function RevenueChart() {
 
       {/* Chart */}
       <div className="flex items-end justify-between gap-1.5 sm:gap-2.5 h-44 sm:h-56">
-        {revenueData.map((item) => {
-          const heightPercent = (item.revenue / maxRevenue) * 100;
+        {displayData.length === 0 ? (
+          <div className="w-full text-center text-sm text-[#98A2B3] py-8 my-auto">No revenue data yet.</div>
+        ) : (
+          displayData.map((item) => {
+            const heightPercent = (item.revenue / maxRevenue) * 100;
           return (
             <div
               key={item.month}
@@ -67,7 +60,8 @@ export function RevenueChart() {
               </span>
             </div>
           );
-        })}
+        })
+        )}
       </div>
     </div>
   );

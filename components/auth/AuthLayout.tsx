@@ -90,33 +90,39 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
 
       {/* Right Form Panel — scrollable */}
       <div className="flex-1 h-full overflow-y-auto bg-[#F7F9FC]">
-        <div className="flex items-center justify-center min-h-full px-5 sm:px-8 py-10">
+        <div className="flex items-start sm:items-center justify-center min-h-full px-5 sm:px-8 py-8 sm:py-10">
           <div className="w-full max-w-[420px]">
-            {/* Form Logo */}
-            <div className="mb-8 flex flex-col items-center justify-center">
-              <Link href="/" className="flex items-center gap-2 group transition-opacity hover:opacity-90">
-                  <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-[#17A546] text-white group-hover:bg-[#14933E] transition-colors duration-300 shadow-md shadow-[#17A546]/20">
-                      <span className="font-serif text-[20px] font-bold leading-none translate-y-[0.5px]">B</span>
-                  </div>
-                  <span className="text-[24px] font-bold text-[#0A1B39] tracking-tight">
-                      Bash<span className="font-medium text-[#676E85]">Academy</span>
-                  </span>
+
+            {/* Logo — visible on all sizes, centred */}
+            <div className="mb-6 sm:mb-8 flex flex-col items-center">
+              <Link
+                href="/"
+                className="flex items-center gap-2.5 group transition-opacity hover:opacity-90"
+              >
+                <div className="flex items-center justify-center h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-[#17A546] text-white group-hover:bg-[#14933E] transition-colors duration-300 shadow-md shadow-[#17A546]/20">
+                  <span className="font-serif text-lg sm:text-xl font-bold leading-none translate-y-[0.5px]">B</span>
+                </div>
+                <span className="text-[22px] sm:text-[24px] font-bold text-[#0A1B39] tracking-tight">
+                  Bash<span className="font-medium text-[#676E85]">Academy</span>
+                </span>
               </Link>
             </div>
 
             {/* Form card */}
-            <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-xl shadow-[#0A1B39]/5 border border-neutral-100">
-              <div className="mb-6">
-                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[#0A1B39]">
+            <div className="bg-white p-5 sm:p-8 rounded-2xl shadow-xl shadow-[#0A1B39]/5 border border-neutral-100">
+              <div className="mb-5 sm:mb-6">
+                <h2 className="text-[22px] sm:text-2xl font-bold tracking-tight text-[#0A1B39] leading-tight">
                   {title}
                 </h2>
-                <p className="mt-2 text-sm text-[#676E85]">{subtitle}</p>
+                <p className="mt-1.5 sm:mt-2 text-[13px] sm:text-sm text-[#676E85] leading-relaxed">
+                  {subtitle}
+                </p>
               </div>
               {children}
             </div>
 
             {/* Mobile footer */}
-            <p className="lg:hidden mt-6 text-center text-xs text-[#98A2B3]">
+            <p className="lg:hidden mt-6 sm:mt-8 text-center text-[11px] sm:text-xs text-[#98A2B3]">
               © {new Date().getFullYear()} Bash Academy. All rights reserved.
             </p>
           </div>

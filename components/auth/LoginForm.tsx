@@ -5,9 +5,12 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Mail, Lock } from "lucide-react";
+import { Mail, Lock, AlertCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { loginWithEmail } from "@/app/api/auth/mutations";
+import { useSession } from "@/lib/auth-client";
+import { useState } from "react";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -19,6 +22,9 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 export function LoginForm() {
   const router = useRouter();
+  const { data: session } = useSession();
+  const [serverError, setServerError] = useState<string | null>(null);
+
   const {
     register,
     handleSubmit,
@@ -28,14 +34,37 @@ export function LoginForm() {
     mode: "onChange",
   });
 
+  // If already authenticated, redirect away from login
+  if (session?.user) {
+    const role = (session.user as { role?: string }).role;
+    router.replace(role === "admin" ? "/admin/dashboard" : "/dashboard");
+    return null;
+  }
+
   const onSubmit = async (data: LoginFormValues) => {
-    console.log(data);
-    // Handle login logic here
-    router.push("/dashboard");
+    setServerError(null);
+
+    const result = await loginWithEmail(data);
+
+    if (!result.ok) {
+      setServerError(result.error);
+      return;
+    }
+
+    const role = result.data.role;
+    router.push(role === "admin" ? "/admin/dashboard" : "/dashboard");
   };
 
   return (
-    <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
+    <form className="space-y-4 sm:space-y-5" onSubmit={handleSubmit(onSubmit)}>
+      {/* Server-level error banner */}
+      {serverError && (
+        <div className="flex items-start gap-3 rounded-lg border border-semantic-error-main/20 bg-semantic-error-support p-3">
+          <AlertCircle className="h-4 w-4 text-semantic-error-main mt-0.5 shrink-0" />
+          <p className="text-sm text-semantic-error-dark">{serverError}</p>
+        </div>
+      )}
+
       <div className="space-y-4">
         <Input
           label="Email address"
@@ -62,15 +91,15 @@ export function LoginForm() {
         />
       </div>
 
-      <div className="flex items-center justify-between text-sm">
-        <div className="flex items-center">
+      <div className="flex items-center justify-between text-[13px] sm:text-sm">
+        <div className="flex items-center gap-2">
           <input
             id="remember-me"
             type="checkbox"
             className="h-4 w-4 rounded border-neutral-300 text-brand-green focus:ring-brand-green accent-[#17A546]"
             {...register("rememberMe")}
           />
-          <label htmlFor="remember-me" className="ml-2 block text-[#0A1B39]">
+          <label htmlFor="remember-me" className="text-[#0A1B39] select-none">
             Remember me
           </label>
         </div>
@@ -79,12 +108,19 @@ export function LoginForm() {
         </Link>
       </div>
 
-      <Button 
-        type="submit" 
+      <Button
+        type="submit"
         disabled={isSubmitting}
-        className="w-full bg-brand-green hover:bg-brand-green/90 text-white rounded-xl h-12 font-bold shadow-lg shadow-[#17A546]/20 disabled:opacity-70"
+        className="w-full bg-brand-green hover:bg-brand-green/90 text-white rounded-xl h-11 sm:h-12 font-bold text-[14px] sm:text-[15px] shadow-lg shadow-[#17A546]/20 disabled:opacity-70 transition-all"
       >
-        {isSubmitting ? "Signing in..." : "Sign in"}
+        {isSubmitting ? (
+          <span className="flex items-center justify-center gap-2">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Signing in...
+          </span>
+        ) : (
+          "Sign in"
+        )}
       </Button>
 
       {/* Divider */}
@@ -100,7 +136,7 @@ export function LoginForm() {
       {/* Social login */}
       <button
         type="button"
-        className="w-full h-12 rounded-xl border border-neutral-200 bg-white text-sm font-medium text-[#0A1B39] hover:bg-neutral-50 transition-colors flex items-center justify-center gap-3"
+        className="w-full h-11 sm:h-12 rounded-xl border border-neutral-200 bg-white text-[13px] sm:text-sm font-medium text-[#0A1B39] hover:bg-neutral-50 transition-colors flex items-center justify-center gap-2.5"
       >
         <svg className="h-5 w-5" viewBox="0 0 24 24">
           <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />

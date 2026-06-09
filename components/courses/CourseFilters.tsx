@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
-
 const levels = [
   { id: "all", label: "All Courses" },
   { id: "ss1", label: "SS1" },
   { id: "ss2", label: "SS2" },
   { id: "ss3", label: "SS3" },
+  { id: "waec", label: "WAEC" },
+  { id: "neco", label: "NECO" },
   { id: "jamb", label: "JAMB Prep" },
 ];
 

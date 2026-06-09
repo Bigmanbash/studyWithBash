@@ -1,15 +1,21 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowLeft, CheckCircle, FileText, Lock, ShoppingCart, Eye } from "lucide-react";
 import { AvailableCourses } from "@/components/dashboard";
+import { use } from "react";
 
-export default async function CourseDetailsPage({ params }: { params: Promise<{ courseId: string }> }) {
-  const resolvedParams = await params;
+export default function CourseDetailsPage({ params }: { params: Promise<{ courseId: string }> }) {
+  const resolvedParams = use(params);
+  const router = useRouter();
+
   // Mock data - In a real app, fetch based on resolvedParams.courseId
   const course = {
     title: "Mathematics - SSS1 First Term",
     description: "A comprehensive guide to SSS1 Mathematics. Covers Algebraic processes, logical reasoning, and basic geometry tailored to the West African examination syllabus.",
-    image: "/collection-accessories.png",
+    image: "/img/hero_section.png",
     price: 2500,
     originalPrice: 3500,
     features: [
@@ -22,13 +28,17 @@ export default async function CourseDetailsPage({ params }: { params: Promise<{ 
     isPurchased: false
   };
 
+  const handlePreview = () => {
+    router.push(`/dashboard/read/${resolvedParams.courseId}?preview=true`);
+  };
+
   return (
     <div className="min-h-screen bg-[#F7F9FC]">
       {/* Header */}
       <header className="bg-white border-b border-neutral-100">
         <div className="px-4 sm:px-6 lg:px-8 h-16 flex items-center max-w-7xl mx-auto">
-          <Link 
-            href="/dashboard" 
+          <Link
+            href="/dashboard"
             className="flex items-center text-sm font-medium text-[#676E85] hover:text-[#0A1B39] transition-colors"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -39,7 +49,7 @@ export default async function CourseDetailsPage({ params }: { params: Promise<{ 
 
       <main className="px-4 sm:px-6 lg:px-8 py-8 sm:py-12 max-w-7xl mx-auto space-y-12">
         <div className="bg-white rounded-md border border-neutral-100 shadow-sm overflow-hidden flex flex-col lg:flex-row">
-          
+
           {/* Left Col: Image & Preview */}
           <div className="w-full lg:w-1/2 bg-neutral-50 p-6 sm:p-10 flex flex-col items-center justify-center border-b lg:border-b-0 lg:border-r border-neutral-100">
             <div className="relative w-full max-w-md aspect-[3/4] bg-white rounded-md shadow-sm overflow-hidden mb-6 border border-neutral-200">
@@ -54,14 +64,17 @@ export default async function CourseDetailsPage({ params }: { params: Promise<{ 
                   <Lock className="w-12 h-12 mb-4 opacity-80" />
                   <h3 className="text-xl font-bold mb-2">Full Document Locked</h3>
                   <p className="text-sm opacity-90 mb-6">Purchase this material to unlock full access to the PDF document.</p>
-                  <button className="bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/40 text-white px-6 py-3 rounded-md font-semibold text-sm flex items-center justify-center gap-2 transition-colors">
+                  <button
+                    onClick={handlePreview}
+                    className="bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/40 text-white px-6 py-3 rounded-md font-semibold text-sm flex items-center justify-center gap-2 transition-colors"
+                  >
                     <Eye className="w-4 h-4" />
                     Preview First 3 Pages
                   </button>
                 </div>
               )}
             </div>
-            
+
             {course.isPurchased && (
               <p className="text-sm text-[#676E85] flex items-center gap-2">
                 <CheckCircle className="w-4 h-4 text-[#17A546]" />
@@ -76,11 +89,11 @@ export default async function CourseDetailsPage({ params }: { params: Promise<{ 
               <div className="inline-flex items-center rounded-md border border-neutral-200 bg-neutral-50 px-2.5 py-0.5 text-xs font-semibold text-neutral-600 mb-6">
                 PDF Material
               </div>
-              
+
               <h1 className="text-3xl sm:text-4xl font-bold text-[#0A1B39] mb-4">
                 {course.title}
               </h1>
-              
+
               <p className="text-lg text-[#676E85] mb-8 leading-relaxed">
                 {course.description}
               </p>
@@ -112,9 +125,12 @@ export default async function CourseDetailsPage({ params }: { params: Promise<{ 
                       )}
                     </div>
                   </div>
-                  
+
                   <div className="flex flex-col sm:flex-row gap-3">
-                    <button className="bg-neutral-100 hover:bg-neutral-200 text-[#0A1B39] px-6 py-3 rounded-md font-bold text-sm flex items-center justify-center gap-2 transition-colors sm:w-auto w-full">
+                    <button
+                      onClick={handlePreview}
+                      className="bg-neutral-100 hover:bg-neutral-200 text-[#0A1B39] px-6 py-3 rounded-md font-bold text-sm flex items-center justify-center gap-2 transition-colors sm:w-auto w-full"
+                    >
                       <Eye className="w-4 h-4" />
                       Preview
                     </button>
@@ -133,8 +149,8 @@ export default async function CourseDetailsPage({ params }: { params: Promise<{ 
                       Purchased
                     </p>
                   </div>
-                  
-                  <Link 
+
+                  <Link
                     href={`/dashboard/read/${resolvedParams.courseId}`}
                     className="bg-[#0A1B39] hover:bg-[#0A1B39]/90 text-white px-6 py-3 rounded-md font-bold text-sm flex items-center justify-center gap-2 transition-colors sm:w-auto w-full"
                   >
@@ -147,7 +163,7 @@ export default async function CourseDetailsPage({ params }: { params: Promise<{ 
 
           </div>
         </div>
-        
+
         {/* Other Courses Section */}
         <div className="pt-8 border-t border-neutral-100">
           <AvailableCourses title="Other Recommended Courses" />

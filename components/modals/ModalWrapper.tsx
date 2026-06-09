@@ -23,22 +23,22 @@ export function ModalWrapper({ isOpen, onClose, children, size = "md" }: ModalWr
   if (!isOpen) return null;
 
   const sizeClasses = {
-    sm: "max-w-sm",
-    md: "max-w-md",
-    lg: "max-w-lg",
+    sm: "w-[90vw] min-w-[280px] max-w-sm",
+    md: "w-[90vw] min-w-[280px] max-w-md",
+    lg: "w-[90vw] min-w-[280px] max-w-lg",
   };
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-[#0A1B39]/40 backdrop-blur-sm animate-in fade-in duration-200"
+        className="absolute inset-0 bg-[#0A1B39]/40 animate-in fade-in duration-200"
         onClick={onClose}
       />
 
       {/* Modal */}
       <div
-        className={`relative w-full ${sizeClasses[size]} bg-white rounded-2xl sm:rounded-3xl shadow-2xl p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-300 max-h-[90vh] flex flex-col`}
+        className={`relative ${sizeClasses[size]} bg-white rounded-2xl sm:rounded-3xl shadow-2xl p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-300 max-h-[90vh] flex flex-col`}
       >
         <button
           onClick={onClose}

@@ -1,3 +1,4 @@
+import { getDashboardStats, getEnrollmentOverview, getRevenueOverview } from "@/app/api/adminUser/dashboard/queries";
 import {
   AdminDashboardHeader,
   AdminStatsCards,
@@ -7,7 +8,11 @@ import {
   EnrollmentOverview,
 } from "@/components/admin/dashboard";
 
-export default function AdminDashboardPage() {
+export default async function AdminDashboardPage() {
+  const statsData = await getDashboardStats();
+  const enrollmentData = await getEnrollmentOverview();
+  const revenueData = await getRevenueOverview();
+
   return (
     <>
       <AdminDashboardHeader />
@@ -23,12 +28,12 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Stats */}
-        <AdminStatsCards />
+        <AdminStatsCards statsData={statsData} />
 
         {/* Revenue + Enrollment Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <RevenueChart />
-          <EnrollmentOverview />
+          <RevenueChart revenueData={revenueData} />
+          <EnrollmentOverview enrollmentData={enrollmentData} />
         </div>
 
         {/* Payments + Support Row */}

@@ -1,24 +1,68 @@
 import { CourseCard, type CourseData } from "./CourseCard";
 
 const allCourses: CourseData[] = [
-  // SS1
-  { slug: "ss1-physics", title: "Physics (SS1)", subject: "Measurement, Mechanics & Motion", level: "SS1", materialsCount: 14, originalPrice: 15000, price: 9000, color: "bg-blue-500", iconBg: "bg-blue-500/10 text-blue-500" },
-  { slug: "ss1-chemistry", title: "Chemistry (SS1)", subject: "Atomic Structure & Chemical Bonding", level: "SS1", materialsCount: 12, originalPrice: 15000, price: 9000, color: "bg-amber-500", iconBg: "bg-amber-500/10 text-amber-500" },
-  { slug: "ss1-mathematics", title: "Mathematics (SS1)", subject: "Number & Numeration, Algebra", level: "SS1", materialsCount: 16, originalPrice: 15000, price: 9000, color: "bg-[#17A546]", iconBg: "bg-[#17A546]/10 text-[#17A546]" },
-  { slug: "ss1-further-math", title: "Further Mathematics (SS1)", subject: "Sets, Logic & Real Numbers", level: "SS1", materialsCount: 10, originalPrice: 15000, price: 9000, color: "bg-purple-500", iconBg: "bg-purple-500/10 text-purple-500" },
-  // SS2
-  { slug: "ss2-physics", title: "Physics (SS2)", subject: "Waves, Light & Electricity", level: "SS2", materialsCount: 15, originalPrice: 15000, price: 9000, color: "bg-blue-500", iconBg: "bg-blue-500/10 text-blue-500" },
-  { slug: "ss2-chemistry", title: "Chemistry (SS2)", subject: "Organic Chemistry & Reactions", level: "SS2", materialsCount: 13, originalPrice: 15000, price: 9000, color: "bg-amber-500", iconBg: "bg-amber-500/10 text-amber-500" },
-  { slug: "ss2-mathematics", title: "Mathematics (SS2)", subject: "Trigonometry & Coordinate Geometry", level: "SS2", materialsCount: 14, originalPrice: 15000, price: 9000, color: "bg-[#17A546]", iconBg: "bg-[#17A546]/10 text-[#17A546]" },
-  { slug: "ss2-further-math", title: "Further Mathematics (SS2)", subject: "Calculus & Vectors", level: "SS2", materialsCount: 12, originalPrice: 15000, price: 9000, color: "bg-purple-500", iconBg: "bg-purple-500/10 text-purple-500" },
-  // SS3
-  { slug: "ss3-physics", title: "Physics (SS3)", subject: "Nuclear & Modern Physics", level: "SS3", materialsCount: 11, originalPrice: 15000, price: 9000, color: "bg-blue-500", iconBg: "bg-blue-500/10 text-blue-500" },
-  { slug: "ss3-chemistry", title: "Chemistry (SS3)", subject: "Industrial Chemistry & Equilibrium", level: "SS3", materialsCount: 10, originalPrice: 15000, price: 9000, color: "bg-amber-500", iconBg: "bg-amber-500/10 text-amber-500" },
-  { slug: "ss3-mathematics", title: "Mathematics (SS3)", subject: "Statistics & Probability", level: "SS3", materialsCount: 12, originalPrice: 15000, price: 9000, color: "bg-[#17A546]", iconBg: "bg-[#17A546]/10 text-[#17A546]" },
-  // JAMB
-  { slug: "jamb-physics", title: "JAMB Physics", subject: "Full JAMB Physics Syllabus", level: "JAMB", materialsCount: 45, originalPrice: 20000, price: 12000, color: "bg-blue-500", iconBg: "bg-rose-500/10 text-rose-500" },
-  { slug: "jamb-chemistry", title: "JAMB Chemistry", subject: "Full JAMB Chemistry Syllabus", level: "JAMB", materialsCount: 38, originalPrice: 20000, price: 12000, color: "bg-amber-500", iconBg: "bg-rose-500/10 text-rose-500" },
-  { slug: "jamb-mathematics", title: "JAMB Mathematics", subject: "Full JAMB Mathematics Syllabus", level: "JAMB", materialsCount: 52, originalPrice: 20000, price: 12000, color: "bg-[#17A546]", iconBg: "bg-rose-500/10 text-rose-500" },
+  // Senior Secondary
+  {
+    slug: "sss1",
+    title: "SS 1",
+    subject: "All Subjects Bundle",
+    level: "SS1",
+    originalPrice: 5000,
+    price: 2500,
+    color: "bg-[#17A546]",
+    iconBg: "bg-[#17A546]/10 text-[#17A546]",
+  },
+  {
+    slug: "sss2",
+    title: "SS 2",
+    subject: "All Subjects Bundle",
+    level: "SS2",
+    originalPrice: 5000,
+    price: 2500,
+    color: "bg-[#4A85E4]",
+    iconBg: "bg-[#4A85E4]/10 text-[#4A85E4]",
+  },
+  {
+    slug: "sss3",
+    title: "SS 3",
+    subject: "All Subjects Bundle",
+    level: "SS3",
+    originalPrice: 5000,
+    price: 2500,
+    color: "bg-[#DEAB06]",
+    iconBg: "bg-[#DEAB06]/10 text-[#DEAB06]",
+  },
+  // Exam Prep
+  {
+    slug: "waec-package",
+    title: "WAEC",
+    subject: "Complete WAEC Prep",
+    level: "WAEC",
+    originalPrice: 5000,
+    price: 2500,
+    color: "bg-[#F5B546]",
+    iconBg: "bg-[#F5B546]/10 text-[#F5B546]",
+  },
+  {
+    slug: "neco-package",
+    title: "NECO",
+    subject: "Complete NECO Prep",
+    level: "NECO",
+    originalPrice: 5000,
+    price: 2500,
+    color: "bg-[#DD524D]",
+    iconBg: "bg-[#DD524D]/10 text-[#DD524D]",
+  },
+  {
+    slug: "jamb-package",
+    title: "JAMB",
+    subject: "Complete JAMB Prep",
+    level: "JAMB",
+    originalPrice: 5000,
+    price: 2500,
+    color: "bg-[#030E36]",
+    iconBg: "bg-[#030E36]/10 text-[#030E36]",
+  },
 ];
 
 interface CourseGridProps {

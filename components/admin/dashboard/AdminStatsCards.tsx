@@ -1,49 +1,44 @@
 import { Users, BookOpen, CreditCard, TrendingUp, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import type { DashboardStats } from "@/app/api/adminUser/dashboard/queries";
 
-const stats = [
-  {
-    label: "Total Students",
-    value: "2,847",
-    change: "+12.5%",
-    trend: "up" as const,
-    period: "vs last month",
-    icon: Users,
-    color: "text-blue-500",
-    bg: "bg-blue-500/10",
-  },
-  {
-    label: "Active Courses",
-    value: "24",
-    change: "+3",
-    trend: "up" as const,
-    period: "this month",
-    icon: BookOpen,
-    color: "text-[#17A546]",
-    bg: "bg-[#17A546]/10",
-  },
-  {
-    label: "Revenue",
-    value: "₦4.2M",
-    change: "+23.1%",
-    trend: "up" as const,
-    period: "vs last month",
-    icon: CreditCard,
-    color: "text-[#DEAB06]",
-    bg: "bg-[#DEAB06]/10",
-  },
-  {
-    label: "Completion Rate",
-    value: "68.4%",
-    change: "-2.3%",
-    trend: "down" as const,
-    period: "vs last month",
-    icon: TrendingUp,
-    color: "text-purple-500",
-    bg: "bg-purple-500/10",
-  },
-];
+interface AdminStatsCardsProps {
+  statsData: DashboardStats;
+}
 
-export function AdminStatsCards() {
+export const AdminStatsCards = ({ statsData }: AdminStatsCardsProps) => {
+  const stats = [
+    {
+      label: "Total Students",
+      value: statsData.totalStudents.toLocaleString(),
+      change: "+12.5%", // These could be dynamic later
+      trend: "up" as const,
+      period: "all time",
+      icon: Users,
+      color: "text-blue-500",
+      bg: "bg-blue-500/10",
+    },
+    {
+      label: "Active Courses",
+      value: statsData.activeCourses.toLocaleString(),
+      change: "+3",
+      trend: "up" as const,
+      period: "all time",
+      icon: BookOpen,
+      color: "text-[#17A546]",
+      bg: "bg-[#17A546]/10",
+    },
+    {
+      label: "Revenue",
+      value: `₦${(statsData.totalRevenueKobo / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      change: "+23.1%",
+      trend: "up" as const,
+      period: "all time",
+      icon: CreditCard,
+      color: "text-[#DEAB06]",
+      bg: "bg-[#DEAB06]/10",
+    },
+  ];
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5">
       {stats.map((stat) => (
@@ -58,11 +53,10 @@ export function AdminStatsCards() {
               <stat.icon className={`h-5 w-5 ${stat.color}`} />
             </div>
             <div
-              className={`flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full ${
-                stat.trend === "up"
-                  ? "text-[#0E7B33] bg-[#E7F6EC]"
-                  : "text-[#940803] bg-[#FBEAE9]"
-              }`}
+              className={`flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full ${stat.trend === "up"
+                ? "text-[#0E7B33] bg-[#E7F6EC]"
+                : "text-[#940803] bg-[#FBEAE9]"
+                }`}
             >
               {stat.trend === "up" ? (
                 <ArrowUpRight className="h-3 w-3" />
@@ -81,4 +75,4 @@ export function AdminStatsCards() {
       ))}
     </div>
   );
-}
+};

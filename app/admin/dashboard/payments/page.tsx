@@ -227,7 +227,7 @@ export default function AdminPaymentsPage() {
           </div>
           <Button
             variant="outline"
-            className="border-neutral-200 text-[#0A1B39] rounded-xl h-10 px-4 font-medium w-fit hover:bg-neutral-50"
+            className="border-neutral-200 text-[#0A1B39] rounded-md h-10 px-4 font-medium w-fit hover:bg-neutral-50 shadow-sm"
           >
             <Download className="h-4 w-4 mr-2" />
             Export
@@ -272,9 +272,9 @@ export default function AdminPaymentsPage() {
           ].map((stat) => (
             <div
               key={stat.label}
-              className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-neutral-100 shadow-sm"
+              className="bg-white rounded-xl p-4 sm:p-5 border border-neutral-200 shadow-sm"
             >
-              <div className={`${stat.bg} rounded-xl p-2 w-fit mb-3`}>
+              <div className={`${stat.bg} rounded-md p-2 w-fit mb-3`}>
                 <stat.icon className={`h-4 w-4 ${stat.color}`} />
               </div>
               <p className="text-xl sm:text-2xl font-bold text-[#0A1B39]">
@@ -291,11 +291,11 @@ export default function AdminPaymentsPage() {
         {/* Main Content */}
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           {/* Payment List */}
-          <div className="xl:col-span-2 bg-white rounded-2xl sm:rounded-3xl border border-neutral-100 shadow-sm overflow-hidden">
+          <div className="xl:col-span-2 bg-white rounded-xl border border-neutral-200 shadow-sm overflow-hidden">
             {/* Filters */}
             <div className="p-4 sm:p-5 border-b border-neutral-100">
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                <div className="flex items-center bg-neutral-50 rounded-xl p-1 border border-neutral-100 overflow-x-auto">
+                <div className="flex items-center bg-neutral-50 rounded-md p-1 border border-neutral-200 overflow-x-auto">
                   {[
                     { key: "pending" as const, label: "Pending", count: pendingCount },
                     { key: "all" as const, label: "All", count: payments.length },
@@ -306,7 +306,7 @@ export default function AdminPaymentsPage() {
                       key={tab.key}
                       onClick={() => setActiveTab(tab.key)}
                       className={cn(
-                        "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 whitespace-nowrap",
+                        "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 whitespace-nowrap",
                         activeTab === tab.key
                           ? "bg-white text-[#0A1B39] shadow-sm"
                           : "text-[#98A2B3] hover:text-[#676E85]"
@@ -328,7 +328,7 @@ export default function AdminPaymentsPage() {
                 </div>
 
                 <div className="flex-1 flex items-center gap-2 w-full sm:w-auto sm:justify-end">
-                  <div className="flex items-center bg-neutral-50 rounded-xl px-3 py-2 gap-2 border border-neutral-100 focus-within:border-[#17A546]/30 transition-colors flex-1 sm:flex-initial sm:w-56">
+                  <div className="flex items-center bg-neutral-50 rounded-md px-3 py-2 gap-2 border border-neutral-200 focus-within:border-[#17A546]/30 transition-colors flex-1 sm:flex-initial sm:w-56 shadow-sm">
                     <Search className="h-3.5 w-3.5 text-[#98A2B3]" />
                     <input
                       type="text"
@@ -338,7 +338,7 @@ export default function AdminPaymentsPage() {
                       onChange={(e) => setSearchQuery(e.target.value)}
                     />
                   </div>
-                  <button className="h-9 w-9 rounded-xl bg-neutral-50 border border-neutral-100 flex items-center justify-center hover:bg-neutral-100 transition-colors flex-shrink-0">
+                  <button className="h-9 w-9 rounded-md bg-neutral-50 border border-neutral-200 flex items-center justify-center hover:bg-neutral-100 transition-colors flex-shrink-0 shadow-sm">
                     <Filter className="h-3.5 w-3.5 text-[#676E85]" />
                   </button>
                 </div>
@@ -438,7 +438,7 @@ export default function AdminPaymentsPage() {
                               </>
                             )}
                             <button
-                              className="h-7 w-7 rounded-lg bg-neutral-50 border border-neutral-100 flex items-center justify-center hover:bg-neutral-100 transition-colors"
+                              className="h-7 w-7 rounded-md bg-neutral-50 border border-neutral-200 flex items-center justify-center hover:bg-neutral-100 transition-colors shadow-sm"
                               title="View"
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -470,7 +470,7 @@ export default function AdminPaymentsPage() {
           </div>
 
           {/* Detail Panel */}
-          <div className="bg-white rounded-2xl sm:rounded-3xl border border-neutral-100 shadow-sm overflow-hidden">
+          <div className="bg-white rounded-xl border border-neutral-200 shadow-sm overflow-hidden">
             {selected ? (
               <div className="h-full flex flex-col">
                 {/* Header */}
@@ -527,7 +527,7 @@ export default function AdminPaymentsPage() {
                     ].map((item) => (
                       <div
                         key={item.label}
-                        className="p-3 rounded-xl bg-neutral-50 border border-neutral-100"
+                        className="p-3 rounded-md bg-neutral-50 border border-neutral-200"
                       >
                         <p className="text-[10px] text-[#98A2B3] font-medium">
                           {item.label}
@@ -548,7 +548,7 @@ export default function AdminPaymentsPage() {
 
                   {/* Proof Preview Placeholder */}
                   {selected.proofUploaded && (
-                    <div className="mt-4 p-4 rounded-xl border border-dashed border-neutral-200 bg-neutral-50 text-center">
+                    <div className="mt-4 p-4 rounded-md border border-dashed border-neutral-200 bg-neutral-50 text-center">
                       <Receipt className="h-6 w-6 text-[#98A2B3] mx-auto mb-2" />
                       <p className="text-xs text-[#676E85]">Payment proof uploaded</p>
                       <button className="text-xs font-semibold text-[#17A546] mt-1 hover:underline flex items-center gap-1 mx-auto">
@@ -562,11 +562,11 @@ export default function AdminPaymentsPage() {
                 {/* Actions */}
                 {selected.status === "pending" && (
                   <div className="p-5 border-t border-neutral-100 space-y-2">
-                    <button className="w-full h-10 rounded-xl bg-[#17A546] text-white text-sm font-semibold hover:bg-[#17A546]/90 transition-colors flex items-center justify-center gap-2">
+                    <button className="w-full h-10 rounded-md bg-[#17A546] text-white text-sm font-semibold hover:bg-[#17A546]/90 transition-colors flex items-center justify-center gap-2 shadow-sm">
                       <CheckCircle2 className="h-4 w-4" />
                       Approve Payment
                     </button>
-                    <button className="w-full h-10 rounded-xl bg-[#FBEAE9] text-[#940803] text-sm font-medium hover:bg-[#FBEAE9]/80 transition-colors flex items-center justify-center gap-2">
+                    <button className="w-full h-10 rounded-md bg-[#FBEAE9] text-[#940803] text-sm font-medium hover:bg-[#FBEAE9]/80 transition-colors flex items-center justify-center gap-2 shadow-sm">
                       <XCircle className="h-4 w-4" />
                       Reject Payment
                     </button>
@@ -576,7 +576,7 @@ export default function AdminPaymentsPage() {
                 {selected.status !== "pending" && (
                   <div className="p-5 border-t border-neutral-100">
                     <div
-                      className={`p-3 rounded-xl text-center ${statusConfig[selected.status].bg}`}
+                      className={`p-3 rounded-md text-center ${statusConfig[selected.status].bg}`}
                     >
                       <p className={`text-xs font-semibold ${statusConfig[selected.status].color}`}>
                         This payment has been {selected.status}.

@@ -1,31 +1,85 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Shield, AlertCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Shield } from "lucide-react";
+import { loginWithEmail } from "@/app/api/auth";
+
+const adminLoginSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(1, "Password is required"),
+  rememberMe: z.boolean().optional(),
+});
+
+type AdminLoginValues = z.infer<typeof adminLoginSchema>;
 
 export function AdminLoginForm() {
+  const router = useRouter();
+  const [serverError, setServerError] = useState<string | null>(null);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<AdminLoginValues>({
+    resolver: zodResolver(adminLoginSchema),
+    mode: "onChange",
+  });
+
+  const onSubmit = async (data: AdminLoginValues) => {
+    setServerError(null);
+
+    const result = await loginWithEmail(data);
+
+    if (!result.ok) {
+      setServerError(result.error);
+      return;
+    }
+
+    if (result.data.role !== "admin") {
+      setServerError("Unauthorized access. This portal is for administrators only.");
+      // We should probably log them out, but for now we just show error
+      return;
+    }
+
+    router.push("/admin/dashboard");
+  };
+
   return (
-    <form className="space-y-5" action="#" method="POST">
+    <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
+      {serverError && (
+        <div className="flex items-start gap-3 rounded-lg border border-semantic-error-main/20 bg-semantic-error-support p-3">
+          <AlertCircle className="h-4 w-4 text-semantic-error-main mt-0.5 shrink-0" />
+          <p className="text-sm text-semantic-error-dark">{serverError}</p>
+        </div>
+      )}
+
       <div className="space-y-4">
         <Input
           label="Admin Email"
           id="admin-email"
-          name="email"
           type="email"
           autoComplete="email"
-          required
           placeholder="admin@bashacademy.com"
+          error={!!errors.email}
+          helperText={errors.email?.message}
+          {...register("email")}
         />
         <Input
           label="Password"
           id="admin-password"
-          name="password"
           type="password"
           autoComplete="current-password"
-          required
           placeholder="Enter your password"
           iconType="password"
+          error={!!errors.password}
+          helperText={errors.password?.message}
+          {...register("password")}
         />
       </div>
 
@@ -33,9 +87,9 @@ export function AdminLoginForm() {
         <div className="flex items-center">
           <input
             id="remember-admin"
-            name="remember-admin"
             type="checkbox"
             className="h-4 w-4 rounded border-neutral-300 text-brand-green focus:ring-brand-green accent-[#17A546]"
+            {...register("rememberMe")}
           />
           <label htmlFor="remember-admin" className="ml-2 block text-[#0A1B39]">
             Keep me signed in
@@ -45,10 +99,20 @@ export function AdminLoginForm() {
 
       <Button
         type="submit"
-        className="w-full shadow-lg shadow-[#17A546]/20 hover:-translate-y-1 transition-transform cursor-pointer"
+        disabled={isSubmitting}
+        className="w-full bg-[#17A546] hover:bg-[#17A546]/90 text-white shadow-lg shadow-[#17A546]/20 transition-all font-bold"
       >
-        <Shield className="h-4 w-4 mr-2" />
-        Sign in to Admin
+        {isSubmitting ? (
+          <span className="flex items-center justify-center gap-2">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Authenticating...
+          </span>
+        ) : (
+          <>
+            <Shield className="h-4 w-4 mr-2" />
+            Sign in to Admin
+          </>
+        )}
       </Button>
 
       {/* Security notice */}

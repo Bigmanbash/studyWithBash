@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
   images: {
     domains: ["images.unsplash.com", "imgix.cosmicjs.com"],
   },
+  serverExternalPackages: ["kysely", "@better-auth/kysely-adapter"],
 };
 
 export default nextConfig;

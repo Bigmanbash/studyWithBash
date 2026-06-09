@@ -36,12 +36,16 @@ export function Header() {
 
                 {/* Right Actions */}
                 <div className="flex items-center gap-3">
-                    <Button variant="outline" className="hidden sm:inline-flex border-neutral-200 text-[#0A1B39] hover:bg-neutral-50 px-5 h-10 font-semibold transition-colors">
-                        Log In
-                    </Button>
-                    <Button className="hidden md:inline-flex bg-[#17A546] hover:bg-[#14933E] text-white px-6 h-10 font-semibold shadow-lg shadow-[#17A546]/20 hover:-translate-y-1 transition-all">
-                        Get Started
-                    </Button>
+                    <Link href="/login">
+                        <Button variant="outline" className="hidden sm:inline-flex border-neutral-200 text-[#0A1B39] hover:bg-neutral-50 px-5 h-10 font-semibold transition-colors">
+                            Log In
+                        </Button>
+                    </Link>
+                    <Link href="/signup">
+                        <Button className="hidden md:inline-flex bg-[#17A546] hover:bg-[#14933E] text-white px-6 h-10 font-semibold shadow-lg shadow-[#17A546]/20 hover:-translate-y-1 transition-all">
+                            Get Started
+                        </Button>
+                    </Link>
 
                     {/* Mobile Menu Toggle */}
                     <Button 
@@ -78,12 +82,16 @@ export function Header() {
                                 About Us
                             </Link>
                             <div className="flex flex-col gap-3 mt-6">
-                                <Button variant="outline" className="w-full justify-center border-neutral-200 text-[#0A1B39] h-12 font-semibold text-[16px] transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
-                                    Log In
-                                </Button>
-                                <Button className="w-full justify-center bg-[#17A546] hover:bg-[#14933E] text-white h-12 font-semibold text-[16px] shadow-lg shadow-[#17A546]/20 hover:-translate-y-1 transition-all" onClick={() => setIsMobileMenuOpen(false)}>
-                                    Get Started
-                                </Button>
+                                <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
+                                    <Button variant="outline" className="w-full justify-center border-neutral-200 text-[#0A1B39] h-12 font-semibold text-[16px] transition-colors">
+                                        Log In
+                                    </Button>
+                                </Link>
+                                <Link href="/signup" onClick={() => setIsMobileMenuOpen(false)}>
+                                    <Button className="w-full justify-center bg-[#17A546] hover:bg-[#14933E] text-white h-12 font-semibold text-[16px] shadow-lg shadow-[#17A546]/20 hover:-translate-y-1 transition-all">
+                                        Get Started
+                                    </Button>
+                                </Link>
                             </div>
                         </div>
                     </div>

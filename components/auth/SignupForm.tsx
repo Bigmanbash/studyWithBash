@@ -1,32 +1,41 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { User, Mail, Phone, Lock, ChevronDown } from "lucide-react";
+import { User, Mail, Phone, Lock, ChevronDown, AlertCircle, Loader2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { registerStudent } from "@/app/api/auth/mutations";
+import { useState } from "react";
 
-const signupSchema = z.object({
-  firstName: z.string().min(2, "First name must be at least 2 characters"),
-  lastName: z.string().min(2, "Last name must be at least 2 characters"),
-  email: z.string().email("Please enter a valid email address"),
-  whatsappNumber: z.string().min(10, "Please enter a valid WhatsApp number"),
-  howDidYouFindUs: z.string().min(1, "Please select an option"),
-  password: z
-    .string()
-    .min(8, "Password must be at least 8 characters")
-    .regex(/[a-zA-Z]/, "Password must contain at least one letter")
-    .regex(/[0-9]/, "Password must contain at least one number"),
-  confirmPassword: z.string()
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords do not match",
-  path: ["confirmPassword"],
-});
+const signupSchema = z
+  .object({
+    firstName: z.string().min(2, "First name must be at least 2 characters"),
+    lastName: z.string().min(2, "Last name must be at least 2 characters"),
+    email: z.string().email("Please enter a valid email address"),
+    whatsappNumber: z.string().min(10, "Please enter a valid WhatsApp number"),
+    howDidYouFindUs: z.string().min(1, "Please select an option"),
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .regex(/[a-zA-Z]/, "Password must contain at least one letter")
+      .regex(/[0-9]/, "Password must contain at least one number"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
 
 type SignupFormValues = z.infer<typeof signupSchema>;
 
 export function SignupForm() {
+  const router = useRouter();
+  const [serverError, setServerError] = useState<string | null>(null);
+  const [isSuccess, setIsSuccess] = useState(false);
+
   const {
     register,
     handleSubmit,
@@ -37,14 +46,64 @@ export function SignupForm() {
   });
 
   const onSubmit = async (data: SignupFormValues) => {
-    console.log(data);
-    // Handle signup logic here
+    setServerError(null);
+
+    const result = await registerStudent({
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email,
+      whatsappNumber: data.whatsappNumber,
+      howDidYouFindUs: data.howDidYouFindUs,
+      password: data.password,
+    });
+
+    if (!result.ok) {
+      setServerError(result.error);
+      return;
+    }
+
+    setIsSuccess(true);
+    // Brief success moment before redirect
+    setTimeout(() => router.push("/dashboard"), 1200);
   };
 
+  // ── Success state ─────────────────────────────────────────────────────────
+  if (isSuccess) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-4 py-8 text-center">
+        <div className="h-14 w-14 rounded-full bg-semantic-success-support flex items-center justify-center">
+          <CheckCircle2 className="h-7 w-7 text-semantic-success-dark" />
+        </div>
+        <div>
+          <p className="text-base font-bold text-[#0A1B39]">Account created!</p>
+          <p className="text-sm text-[#676E85] mt-1">Taking you to your dashboard...</p>
+        </div>
+        <div className="flex gap-1">
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className="h-1.5 w-1.5 rounded-full bg-brand-green animate-bounce"
+              style={{ animationDelay: `${i * 0.15}s` }}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // ── Form ──────────────────────────────────────────────────────────────────
   return (
-    <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
-      <div className="space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <form className="space-y-4 sm:space-y-5" onSubmit={handleSubmit(onSubmit)}>
+      {/* Server-level error banner */}
+      {serverError && (
+        <div className="flex items-start gap-3 rounded-lg border border-semantic-error-main/20 bg-semantic-error-support p-3">
+          <AlertCircle className="h-4 w-4 text-semantic-error-main mt-0.5 shrink-0" />
+          <p className="text-sm text-semantic-error-dark">{serverError}</p>
+        </div>
+      )}
+
+      <div className="space-y-3.5 sm:space-y-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4">
           <Input
             label="First Name"
             id="firstName"
@@ -92,15 +151,16 @@ export function SignupForm() {
           {...register("whatsappNumber")}
         />
 
+        {/* How did you find us — custom select */}
         <div className="flex flex-col gap-1.5 w-full">
-          <label className="text-sm font-medium text-[#485066] uppercase tracking-wide">
+          <label className="text-[13px] sm:text-sm font-medium text-[#485066] uppercase tracking-wide">
             How you found us
           </label>
           <div className="relative">
             <select
-              className={`w-full appearance-none rounded-lg border bg-white px-3 py-2 text-base transition-colors focus-visible:outline-none focus-visible:ring-1 h-[44px] cursor-pointer ${
+              className={`w-full appearance-none rounded-lg border bg-white px-3 py-2 text-[15px] sm:text-base transition-colors focus-visible:outline-none focus-visible:ring-1 h-[42px] sm:h-[44px] cursor-pointer ${
                 errors.howDidYouFindUs
-                  ? "border-[#EF4444] text-[#EF4444] focus-visible:border-[#EF4444] focus-visible:ring-[#EF4444]"
+                  ? "border-semantic-error-main text-semantic-error-main focus-visible:ring-semantic-error-main"
                   : "border-[#D1D5DB] text-[#070D17] focus-visible:border-[#3B82F6] focus-visible:ring-[#3B82F6]"
               }`}
               {...register("howDidYouFindUs")}
@@ -116,7 +176,7 @@ export function SignupForm() {
             </div>
           </div>
           {errors.howDidYouFindUs && (
-            <p className="text-xs mt-1 text-[#EF4444]">
+            <p className="text-xs mt-0.5 text-semantic-error-main">
               {errors.howDidYouFindUs.message}
             </p>
           )}
@@ -149,12 +209,19 @@ export function SignupForm() {
         />
       </div>
 
-      <Button 
-        type="submit" 
+      <Button
+        type="submit"
         disabled={isSubmitting}
-        className="w-full bg-brand-green hover:bg-brand-green/90 text-white rounded-xl h-12 font-bold shadow-lg shadow-[#17A546]/20 disabled:opacity-70"
+        className="w-full bg-brand-green hover:bg-brand-green/90 text-white rounded-xl h-11 sm:h-12 font-bold text-[14px] sm:text-[15px] shadow-lg shadow-[#17A546]/20 disabled:opacity-70 transition-all"
       >
-        {isSubmitting ? "Creating account..." : "Create account"}
+        {isSubmitting ? (
+          <span className="flex items-center justify-center gap-2">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Creating account...
+          </span>
+        ) : (
+          "Create account"
+        )}
       </Button>
 
       {/* Divider */}
@@ -170,9 +237,9 @@ export function SignupForm() {
       {/* Social login */}
       <button
         type="button"
-        className="w-full h-12 rounded-xl border border-neutral-200 bg-white text-sm font-medium text-[#0A1B39] hover:bg-neutral-50 transition-colors flex items-center justify-center gap-3"
+        className="w-full h-11 sm:h-12 rounded-xl border border-neutral-200 bg-white text-[13px] sm:text-sm font-medium text-[#0A1B39] hover:bg-neutral-50 transition-colors flex items-center justify-center gap-2.5"
       >
-        <svg className="h-5 w-5" viewBox="0 0 24 24">
+        <svg className="h-[18px] w-[18px] sm:h-5 sm:w-5" viewBox="0 0 24 24">
           <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
           <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
           <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
@@ -181,7 +248,7 @@ export function SignupForm() {
         Continue with Google
       </button>
 
-      <p className="text-xs text-center text-[#98A2B3]">
+      <p className="text-[11px] sm:text-xs text-center text-[#98A2B3] leading-relaxed">
         By signing up, you agree to our{" "}
         <a href="#" className="text-brand-green hover:underline">Terms</a> and{" "}
         <a href="#" className="text-brand-green hover:underline">Privacy Policy</a>.
