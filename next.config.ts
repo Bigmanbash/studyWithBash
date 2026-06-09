@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   images: {
     domains: ["images.unsplash.com", "imgix.cosmicjs.com"],
   },
-  serverExternalPackages: ["kysely", "@better-auth/kysely-adapter"],
+  serverExternalPackages: ["better-auth", "@better-auth/core", "drizzle-orm"],
 };
 
 export default nextConfig;
