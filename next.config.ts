@@ -1,11 +1,16 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
   images: {
     domains: ["images.unsplash.com", "imgix.cosmicjs.com"],
   },
-  serverExternalPackages: ["better-auth", "@better-auth/core", "drizzle-orm"],
+  serverExternalPackages: [
+    "better-auth",
+    "@better-auth/core",
+    "@better-auth/kysely-adapter",
+    "kysely",
+    "drizzle-orm",
+  ],
 };
 
 export default nextConfig;

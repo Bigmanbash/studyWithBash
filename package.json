@@ -2,6 +2,11 @@
   "name": "bash-academy-fe",
   "version": "0.1.0",
   "private": true,
+  "overrides": {
+    "better-auth": {
+      "kysely": "0.27.4"
+    }
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -24,6 +29,7 @@
     "dotenv": "^17.4.2",
     "drizzle-kit": "^0.31.10",
     "drizzle-orm": "^0.45.2",
+    "force": "^0.0.3",
     "gsap": "^3.13.0",
     "kysely": "^0.27.4",
     "lucide-react": "^0.554.0",
