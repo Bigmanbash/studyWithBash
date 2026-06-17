@@ -4,38 +4,12 @@ import Link from "next/link";
 import { LayoutGrid, List } from "lucide-react";
 import { CourseCard } from "./CourseCard";
 import { useState } from "react";
+import type { Course } from "@/lib/neon/schema";
 
-const availableCourses = [
-  {
-    id: "mathematics-sss1",
-    title: "Mathematics - SSS1 First Term",
-     image: "/img/hero_section.png",
-    price: 2500,
-    originalPrice: 3500,
-  },
-  {
-    id: "english-sss1",
-    title: "English Language - SSS1 First Term",
-    image: "/img/hero_section.png",
-    price: 2500,
-  },
-  {
-    id: "biology-sss1",
-    title: "Biology - SSS1 First Term",
-    image: "/img/hero_section.png",
-    price: 2500,
-    originalPrice: 3500,
-  },
-  {
-    id: "chemistry-sss1",
-    title: "Chemistry - SSS1 First Term",
-    image: "/img/hero_section.png",
-    price: 2500,
-  },
-];
-
-export function AvailableCourses({ title = "Available Courses" }: { title?: string }) {
+export function AvailableCourses({ title = "Available Courses", courses = [] }: { title?: string, courses?: Course[] }) {
   const [view, setView] = useState<"grid" | "list">("grid");
+
+  if (!courses || courses.length === 0) return null;
 
   return (
     <div>
@@ -72,8 +46,17 @@ export function AvailableCourses({ title = "Available Courses" }: { title?: stri
         ? "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4"
         : "flex flex-col"
       }>
-        {availableCourses.map((course) => (
-          <CourseCard key={course.id} {...course} isPurchased={false} view={view} />
+        {courses.map((course) => (
+          <CourseCard 
+            key={course.id} 
+            id={course.id}
+            title={course.title}
+            image={course.coverImagePath || "/img/hero_section.png"}
+            price={course.price / 100} 
+            originalPrice={course.originalPrice ? course.originalPrice / 100 : undefined}
+            isPurchased={false} 
+            view={view} 
+          />
         ))}
       </div>
     </div>

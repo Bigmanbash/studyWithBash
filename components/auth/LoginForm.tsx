@@ -8,7 +8,7 @@ import * as z from "zod";
 import { Mail, Lock, AlertCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { loginWithEmail } from "@/app/api/auth/mutations";
+import { loginWithEmail, logout } from "@/app/api/auth/mutations";
 import { useSession } from "@/lib/auth-client";
 import { useState } from "react";
 
@@ -34,11 +34,15 @@ export function LoginForm() {
     mode: "onChange",
   });
 
-  // If already authenticated, redirect away from login
+  // If already authenticated as a student, redirect to their dashboard
   if (session?.user) {
     const role = (session.user as { role?: string }).role;
-    router.replace(role === "admin" ? "/admin/dashboard" : "/dashboard");
-    return null;
+    if (role !== "admin") {
+      router.replace("/dashboard");
+      return null;
+    }
+    // Admins with an existing session should not be helped from here —
+    // the form handler will reject their credentials if they try to submit.
   }
 
   const onSubmit = async (data: LoginFormValues) => {
@@ -51,8 +55,15 @@ export function LoginForm() {
       return;
     }
 
-    const role = result.data.role;
-    router.push(role === "admin" ? "/admin/dashboard" : "/dashboard");
+    // This is the student login page — admin accounts must not authenticate here.
+    // Destroy the session immediately and reject the attempt.
+    if (result.data.role === "admin") {
+      await logout();
+      setServerError("Admin accounts cannot sign in here. Please use the admin portal.");
+      return;
+    }
+
+    router.push("/dashboard");
   };
 
   return (

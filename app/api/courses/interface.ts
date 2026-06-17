@@ -7,6 +7,9 @@ export interface CourseListQuery {
   limit?: number;
   search?: string;
   category?: "school" | "exam";
+  level?: "SSS1" | "SSS2" | "SSS3";
+  term?: "first" | "second" | "third";
+  subject?: string;
   status?: "active" | "draft";
 }
 

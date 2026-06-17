@@ -27,7 +27,7 @@ async function processCourseUrls(course: Course): Promise<Course> {
 }
 
 export async function listCourses(query: CourseListQuery = {}): Promise<PaginatedCourses> {
-  const { page = 1, limit = 10, search, category, status } = query;
+  const { page = 1, limit = 10, search, category, level, term, subject, status } = query;
   const offset = (page - 1) * limit;
 
   const conditions = [];
@@ -40,6 +40,18 @@ export async function listCourses(query: CourseListQuery = {}): Promise<Paginate
 
   if (category) {
     conditions.push(eq(courses.category, category));
+  }
+  
+  if (level) {
+    conditions.push(eq(courses.level, level));
+  }
+  
+  if (term) {
+    conditions.push(eq(courses.term, term));
+  }
+  
+  if (subject) {
+    conditions.push(ilike(courses.subject, subject));
   }
 
   if (status) {

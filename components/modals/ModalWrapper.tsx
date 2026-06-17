@@ -38,7 +38,7 @@ export function ModalWrapper({ isOpen, onClose, children, size = "md" }: ModalWr
 
       {/* Modal */}
       <div
-        className={`relative ${sizeClasses[size]} bg-white rounded-2xl sm:rounded-3xl shadow-2xl p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-300 max-h-[90vh] flex flex-col`}
+        className={`relative ${sizeClasses[size]} bg-white rounded-2xl sm:rounded-3xl shadow-2xl p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-300 max-h-fit flex flex-col`}
       >
         <button
           onClick={onClose}

@@ -2,39 +2,55 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, BookOpen } from "lucide-react";
+import { ArrowLeft, BookOpen, Loader2 } from "lucide-react";
 import { EmbedPDF } from "@/components/dashboard";
 import { use, Suspense } from "react";
+import { useCourseDetails } from "@/hooks/useStudentDashboard";
 
-// In a real app this would come from your DB / API via courseId
-const COURSE_DOC_URL =
-  "https://docs.google.com/document/d/1M2O-TLvjWXkpCYIOs3wQg2paTcu0ExuBSaOJZz6TwB8/edit?usp=sharing";
-
-function ReadCourseContent({
-  courseId,
-}: {
-  courseId: string;
-}) {
+function ReadCourseContent({ courseId }: { courseId: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isPreview = searchParams.get("preview") === "true";
 
-  const courseTitle = "Mathematics – SSS1 First Term";
-  const subject = "Mathematics";
-  const term = "First Term";
+  const { data, isLoading, error } = useCourseDetails(courseId);
+
+  if (isLoading) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-[#F7F9FC]">
+        <Loader2 className="w-8 h-8 animate-spin text-brand-green" />
+      </div>
+    );
+  }
+
+  if (error || !data) {
+    return (
+      <div className="h-screen flex flex-col items-center justify-center bg-[#F7F9FC]">
+        <h2 className="text-2xl font-bold text-[#0A1B39] mb-2">Error Loading Document</h2>
+        <p className="text-[#676E85] mb-6">Could not load the requested material.</p>
+        <Link href={`/dashboard/course/${courseId}`} className="text-brand-green hover:underline">
+          Go back
+        </Link>
+      </div>
+    );
+  }
+
+  const { course, isPurchased } = data;
+
+  // If they are not in preview mode and haven't purchased, boot them back
+  if (!isPreview && !isPurchased) {
+    router.replace(`/dashboard/course/${courseId}`);
+    return null;
+  }
 
   const handleRequestPurchase = () => {
-    // Navigate back to the course detail / checkout page
     router.push(`/dashboard/course/${courseId}`);
   };
 
   return (
     <div className="h-screen flex flex-col bg-[#F7F9FC] overflow-hidden">
-
       {/* ── Reader Header ───────────────────────────────────────────── */}
       <header className="shrink-0 bg-white/90 backdrop-blur-md border-b border-neutral-100/80 sticky top-0 z-20">
         <div className="px-4 sm:px-6 h-14 flex items-center gap-4 max-w-screen-xl mx-auto w-full">
-
           {/* Back */}
           <Link
             href={isPreview ? `/dashboard/course/${courseId}` : "/dashboard/purchased"}
@@ -52,11 +68,11 @@ function ReadCourseContent({
               </div>
               <div className="min-w-0">
                 <p className="text-[13px] font-semibold text-[#0A1B39] truncate leading-none mb-0.5">
-                  {courseTitle}
+                  {course.title}
                 </p>
-                <p className="text-[11px] text-neutral-400 leading-none">
-                  {subject} · {term}
-                  {isPreview && (
+                <p className="text-[11px] text-neutral-400 leading-none capitalize">
+                  {course.subject} {course.category === "school" && `· ${course.term} Term`}
+                  {isPreview && !isPurchased && (
                     <span className="ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded bg-amber-50 text-amber-600 text-[10px] font-semibold border border-amber-200/60">
                       PREVIEW
                     </span>
@@ -82,30 +98,32 @@ function ReadCourseContent({
             overflow-hidden
           "
         >
-          <EmbedPDF
-            src={COURSE_DOC_URL}
-            title={courseTitle}
-            isPreview={isPreview}
-            previewPageLimit={3}
-            onRequestPurchase={handleRequestPurchase}
-          />
+          {course.pdfPath ? (
+            <EmbedPDF
+              src={course.pdfPath}
+              title={course.title}
+              isPreview={isPreview && !isPurchased}
+              previewPageLimit={3}
+              onRequestPurchase={handleRequestPurchase}
+            />
+          ) : (
+             <div className="w-full h-full flex items-center justify-center text-[#676E85]">
+                No PDF material has been uploaded for this course yet.
+             </div>
+          )}
         </div>
       </main>
     </div>
   );
 }
 
-export default function ReadCoursePage({
-  params,
-}: {
-  params: Promise<{ courseId: string }>;
-}) {
+export default function ReadCoursePage({ params }: { params: Promise<{ courseId: string }> }) {
   const { courseId } = use(params);
 
   return (
     <Suspense fallback={
       <div className="h-screen flex items-center justify-center bg-[#F7F9FC]">
-        <div className="w-8 h-8 border-3 border-neutral-200 border-t-[#17A546] rounded-full animate-spin" />
+        <Loader2 className="w-8 h-8 animate-spin text-brand-green" />
       </div>
     }>
       <ReadCourseContent courseId={courseId} />

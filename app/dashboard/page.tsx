@@ -1,15 +1,39 @@
+"use client";
+
 import {
   DashboardHeader,
-  MinimalStats,
   ContinueReading,
   RecentlyPurchased,
   AvailableCourses,
   QuickActions,
 } from "@/components/dashboard";
+import { useStudentDashboard } from "@/hooks/useStudentDashboard";
+import { Loader2 } from "lucide-react";
+import { useSession } from "@/lib/auth-client";
 
 export default function DashboardPage() {
-  // MOCK STATE: Toggle this to see the two different dashboard states
-  const hasPurchases = true; 
+  const { data: session } = useSession();
+  const { data, isLoading, error } = useStudentDashboard();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F7F9FC]">
+        <Loader2 className="h-8 w-8 animate-spin text-brand-green" />
+      </div>
+    );
+  }
+
+  if (error || !data) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F7F9FC]">
+        <p className="text-semantic-error-main">Failed to load dashboard data.</p>
+      </div>
+    );
+  }
+
+  const { purchased, available } = data;
+  const hasPurchases = purchased.length > 0;
+  const firstName = session?.user?.name?.split(" ")[0] || "Student";
 
   return (
     <>
@@ -19,7 +43,7 @@ export default function DashboardPage() {
         {/* Header Section */}
         <div className="flex flex-col gap-1">
           <h2 className="text-2xl font-bold text-[#0A1B39]">
-            Welcome Back, Chioma 👋
+            Welcome Back, {firstName} 👋
           </h2>
           <p className="text-sm text-[#676E85]">
             {hasPurchases
@@ -31,25 +55,15 @@ export default function DashboardPage() {
         {/* Conditional Dashboard Sections */}
         {hasPurchases ? (
           <>
-            {/* Continue Reading - Most prominent */}
             <ContinueReading />
-
-            {/* Minimal Stats */}
-            {/* <MinimalStats /> */}
-
-            {/* Recently Purchased */}
-            <RecentlyPurchased />
-            
-            {/* Other Courses */}
-            <AvailableCourses title="You Might Also Like" />
+            <RecentlyPurchased courses={purchased} />
+            <AvailableCourses title="You Might Also Like" courses={available} />
           </>
         ) : (
           <>
-            {/* Quick Actions for discovery */}
             <QuickActions />
-
-            {/* Available Courses */}
-            <AvailableCourses title="Popular Courses for SSS1" />
+            <RecentlyPurchased courses={purchased} />
+            <AvailableCourses title="Popular Courses for SSS1" courses={available} />
           </>
         )}
 

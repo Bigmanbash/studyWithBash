@@ -1,13 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { 
   Home, ShoppingBag, BookOpen, GraduationCap, User, 
   Settings, Plus, LogOut, X, Menu, ChevronDown, ChevronRight
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { useSession } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth-client";
 
 const terms = [
   { label: "First Term", href: "first-term", available: true },
@@ -95,72 +97,86 @@ export function Sidebar() {
     );
   };
 
-  const SidebarContent = () => (
-    <div className="flex flex-col h-full overflow-hidden">
-      {/* Logo */}
-      <div className="px-5 py-5 flex-shrink-0 border-b border-neutral-100">
-        <Link href="/dashboard" className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-md bg-[#17A546] flex items-center justify-center shrink-0">
-            <span className="text-white text-[11px] font-black">B</span>
-          </div>
-          <span className="text-[15px] font-bold tracking-tight text-[#0A1B39]">
-            Bash <span className="text-[#17A546]">Academy</span>
-          </span>
-        </Link>
-      </div>
+  const SidebarContent = () => {
+    const { data: session } = useSession();
+    const router = useRouter();
 
-      {/* Nav */}
-      <nav className="flex-1 px-3 py-4 space-y-5 overflow-y-auto pb-6 scrollbar-hide">
+    const handleSignOut = async () => {
+      await authClient.signOut();
+      router.push("/login");
+    };
 
-        <div className="space-y-0.5">
-          <NavItem href="/dashboard" icon={Home} label="Home" />
-          <NavItem href="/dashboard/purchased" icon={ShoppingBag} label="Purchased" />
+    const initial = session?.user?.name?.charAt(0)?.toUpperCase() || "S";
+
+    return (
+      <div className="flex flex-col h-full overflow-hidden">
+        {/* Logo */}
+        <div className="px-5 py-5 flex-shrink-0 border-b border-neutral-100">
+          <Link href="/dashboard" className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-md bg-[#17A546] flex items-center justify-center shrink-0">
+              <span className="text-white text-[11px] font-black">B</span>
+            </div>
+            <span className="text-[15px] font-bold tracking-tight text-[#0A1B39]">
+              Bash <span className="text-[#17A546]">Academy</span>
+            </span>
+          </Link>
         </div>
 
-        <div>
-          <p className="px-3 text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-1.5">Courses</p>
-          <ClassSection title="SSS 1" id="sss1" />
-          <ClassSection title="SSS 2" id="sss2" />
-          <ClassSection title="SSS 3" id="sss3" />
-        </div>
+        {/* Nav */}
+        <nav className="flex-1 px-3 py-4 space-y-5 overflow-y-auto pb-6 scrollbar-hide">
 
-        <div>
-          <p className="px-3 text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-1.5">Exam Prep</p>
           <div className="space-y-0.5">
-            <NavItem href="/dashboard/exam/waec" icon={GraduationCap} label="WAEC" />
-            <NavItem href="/dashboard/exam/neco" icon={GraduationCap} label="NECO" />
-            <NavItem href="/dashboard/exam/jamb" icon={GraduationCap} label="JAMB" />
-            <NavItem href="/dashboard/exam/post-utme" icon={GraduationCap} label="Post-UTME" badge="Soon" />
+            <NavItem href="/dashboard" icon={Home} label="Home" />
+            <NavItem href="/dashboard/purchased" icon={ShoppingBag} label="Purchased" />
           </div>
-        </div>
 
-        <div>
-          <p className="px-3 text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-1.5">Account</p>
-          <div className="space-y-0.5">
-            <NavItem href="/dashboard/profile" icon={User} label="Profile" />
-            {/* <NavItem href="/dashboard/settings" icon={Settings} label="Settings" />
-            <NavItem href="/dashboard/addons" icon={Plus} label="Add-ons" badge="Soon" /> */}
+          <div>
+            <p className="px-3 text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-1.5">Courses</p>
+            <ClassSection title="SSS 1" id="sss1" />
+            <ClassSection title="SSS 2" id="sss2" />
+            <ClassSection title="SSS 3" id="sss3" />
           </div>
-        </div>
-      </nav>
 
-      {/* Bottom profile */}
-      <div className="p-3 border-t border-neutral-100 flex-shrink-0">
-        <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-md hover:bg-neutral-50 transition-colors cursor-pointer group">
-          <div className="h-8 w-8 rounded-full bg-[#17A546]/10 flex items-center justify-center text-[#17A546] font-bold text-[12px] shrink-0">
-            C
+          <div>
+            <p className="px-3 text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-1.5">Exam Prep</p>
+            <div className="space-y-0.5">
+              <NavItem href="/dashboard/exam/waec" icon={GraduationCap} label="WAEC" />
+              <NavItem href="/dashboard/exam/neco" icon={GraduationCap} label="NECO" />
+              <NavItem href="/dashboard/exam/jamb" icon={GraduationCap} label="JAMB" />
+              <NavItem href="/dashboard/exam/post-utme" icon={GraduationCap} label="Post-UTME" badge="Soon" />
+            </div>
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-[13px] font-semibold text-[#0A1B39] truncate">Chioma E.</p>
-            <p className="text-[11px] text-[#676E85] truncate">chioma@example.com</p>
+
+          <div>
+            <p className="px-3 text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-1.5">Account</p>
+            <div className="space-y-0.5">
+              <NavItem href="/dashboard/profile" icon={User} label="Profile" />
+            </div>
           </div>
-          <button className="text-[#98A2B3] group-hover:text-red-400 transition-colors">
-            <LogOut className="h-3.5 w-3.5" />
-          </button>
+        </nav>
+
+        {/* Bottom profile */}
+        <div className="p-3 border-t border-neutral-100 flex-shrink-0">
+          <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-md hover:bg-neutral-50 transition-colors cursor-pointer group">
+            <div className="h-8 w-8 rounded-full bg-[#17A546]/10 flex items-center justify-center text-[#17A546] font-bold text-[12px] shrink-0">
+              {initial}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[13px] font-semibold text-[#0A1B39] truncate">
+                {session?.user?.name || "Student"}
+              </p>
+              <p className="text-[11px] text-[#676E85] truncate">
+                {session?.user?.email || "student@example.com"}
+              </p>
+            </div>
+            <button onClick={handleSignOut} className="text-[#98A2B3] group-hover:text-red-400 transition-colors">
+              <LogOut className="h-3.5 w-3.5" />
+            </button>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <>

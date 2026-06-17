@@ -1,29 +1,11 @@
 import Link from "next/link";
 import Image from "next/image";
 import { FileText } from "lucide-react";
+import type { Course } from "@/lib/neon/schema";
 
-const recentPurchases = [
-  {
-    id: "1",
-    title: "English Language - SSS1 First Term",
-    image: "/img/hero_section.png",
-    date: "Oct 24, 2023",
-  },
-  {
-    id: "2",
-    title: "Biology - SSS1 First Term",
-    image: "/img/hero_section.png",
-    date: "Oct 22, 2023",
-  },
-  {
-    id: "3",
-    title: "Chemistry - SSS1 First Term",
-    image: "/img/hero_section.png",
-    date: "Oct 20, 2023",
-  },
-];
+export function RecentlyPurchased({ courses }: { courses: Course[] }) {
+  if (!courses || courses.length === 0) return null;
 
-export function RecentlyPurchased() {
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
@@ -32,14 +14,20 @@ export function RecentlyPurchased() {
       </div>
 
       <div className="divide-y divide-neutral-100">
-        {recentPurchases.map((course) => (
+        {courses.map((course) => (
           <div key={course.id} className="flex items-center gap-3 py-2.5">
             <div className="relative w-11 h-11 rounded-lg overflow-hidden shrink-0 bg-neutral-100">
-              <Image src={course.image} alt={course.title} fill className="object-cover" />
+              <Image src={course.coverImagePath || "/img/hero_section.png"} alt={course.title} fill className="object-cover" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[13px] font-medium text-[#0A1B39] truncate">{course.title}</p>
-              <p className="text-[12px] text-[#676E85]">{course.date}</p>
+              <p className="text-[12px] text-[#676E85]">
+                {new Date(course.createdAt).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                })}
+              </p>
             </div>
             <Link
               href={`/dashboard/read/${course.id}`}

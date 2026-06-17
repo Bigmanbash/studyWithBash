@@ -8,7 +8,7 @@ import * as z from "zod";
 import { Shield, AlertCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { loginWithEmail } from "@/app/api/auth";
+import { loginWithEmail, logout } from "@/app/api/auth";
 
 const adminLoginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -42,8 +42,10 @@ export function AdminLoginForm() {
     }
 
     if (result.data.role !== "admin") {
+      // A non-admin signed in through the admin portal — destroy their session
+      // immediately to prevent auth state leaking into the student flow.
+      await logout();
       setServerError("Unauthorized access. This portal is for administrators only.");
-      // We should probably log them out, but for now we just show error
       return;
     }
 
