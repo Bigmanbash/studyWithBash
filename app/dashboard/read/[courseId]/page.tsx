@@ -47,7 +47,7 @@ function ReadCourseContent({ courseId }: { courseId: string }) {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-[#F7F9FC] overflow-hidden">
+    <div className="h-[100dvh] flex flex-col bg-[#F7F9FC] overflow-hidden -mt-16 lg:mt-0 relative z-[60]">
       {/* ── Reader Header ───────────────────────────────────────────── */}
       <header className="shrink-0 bg-white/90 backdrop-blur-md border-b border-neutral-100/80 sticky top-0 z-20">
         <div className="px-4 sm:px-6 h-14 flex items-center gap-4 max-w-screen-xl mx-auto w-full">

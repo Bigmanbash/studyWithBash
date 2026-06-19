@@ -34,6 +34,11 @@ export const GET = async (req: Request, { params }: { params: Promise<{ id: stri
 
     const isPurchased = purchaseRecords.length > 0;
 
+    // Secure the PDF path if not purchased
+    if (!isPurchased && course.pdfPath) {
+      course.pdfPath = `/api/dashboard/course/${course.id}/preview`;
+    }
+
     return NextResponse.json({
       course,
       isPurchased,

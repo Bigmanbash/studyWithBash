@@ -1,10 +1,11 @@
-export { ModalWrapper } from "./ModalWrapper";
-export { PaymentModal } from "./PaymentModal";
-export { QuizModal } from "./QuizModal";
-export { SuccessModal } from "./SuccessModal";
-export { ErrorModal } from "./ErrorModal";
 export { ConfirmModal } from "./ConfirmModal";
-export { Preloader } from "./Preloader";
+export { ErrorModal } from "./ErrorModal";
+export { ModalWrapper } from "./ModalWrapper";
 export { NotificationsModal } from "./NotificationsModal";
+export { PaymentModal } from "./PaymentModal";
+export { Preloader } from "./Preloader";
 export { ProfileModal } from "./ProfileModal";
+export { QuizModal } from "./QuizModal";
 export { StatusModal } from "./StatusModal";
+export { SuccessModal } from "./SuccessModal";
+export { PaymentSuccessModal } from "./PaymentSuccessModal";

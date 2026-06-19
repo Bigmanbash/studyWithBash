@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/neon";
 import { courses, payments } from "@/lib/neon/schema";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, notInArray } from "drizzle-orm";
 import { requireServerSession } from "@/app/api/auth/queries";
 
 export async function GET(request: Request) {
@@ -32,11 +32,17 @@ export async function GET(request: Request) {
 
     let purchasedCourses = purchasedData.map((p) => p.course);
 
-    // Fetch available courses (paginated, just fetch latest active courses)
+    const purchasedIds = purchasedCourses.map((c) => c.id);
+
+    // Fetch available courses (paginated, excluding already purchased)
     const availableData = await db
       .select()
       .from(courses)
-      .where(eq(courses.status, "active"))
+      .where(
+        purchasedIds.length > 0
+          ? and(eq(courses.status, "active"), notInArray(courses.id, purchasedIds))
+          : eq(courses.status, "active")
+      )
       .orderBy(desc(courses.createdAt))
       .limit(limit)
       .offset(offset);

@@ -7,3 +7,4 @@ export { CourseCard } from "./CourseCard";
 export { AvailableCourses } from "./AvailableCourses";
 export { QuickActions } from "./QuickActions";
 export { EmbedPDF } from "./EmbedPDF";
+export { PageHeader } from "./PageHeader";

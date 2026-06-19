@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { User, Mail, Shield, Save, CheckCircle2, AlertCircle } from "lucide-react";
+import { User, Mail, Shield, Save } from "lucide-react";
 import { authClient, useSession } from "@/lib/auth-client";
 import { useStudentStore } from "@/store/studentStore";
+import { PageHeader } from "@/components/dashboard";
 
 export default function ProfilePage() {
   const { data: session } = useSession();
@@ -105,40 +106,50 @@ export default function ProfilePage() {
 
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-3xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-[#0A1B39]">Profile</h1>
-        <p className="text-[#676E85] mt-2">Manage your personal information.</p>
-      </div>
+      <PageHeader
+        title="Profile"
+        description="Manage your personal information."
+      />
 
       <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-6 sm:p-8 space-y-8">
         
-        <div className="flex items-center gap-6">
-          <div className="h-24 w-24 rounded-full bg-[#17A546]/10 flex items-center justify-center text-[#17A546] font-bold text-3xl uppercase">
+        {/* Profile Header */}
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 sm:gap-6 text-center sm:text-left">
+          <div className="h-24 w-24 rounded-full bg-[#17A546]/10 flex items-center justify-center text-[#17A546] font-extrabold text-4xl uppercase ring-4 ring-white shadow-sm border border-[#17A546]/20">
             {session?.user?.name?.charAt(0) || "U"}
           </div>
-          <div>
-            <h2 className="text-xl font-bold text-[#0A1B39]">{session?.user?.name || "Loading..."}</h2>
-            <p className="text-[#676E85]">{session?.user?.email || "..."}</p>
+          <div className="flex flex-col justify-center mt-1 sm:mt-3">
+            <h2 className="text-2xl font-bold text-[#0A1B39] tracking-tight">{session?.user?.name || "Loading..."}</h2>
+            <p className="text-[15px] text-[#676E85] mt-0.5">{session?.user?.email || "..."}</p>
+            <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#17A546]/10 text-[#17A546] text-xs font-semibold w-fit mx-auto sm:mx-0">
+              <Shield className="w-3.5 h-3.5" /> Student Account
+            </div>
           </div>
         </div>
 
-        <div className="space-y-6">
+        {/* Profile Form */}
+        <div className="space-y-6 pt-4">
           <div>
-            <label className="text-sm font-medium text-[#676E85] flex items-center gap-2 mb-2">
-              <User className="w-4 h-4" /> Full Name
+            <label className="text-[13px] font-bold uppercase tracking-wider text-[#98A2B3] flex items-center gap-2 mb-2.5">
+               Full Name
             </label>
-            <div className="flex gap-3">
-              <input 
-                type="text" 
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Enter your full name"
-                className="flex-1 bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3 text-[#0A1B39] focus:outline-none focus:ring-2 focus:ring-[#17A546]/20 focus:border-[#17A546] transition-all"
-              />
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="relative flex-1">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <User className="h-5 w-5 text-[#98A2B3]" />
+                </div>
+                <input 
+                  type="text" 
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Enter your full name"
+                  className="w-full bg-neutral-50/50 border border-neutral-200/80 rounded-xl pl-11 pr-4 py-3 text-[#0A1B39] font-medium focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#17A546]/20 focus:border-[#17A546] transition-all shadow-sm"
+                />
+              </div>
               <button 
                 onClick={handleUpdateName}
                 disabled={isUpdatingName || name === session?.user?.name || !name.trim()}
-                className="flex items-center justify-center gap-2 bg-[#17A546] hover:bg-[#128638] disabled:opacity-50 disabled:hover:bg-[#17A546] text-white px-6 py-3 rounded-xl font-semibold transition-colors"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#17A546] hover:bg-[#128638] disabled:opacity-50 disabled:hover:bg-[#17A546] text-white px-7 py-3 rounded-xl font-semibold transition-all shadow-sm active:scale-95"
               >
                 {isUpdatingName ? (
                   <span className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
@@ -152,86 +163,97 @@ export default function ProfilePage() {
           </div>
 
           <div>
-            <label className="text-sm font-medium text-[#676E85] flex items-center gap-2 mb-2">
-              <Mail className="w-4 h-4" /> Email Address
+            <label className="text-[13px] font-bold uppercase tracking-wider text-[#98A2B3] flex items-center gap-2 mb-2.5">
+               Email Address
             </label>
-            <input 
-              type="email" 
-              value={session?.user?.email || ""} 
-              disabled
-              className="w-full bg-neutral-100 border border-neutral-200 rounded-xl px-4 py-3 text-[#676E85] cursor-not-allowed"
-            />
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <Mail className="h-5 w-5 text-[#98A2B3]" />
+              </div>
+              <input 
+                type="email" 
+                value={session?.user?.email || ""} 
+                disabled
+                className="w-full bg-neutral-100/50 border border-neutral-200/50 rounded-xl pl-11 pr-4 py-3 text-[#676E85] font-medium cursor-not-allowed shadow-inner"
+              />
+            </div>
+            <p className="text-xs text-[#98A2B3] mt-2">Email address cannot be changed currently.</p>
           </div>
 
-          <div className="pt-4 border-t border-neutral-100">
+          <div className="pt-6 border-t border-neutral-100">
             {!showPasswordForm ? (
               <button 
                 onClick={() => setShowPasswordForm(true)}
-                className="flex items-center justify-center gap-2 w-full sm:w-auto bg-[#0A1B39] hover:bg-[#0A1B39]/90 text-white px-6 py-3 rounded-xl font-semibold transition-colors"
+                className="flex items-center justify-center gap-2 w-full sm:w-auto bg-white border border-neutral-200 hover:border-[#17A546] hover:bg-[#17A546]/5 text-[#0A1B39] hover:text-[#17A546] px-6 py-3 rounded-xl font-semibold transition-all shadow-sm"
               >
                 <Shield className="w-4 h-4" />
                 Change Password
               </button>
             ) : (
-              <form onSubmit={handleUpdatePassword} className="space-y-4 bg-neutral-50 p-5 rounded-xl border border-neutral-200">
-                <h3 className="font-semibold text-[#0A1B39] flex items-center gap-2">
-                  <Shield className="w-4 h-4 text-[#17A546]" /> Change Password
+              <form onSubmit={handleUpdatePassword} className="space-y-5 bg-neutral-50/80 p-5 sm:p-6 rounded-2xl border border-neutral-200/80 shadow-sm animate-in fade-in slide-in-from-top-4 duration-300">
+                <h3 className="font-bold text-[#0A1B39] text-lg flex items-center gap-2 border-b border-neutral-200 pb-3">
+                  <Shield className="w-5 h-5 text-[#17A546]" /> Security
                 </h3>
                 
-                <div>
-                  <label className="text-sm text-[#676E85] block mb-1">Current Password</label>
-                  <input 
-                    type="password" 
-                    required
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                    className="w-full bg-white border border-neutral-200 rounded-lg px-4 py-2.5 text-[#0A1B39] focus:outline-none focus:ring-2 focus:ring-[#17A546]/20 focus:border-[#17A546] transition-all"
-                  />
-                </div>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-4">
                   <div>
-                    <label className="text-sm text-[#676E85] block mb-1">New Password</label>
+                    <label className="text-sm font-semibold text-[#0A1B39] block mb-1.5">Current Password</label>
                     <input 
                       type="password" 
                       required
-                      minLength={8}
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      className="w-full bg-white border border-neutral-200 rounded-lg px-4 py-2.5 text-[#0A1B39] focus:outline-none focus:ring-2 focus:ring-[#17A546]/20 focus:border-[#17A546] transition-all"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="w-full bg-white border border-neutral-200 rounded-xl px-4 py-3 text-[#0A1B39] focus:outline-none focus:ring-2 focus:ring-[#17A546]/20 focus:border-[#17A546] transition-all shadow-sm"
                     />
                   </div>
-                  <div>
-                    <label className="text-sm text-[#676E85] block mb-1">Confirm New Password</label>
-                    <input 
-                      type="password" 
-                      required
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="w-full bg-white border border-neutral-200 rounded-lg px-4 py-2.5 text-[#0A1B39] focus:outline-none focus:ring-2 focus:ring-[#17A546]/20 focus:border-[#17A546] transition-all"
-                    />
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-semibold text-[#0A1B39] block mb-1.5">New Password</label>
+                      <input 
+                        type="password" 
+                        required
+                        minLength={8}
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder="••••••••"
+                        className="w-full bg-white border border-neutral-200 rounded-xl px-4 py-3 text-[#0A1B39] focus:outline-none focus:ring-2 focus:ring-[#17A546]/20 focus:border-[#17A546] transition-all shadow-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-semibold text-[#0A1B39] block mb-1.5">Confirm Password</label>
+                      <input 
+                        type="password" 
+                        required
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="••••••••"
+                        className="w-full bg-white border border-neutral-200 rounded-xl px-4 py-3 text-[#0A1B39] focus:outline-none focus:ring-2 focus:ring-[#17A546]/20 focus:border-[#17A546] transition-all shadow-sm"
+                      />
+                    </div>
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-3 pt-2">
+                <div className="flex flex-col-reverse sm:flex-row items-center gap-3 pt-4 border-t border-neutral-200">
+                  <button 
+                    type="button"
+                    onClick={() => setShowPasswordForm(false)}
+                    disabled={isUpdatingPassword}
+                    className="w-full sm:w-auto bg-white hover:bg-neutral-100 text-[#676E85] border border-neutral-200 px-6 py-2.5 rounded-xl font-semibold transition-colors shadow-sm"
+                  >
+                    Cancel
+                  </button>
                   <button 
                     type="submit"
                     disabled={isUpdatingPassword}
-                    className="flex-1 sm:flex-none bg-[#17A546] hover:bg-[#128638] disabled:opacity-50 text-white px-6 py-2.5 rounded-lg font-semibold transition-colors flex justify-center items-center h-[44px]"
+                    className="w-full sm:w-auto bg-[#0A1B39] hover:bg-[#0A1B39]/90 disabled:opacity-50 text-white px-8 py-2.5 rounded-xl font-semibold transition-all shadow-md active:scale-95 flex justify-center items-center"
                   >
                     {isUpdatingPassword ? (
                       <span className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
                     ) : (
                       "Update Password"
                     )}
-                  </button>
-                  <button 
-                    type="button"
-                    onClick={() => setShowPasswordForm(false)}
-                    disabled={isUpdatingPassword}
-                    className="flex-1 sm:flex-none bg-white hover:bg-neutral-50 text-[#676E85] border border-neutral-200 px-6 py-2.5 rounded-lg font-semibold transition-colors h-[44px]"
-                  >
-                    Cancel
                   </button>
                 </div>
               </form>

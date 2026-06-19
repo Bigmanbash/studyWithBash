@@ -31,7 +31,7 @@ export function QuickActions() {
 
   return (
     <div className="space-y-6">
-      <h3 className="text-xl font-bold text-[#0A1B39]">Quick Actions</h3>
+      <h3 className="text-[18px] font-semibold text-[#0A1B39]">Quick Actions</h3>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {actions.map((action, i) => (
           <Link

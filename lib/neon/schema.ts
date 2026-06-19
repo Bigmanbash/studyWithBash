@@ -87,6 +87,7 @@ export const paymentStatusEnum = pgEnum("payment_status", [
   "pending",
   "approved",
   "rejected",
+  "failed",
 ]);
 
 // ── Courses ───────────────────────────────────────────────────────────────────
@@ -137,7 +138,8 @@ export const payments = pgTable("payments", {
   amount: integer("amount").notNull(),         // kobo
   status: paymentStatusEnum("status").notNull().default("pending"),
   method: text("method"),                      // "bank_transfer" | "card" | "ussd"
-  reference: text("reference").unique(),        // bank/payment reference
+  reference: text("reference").notNull().unique(), // Paystack transaction reference
+  paystackAccessCode: text("paystack_access_code"), // Paystack access_code for popup resumption / debugging
   proofPath: text("proof_path"),               // Supabase Storage key for receipt image
   submittedAt: timestamp("submitted_at").notNull().defaultNow(),
   reviewedAt: timestamp("reviewed_at"),

@@ -39,11 +39,11 @@ export default function DashboardPage() {
     <>
       <DashboardHeader />
       <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-10 sm:space-y-12 max-w-7xl mx-auto">
-        
+
         {/* Header Section */}
         <div className="flex flex-col gap-1">
-          <h2 className="text-2xl font-bold text-[#0A1B39]">
-            Welcome Back, {firstName} 👋
+          <h2 className="text-[22px] font-semibold text-[#0A1B39]">
+            Welcome back, {firstName} 👋
           </h2>
           <p className="text-sm text-[#676E85]">
             {hasPurchases
@@ -55,7 +55,7 @@ export default function DashboardPage() {
         {/* Conditional Dashboard Sections */}
         {hasPurchases ? (
           <>
-            <ContinueReading />
+            <ContinueReading course={purchased[0]} />
             <RecentlyPurchased courses={purchased} />
             <AvailableCourses title="You Might Also Like" courses={available} />
           </>

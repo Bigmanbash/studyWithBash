@@ -21,7 +21,7 @@ export function CourseCard({ id, title, image, price, originalPrice, isPurchased
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-[13px] font-medium text-[#0A1B39] truncate">{title}</p>
-          {price !== undefined && (
+          {!isPurchased && price !== undefined && (
             <div className="flex items-baseline gap-1.5 mt-0.5">
               <span className="text-[12px] font-medium text-[#0A1B39]">₦{price.toLocaleString()}</span>
               {originalPrice && (
@@ -31,11 +31,15 @@ export function CourseCard({ id, title, image, price, originalPrice, isPurchased
           )}
         </div>
         <Link
-          href={`/dashboard/course/${id}`}
-          className="shrink-0 flex items-center gap-1.5 text-[12px] font-medium text-[#17A546] bg-[#17A546]/10 border border-[#17A546]/25 px-2.5 py-1.5 rounded-md hover:bg-[#17A546]/20 transition-colors"
+          href={isPurchased ? `/dashboard/read/${id}` : `/dashboard/course/${id}`}
+          className={`shrink-0 flex items-center gap-1.5 text-[12px] font-medium px-2.5 py-1.5 rounded-md transition-colors ${
+            isPurchased 
+              ? "text-[#0A1B39] bg-neutral-100 border border-neutral-200 hover:bg-neutral-200"
+              : "text-[#17A546] bg-[#17A546]/10 border border-[#17A546]/25 hover:bg-[#17A546]/20"
+          }`}
         >
-          <ShoppingCart className="w-3.5 h-3.5" />
-          Buy now
+          {isPurchased ? <FileText className="w-3.5 h-3.5" /> : <ShoppingCart className="w-3.5 h-3.5" />}
+          {isPurchased ? "Open" : "Buy now"}
         </Link>
       </div>
     );
@@ -49,7 +53,7 @@ export function CourseCard({ id, title, image, price, originalPrice, isPurchased
       </div>
       <div className="p-3 sm:p-4 flex-1 flex flex-col gap-3">
         <h4 className="text-[13px] sm:text-sm font-semibold text-[#0A1B39] line-clamp-2 flex-1">{title}</h4>
-        {price !== undefined && (
+        {!isPurchased && price !== undefined && (
           <div className="flex items-baseline gap-1.5">
             <span className="text-[13px] font-bold text-[#0A1B39]">₦{price.toLocaleString()}</span>
             {originalPrice && (
@@ -58,11 +62,15 @@ export function CourseCard({ id, title, image, price, originalPrice, isPurchased
           </div>
         )}
         <Link
-          href={`/dashboard/course/${id}`}
-          className="flex items-center justify-center gap-1.5 w-full px-3 py-2 rounded-md bg-[#17A546] hover:bg-[#128638] text-white text-[12px] sm:text-[13px] font-medium transition-colors mt-auto"
+          href={isPurchased ? `/dashboard/read/${id}` : `/dashboard/course/${id}`}
+          className={`flex items-center justify-center gap-1.5 w-full px-3 py-2 rounded-md text-[12px] sm:text-[13px] font-medium transition-colors mt-auto ${
+            isPurchased
+              ? "bg-[#0A1B39] hover:bg-[#0A1B39]/90 text-white"
+              : "bg-[#17A546] hover:bg-[#128638] text-white"
+          }`}
         >
-          <ShoppingCart className="w-3.5 h-3.5" />
-          Buy Now
+          {isPurchased ? <FileText className="w-3.5 h-3.5" /> : <ShoppingCart className="w-3.5 h-3.5" />}
+          {isPurchased ? "Open Material" : "Buy Now"}
         </Link>
       </div>
     </div>

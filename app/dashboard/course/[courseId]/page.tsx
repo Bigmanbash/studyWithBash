@@ -4,15 +4,22 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, CheckCircle, FileText, Lock, ShoppingCart, Eye, Loader2, BookOpen, Tag } from "lucide-react";
-import { AvailableCourses } from "@/components/dashboard";
-import { use } from "react";
+import { AvailableCourses , PageHeader } from "@/components/dashboard";
+import { use, useState } from "react";
 import { useCourseDetails } from "@/hooks/useStudentDashboard";
+import { usePaystack } from "@/hooks/usePaystack";
+import { PaymentSuccessModal } from "@/components/modals/PaymentSuccessModal";
 
 export default function CourseDetailsPage({ params }: { params: Promise<{ courseId: string }> }) {
   const resolvedParams = use(params);
   const router = useRouter();
 
   const { data, isLoading, error } = useCourseDetails(resolvedParams.courseId);
+  const { checkout, status: payStatus, error: payError, reset: payReset } = usePaystack();
+
+  const handlePayNow = async () => {
+    await checkout(resolvedParams.courseId);
+  };
 
   if (isLoading) {
     return (
@@ -189,18 +196,34 @@ export default function CourseDetailsPage({ params }: { params: Promise<{ course
                     )}
                   </div>
 
-                  <div className="flex gap-2.5">
-                    <button
-                      onClick={handlePreview}
-                      className="bg-neutral-100 hover:bg-neutral-200 text-[#0A1B39] px-4 py-2.5 rounded-md font-semibold text-sm flex items-center gap-1.5 transition-colors"
-                    >
-                      <Eye className="w-4 h-4" />
-                      Preview
-                    </button>
-                    <button className="bg-[#17A546] hover:bg-[#128638] text-white px-5 py-2.5 rounded-md font-semibold text-sm flex items-center gap-1.5 transition-colors shadow-sm">
-                      <ShoppingCart className="w-4 h-4" />
-                      Pay Now
-                    </button>
+                  <div className="flex flex-col gap-2.5 w-full sm:w-auto">
+                    {payStatus === "failed" && payError && (
+                      <div className="p-2.5 rounded-lg bg-red-50 border border-red-200 text-red-600 text-xs flex items-center justify-between">
+                        <span>{payError}</span>
+                        <button onClick={payReset} className="text-red-400 hover:text-red-600 ml-2 text-xs font-medium">✕</button>
+                      </div>
+                    )}
+                    <div className="flex gap-2.5">
+                      <button
+                        onClick={handlePreview}
+                        className="bg-neutral-100 hover:bg-neutral-200 text-[#0A1B39] px-4 py-2.5 rounded-md font-semibold text-sm flex items-center gap-1.5 transition-colors"
+                      >
+                        <Eye className="w-4 h-4" />
+                        Preview
+                      </button>
+                      <button
+                        onClick={handlePayNow}
+                        disabled={payStatus === "loading"}
+                        className="bg-[#17A546] hover:bg-[#128638] text-white px-5 py-2.5 rounded-md font-semibold text-sm flex items-center gap-1.5 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {payStatus === "loading" ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <ShoppingCart className="w-4 h-4" />
+                        )}
+                        {payStatus === "loading" ? "Processing..." : "Pay Now"}
+                      </button>
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -230,6 +253,11 @@ export default function CourseDetailsPage({ params }: { params: Promise<{ course
           <AvailableCourses title="Other Recommended Courses" />
         </div>
       </main>
+
+      {/* Payment Success Modal */}
+      {payStatus === "success" && (
+        <PaymentSuccessModal onClose={() => { payReset(); router.push("/dashboard"); }} />
+      )}
     </div>
   );
 }

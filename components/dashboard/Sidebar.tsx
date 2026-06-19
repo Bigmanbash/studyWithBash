@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { 
-  Home, ShoppingBag, BookOpen, GraduationCap, User, 
-  Settings, Plus, LogOut, X, Menu, ChevronDown, ChevronRight
+import {
+  Home, ShoppingBag, BookOpen, GraduationCap, User,
+  Settings, Plus, LogOut, X, Menu, ChevronDown, ChevronRight, Bell
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -19,7 +19,22 @@ const terms = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const { data: session } = useSession();
+  // pick first name and last name firt letter eg BA
+  const getInitials = (name?: string) => {
+    if (!name) return "U";
+    const parts = name.trim().split(/\s+/);
+    if (parts.length > 1) {
+      return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+    }
+    return parts[0].charAt(0).toUpperCase();
+  };
+  const initial = getInitials(session?.user?.name) || "BA";
+
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>("sss1");
 
   const toggleSection = (section: string) => {
@@ -98,15 +113,12 @@ export function Sidebar() {
   };
 
   const SidebarContent = () => {
-    const { data: session } = useSession();
     const router = useRouter();
 
     const handleSignOut = async () => {
       await authClient.signOut();
       router.push("/login");
     };
-
-    const initial = session?.user?.name?.charAt(0)?.toUpperCase() || "S";
 
     return (
       <div className="flex flex-col h-full overflow-hidden">
@@ -180,12 +192,53 @@ export function Sidebar() {
 
   return (
     <>
-      <button
-        onClick={() => setIsMobileOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-50 h-9 w-9 rounded-md bg-white shadow-md border border-neutral-200 flex items-center justify-center"
-      >
-        <Menu className="h-4 w-4 text-[#0A1B39]" />
-      </button>
+      {/* Mobile Top Navbar */}
+      <div className="lg:hidden fixed top-0 inset-x-0 z-40 h-16 backdrop-blur-md border-b border-neutral-100 flex items-center justify-between px-4 sm:px-6">
+        <div className="flex items-center">
+          <button
+            onClick={() => setIsMobileOpen(true)}
+            className="h-10 w-10 -ml-2 rounded-full bg-brand-green/10 text-brand-green hover:bg-brand-green/15 flex items-center justify-center transition-colors active:scale-95 text-[#0A1B39]"
+            aria-label="Open menu"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+        </div>
+        <div className="flex items-center gap-3">
+          <button className="h-10 w-10 rounded-full hover:bg-neutral-100 flex items-center justify-center transition-colors relative text-[#676E85] hover:text-[#0A1B39]">
+            <Bell className="h-5 w-5" />
+            <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-[#17A546] border-2 border-white" />
+          </button>
+          <div className="relative">
+            <div
+              onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+              className="h-8 w-8 rounded-full bg-[#17A546]/10 flex items-center justify-center text-[#17A546] font-bold text-[13px] ring-2 ring-white cursor-pointer select-none"
+            >
+              {initial}
+            </div>
+
+            {isProfileDropdownOpen && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setIsProfileDropdownOpen(false)} />
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-neutral-100 z-50 py-2 animate-in fade-in slide-in-from-top-2">
+                  <div className="px-4 py-2 border-b border-neutral-100 mb-1">
+                    <p className="text-[13px] font-semibold text-[#0A1B39] truncate">{session?.user?.name || "Student"}</p>
+                    <p className="text-[11px] text-[#676E85] truncate">{session?.user?.email}</p>
+                  </div>
+                  <Link href="/dashboard/profile" onClick={() => setIsProfileDropdownOpen(false)} className="flex items-center gap-2 px-4 py-2 text-sm text-[#676E85] hover:text-[#0A1B39] hover:bg-neutral-50 transition-colors">
+                    <User className="h-4 w-4" /> Profile
+                  </Link>
+                  <button
+                    onClick={async () => { await authClient.signOut(); router.push("/login"); }}
+                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-500 hover:bg-red-50 transition-colors"
+                  >
+                    <LogOut className="h-4 w-4" /> Sign Out
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
 
       {isMobileOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">

@@ -2,10 +2,10 @@ import { Bell, Search } from "lucide-react";
 
 export function DashboardHeader() {
   return (
-    <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-neutral-100">
+    <header className="sticky top-16 lg:top-0 z-30 bg-white/80 backdrop-blur-md border-b border-neutral-100">
       <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
         <div className="flex-1">
-          <h1 className="text-lg sm:text-xl font-bold text-[#0A1B39] ml-12 lg:ml-0">Dashboard</h1>
+          <h1 className="text-[16px] sm:text-xl font-semibold text-[#0A1B39]">Dashboard</h1>
         </div>
 
         <div className="flex items-center gap-3">

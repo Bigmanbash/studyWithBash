@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { ArrowLeft, BookX } from "lucide-react";
+import { BookX } from "lucide-react";
 import { TermCategoryClient } from "@/components/courses/TermCategoryClient";
 import { listCourses } from "@/app/api/courses/queries";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { PageHeader } from "@/components/dashboard";
 
 export default async function TermCategoryPage({ params }: { params: Promise<{ classId: string; termId: string }> }) {
   const resolvedParams = await params;
@@ -30,23 +31,16 @@ export default async function TermCategoryPage({ params }: { params: Promise<{ c
     id: c.id,
     title: c.title,
     image: c.coverImagePath || "/img/hero_section.png",
-    price: c.price,
+    price: c.price / 100,
   }));
 
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-7xl mx-auto">
-      <div className="mb-6">
-        <div className="flex items-center gap-3 mb-1">
-          <Link
-            href="/dashboard"
-            className="p-1.5 hover:bg-neutral-100 rounded-md text-[#676E85] transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </Link>
-          <h1 className="text-2xl font-bold text-[#0A1B39]">{title}</h1>
-        </div>
-        <p className="text-sm text-[#676E85] ml-9">Browse available subjects for this term.</p>
-      </div>
+      <PageHeader
+        title={title}
+        description="Browse available subjects for this term."
+        backHref="/dashboard"
+      />
 
       {availableCourses.length > 0 ? (
         <TermCategoryClient courses={availableCourses} />
