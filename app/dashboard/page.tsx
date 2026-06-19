@@ -9,6 +9,7 @@ import {
 } from "@/components/dashboard";
 import { useStudentDashboard } from "@/hooks/useStudentDashboard";
 import { Loader2 } from "lucide-react";
+import { DashboardSkeleton } from "@/components/dashboard";
 import { useSession } from "@/lib/auth-client";
 
 export default function DashboardPage() {
@@ -16,11 +17,7 @@ export default function DashboardPage() {
   const { data, isLoading, error } = useStudentDashboard();
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F7F9FC]">
-        <Loader2 className="h-8 w-8 animate-spin text-brand-green" />
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   if (error || !data) {

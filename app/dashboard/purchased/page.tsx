@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { FileText, LayoutGrid, List, Loader2, BookX } from "lucide-react";
 import { useStudentDashboard } from "@/hooks/useStudentDashboard";
-import { AvailableCourses } from "@/components/dashboard";
+import { AvailableCourses, DashboardSkeleton } from "@/components/dashboard";
 import { EmptyState } from "@/components/ui/EmptyState";
 
 export default function PurchasedCoursesPage() {
@@ -12,11 +12,7 @@ export default function PurchasedCoursesPage() {
   const { data, isLoading, error } = useStudentDashboard();
 
   if (isLoading) {
-    return (
-      <div className="min-h-[70vh] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-brand-green" />
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   if (error || !data) {
