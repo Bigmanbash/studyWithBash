@@ -40,3 +40,22 @@ export const POST = async (req: Request) => {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 };
+
+export const DELETE = async (req: Request) => {
+  try {
+    await requireAdminSession();
+    const body = await req.json();
+    const { ids } = body;
+    if (!ids || !Array.isArray(ids)) {
+      return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+    }
+    
+    const { deleteCourses } = await import("./mutations");
+    await deleteCourses(ids);
+    
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    if (error.message === "UNAUTHORIZED") return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+};

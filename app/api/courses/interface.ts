@@ -1,6 +1,6 @@
-import type { Course, NewCourse } from "@/lib/neon/schema";
+import type { Course, NewCourse, Topic, NewTopic, Subtopic, NewSubtopic, SubtopicMaterial, NewSubtopicMaterial } from "@/lib/neon/schema";
 
-export type { Course, NewCourse };
+export type { Course, NewCourse, Topic, NewTopic, Subtopic, NewSubtopic, SubtopicMaterial, NewSubtopicMaterial };
 
 export interface CourseListQuery {
   page?: number;
@@ -19,3 +19,15 @@ export interface PaginatedCourses {
   page: number;
   limit: number;
 }
+
+export type TopicWithSubtopics = Topic & {
+  subtopics: SubtopicWithMaterials[];
+};
+
+export type SubtopicWithMaterials = Subtopic & {
+  materials: MaterialWithUrl[];
+};
+
+export type MaterialWithUrl = SubtopicMaterial & {
+  fileUrl?: string; // signed URL
+};

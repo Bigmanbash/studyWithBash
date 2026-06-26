@@ -120,11 +120,11 @@ export function EmbedPDF({
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
       if (e.key === "ArrowRight" || e.key === "ArrowDown") nextPage();
-      if (e.key === "ArrowLeft"  || e.key === "ArrowUp")   prevPage();
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") prevPage();
     };
     window.addEventListener("keydown", h);
     return () => window.removeEventListener("keydown", h);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pageNum, numPages]);
 
   const prevPage = useCallback(() => {
@@ -143,7 +143,7 @@ export function EmbedPDF({
     }
   }, [isLastPage]);
 
-  const handleZoomIn  = () => setZoom((z) => Math.min(z + 15, 200));
+  const handleZoomIn = () => setZoom((z) => Math.min(z + 15, 200));
   const handleZoomOut = () => setZoom((z) => Math.max(z - 15, 50));
 
   const toggleFullscreen = useCallback(async () => {

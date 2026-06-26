@@ -23,7 +23,8 @@ import Link from "next/link";
 import { fetchCourses } from "@/app/api/courses";
 import type { Course } from "@/app/api/courses";
 import { Pagination } from "@/components/ui/pagination";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Trash2, AlertTriangle, Check } from "lucide-react";
 
 type CourseStatus = "active" | "draft" | "all";
 
@@ -32,6 +33,10 @@ const AdminCoursesPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const queryClient = useQueryClient();
   
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -64,6 +69,47 @@ const AdminCoursesPage = () => {
     { label: "Draft Courses", value: draftCount.toString(), icon: EyeOff, color: "text-[#98A2B3]", bg: "bg-neutral-100" },
     { label: "Total Students", value: "0", icon: Users, color: "text-purple-500", bg: "bg-purple-500/10" },
   ];
+
+  const toggleSelection = (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const newSet = new Set(selectedIds);
+    if (newSet.has(id)) newSet.delete(id);
+    else newSet.add(id);
+    setSelectedIds(newSet);
+  };
+
+  const handleSelectAll = () => {
+    if (selectedIds.size === courses.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(courses.map((c: Course) => c.id)));
+    }
+  };
+
+  const executeDelete = async () => {
+    if (selectedIds.size === 0) return;
+    setIsDeleting(true);
+    try {
+      const res = await fetch("/api/courses", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: Array.from(selectedIds) })
+      });
+      if (res.ok) {
+        setSelectedIds(new Set());
+        setShowDeleteModal(false);
+        queryClient.invalidateQueries({ queryKey: ['admin-courses'] });
+      } else {
+        alert("Failed to delete courses");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Error deleting courses");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <>
@@ -174,18 +220,40 @@ const AdminCoursesPage = () => {
           </div>
         ) : (
           <>
+            <div className="flex items-center justify-between mb-4 px-1">
+              <button 
+                onClick={handleSelectAll}
+                className="text-xs font-semibold text-[#676E85] hover:text-[#0A1B39] transition-colors"
+              >
+                {selectedIds.size === courses.length && courses.length > 0 ? "Deselect All" : "Select All"}
+              </button>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-              {courses.map((course) => (
-                <Link
-                  href={`/admin/dashboard/courses/${course.id}`}
-                  key={course.id}
-                  className={cn(
-                    "bg-white rounded-2xl sm:rounded-3xl border shadow-sm hover:shadow-md transition-all duration-200 group overflow-hidden block",
-                    course.status === "draft"
-                      ? "border-neutral-200 opacity-75 hover:opacity-100"
-                      : "border-neutral-100"
-                  )}
-                >
+              {courses.map((course: Course) => (
+                <div key={course.id} className="relative group">
+                  {/* Selection Checkbox */}
+                  <button
+                    onClick={(e) => toggleSelection(e, course.id)}
+                    className={cn(
+                      "absolute top-5 right-5 z-20 w-5 h-5 rounded border flex items-center justify-center transition-colors",
+                      selectedIds.has(course.id) 
+                        ? "bg-[#17A546] border-[#17A546]" 
+                        : "bg-white border-neutral-300 opacity-0 group-hover:opacity-100 hover:border-[#17A546]"
+                    )}
+                  >
+                    {selectedIds.has(course.id) && <Check className="w-3.5 h-3.5 text-white" />}
+                  </button>
+
+                  <Link
+                    href={`/admin/dashboard/courses/${course.id}`}
+                    className={cn(
+                      "bg-white rounded-2xl sm:rounded-3xl border shadow-sm hover:shadow-md transition-all duration-200 block overflow-hidden",
+                      course.status === "draft"
+                        ? "border-neutral-200 opacity-75 hover:opacity-100"
+                        : "border-neutral-100",
+                      selectedIds.has(course.id) && "ring-2 ring-[#17A546] border-transparent"
+                    )}
+                  >
                   {/* Color Strip */}
                   <div className={`h-1.5 bg-[#17A546]`} />
 
@@ -207,8 +275,16 @@ const AdminCoursesPage = () => {
                           </p>
                         </div>
                       </div>
-                      <button className="h-8 w-8 rounded-lg hover:bg-neutral-100 flex items-center justify-center transition-colors opacity-0 group-hover:opacity-100">
-                        <MoreHorizontal className="h-4 w-4 text-[#98A2B3]" />
+                      <button 
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setSelectedIds(new Set([course.id]));
+                          setShowDeleteModal(true);
+                        }}
+                        className="h-8 w-8 rounded-lg hover:bg-red-50 text-[#98A2B3] hover:text-red-500 flex items-center justify-center transition-colors opacity-0 group-hover:opacity-100 z-10 mr-7"
+                      >
+                        <Trash2 className="h-4 w-4" />
                       </button>
                     </div>
 
@@ -268,7 +344,8 @@ const AdminCoursesPage = () => {
                       </span>
                     </div>
                   </div>
-                </Link>
+                  </Link>
+                </div>
               ))}
             </div>
 
@@ -285,6 +362,58 @@ const AdminCoursesPage = () => {
           </>
         )}
       </div>
+
+      {/* Floating Action Bar */}
+      {selectedIds.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-[#0A1B39] text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-5 animate-in slide-in-from-bottom-8 fade-in duration-300">
+          <span className="text-sm font-semibold whitespace-nowrap">{selectedIds.size} selected</span>
+          <div className="w-px h-5 bg-white/20" />
+          <button 
+            onClick={() => setShowDeleteModal(true)}
+            className="text-sm font-bold text-red-400 hover:text-red-300 transition-colors flex items-center gap-1.5 whitespace-nowrap"
+          >
+            <Trash2 className="w-4 h-4" /> Delete
+          </button>
+          <button 
+            onClick={() => setSelectedIds(new Set())}
+            className="p-1 hover:bg-white/10 rounded-md transition-colors ml-2"
+          >
+            <XCircle className="w-5 h-5 text-neutral-400" />
+          </button>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0A1B39]/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-sm w-full shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center mb-5 mx-auto">
+              <AlertTriangle className="w-6 h-6 text-red-500" />
+            </div>
+            <h3 className="text-xl font-bold text-[#0A1B39] text-center mb-2">Delete Course{selectedIds.size > 1 ? "s" : ""}</h3>
+            <p className="text-[13px] text-[#676E85] text-center mb-8 leading-relaxed">
+              Are you sure you want to delete {selectedIds.size} selected course{selectedIds.size > 1 ? "s" : ""}? This action cannot be undone and will permanently remove all related content.
+            </p>
+            <div className="flex gap-3">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowDeleteModal(false)}
+                className="flex-1 rounded-xl h-11 font-semibold border-neutral-200 text-[#0A1B39] hover:bg-neutral-50"
+                disabled={isDeleting}
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={executeDelete}
+                className="flex-1 rounded-xl h-11 font-bold bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/20"
+                disabled={isDeleting}
+              >
+                {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Yes, Delete"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

@@ -12,6 +12,7 @@ import { useAdminStore } from "@/store/adminStore";
 import { useQuery } from "@tanstack/react-query";
 import { use, useEffect } from "react";
 import { SUBJECT_BRAND_COLORS, SUBJECTS } from "@/lib/constants";
+import { TopicManager } from "@/components/admin/TopicManager";
 
 const EditCoursePage = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);
@@ -28,11 +29,9 @@ const EditCoursePage = ({ params }: { params: Promise<{ id: string }> }) => {
     term: "first" as "first" | "second" | "third" | "",
   });
 
-  const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [coverImage, setCoverImage] = useState<File | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  const pdfInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
 
   const [activeTab, setActiveTab] = useState<"details" | "content">("details");
@@ -81,9 +80,8 @@ const EditCoursePage = ({ params }: { params: Promise<{ id: string }> }) => {
     { name: "Orange", class: "bg-orange-500" },
   ];
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: "pdf" | "image") => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: "image") => {
     if (e.target.files && e.target.files[0]) {
-      if (type === "pdf") setPdfFile(e.target.files[0]);
       if (type === "image") setCoverImage(e.target.files[0]);
     }
   };
@@ -137,18 +135,11 @@ const EditCoursePage = ({ params }: { params: Promise<{ id: string }> }) => {
 
       // Handle file uploads to Supabase Storage
       let uploadedCoverPath = "/img/hero_section.png";
-      let uploadedPdfPath = null;
 
       if (coverImage) {
         const coverExt = coverImage.name.split('.').pop();
         const coverFilename = `cover-${Date.now()}.${coverExt}`;
         uploadedCoverPath = await uploadFile(coverFilename, coverImage);
-      }
-
-      if (pdfFile) {
-        const pdfExt = pdfFile.name.split('.').pop();
-        const pdfFilename = `pdf-${Date.now()}.${pdfExt}`;
-        uploadedPdfPath = await uploadFile(pdfFilename, pdfFile);
       }
 
       // Assuming API expects a NewCourse payload
@@ -167,9 +158,6 @@ const EditCoursePage = ({ params }: { params: Promise<{ id: string }> }) => {
 
       if (uploadedCoverPath !== "/img/hero_section.png") {
         payload.coverImagePath = uploadedCoverPath;
-      }
-      if (uploadedPdfPath) {
-        payload.pdfPath = uploadedPdfPath;
       }
 
       await updateCourseRequest(id, payload);
@@ -509,64 +497,9 @@ const EditCoursePage = ({ params }: { params: Promise<{ id: string }> }) => {
                 </div>
               </div>
 
-              {/* PDF Document Upload */}
-              <div className="bg-white p-6 sm:p-8 rounded-xl border border-neutral-200 shadow-sm">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <label className="block text-sm font-bold text-[#0A1B39]">PDF Course Material</label>
-                    <p className="text-xs text-[#676E85] mt-1">Upload the main PDF document for this course.</p>
-                  </div>
-                  <FileText className="h-5 w-5 text-neutral-400" />
-                </div>
-
-                <div 
-                  className={`border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center text-center transition-colors ${
-                    pdfFile ? "border-[#17A546]/50 bg-[#17A546]/5" : "border-neutral-200 hover:border-[#17A546]/30 hover:bg-neutral-50/50"
-                  }`}
-                >
-                  <input
-                    type="file"
-                    accept="application/pdf"
-                    className="hidden"
-                    ref={pdfInputRef}
-                    onChange={(e) => handleFileChange(e, "pdf")}
-                  />
-                  
-                  {pdfFile ? (
-                    <div className="flex flex-col items-center gap-3 w-full">
-                      <div className="h-12 w-12 rounded-full bg-[#17A546]/10 flex items-center justify-center">
-                        <FileIcon className="h-6 w-6 text-[#17A546]" />
-                      </div>
-                      <div className="min-w-0 px-4">
-                        <p className="text-sm font-medium text-[#0A1B39] truncate max-w-[200px]">{pdfFile.name}</p>
-                        <p className="text-xs text-[#676E85] mt-0.5">{(pdfFile.size / 1024 / 1024).toFixed(2)} MB</p>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setPdfFile(null)}
-                        className="mt-2 text-red-500 hover:text-red-600 hover:bg-red-50 border-red-100"
-                      >
-                        <X className="h-3 w-3 mr-1.5" /> Remove PDF
-                      </Button>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="h-12 w-12 rounded-full bg-neutral-100 flex items-center justify-center mb-4">
-                        <UploadCloud className="h-6 w-6 text-neutral-400" />
-                      </div>
-                      <p className="text-sm font-medium text-[#0A1B39] mb-1">Click to upload PDF</p>
-                      <p className="text-xs text-[#676E85] mb-4">PDF documents only (max. 50MB)</p>
-                      <Button
-                        variant="outline"
-                        onClick={() => pdfInputRef.current?.click()}
-                        className="border-neutral-200 text-[#0A1B39] font-medium"
-                      >
-                        Select PDF
-                      </Button>
-                    </>
-                  )}
-                </div>
+              {/* Topic & Subtopic Manager */}
+              <div className="md:col-span-2">
+                <TopicManager courseId={id} />
               </div>
             </div>
           )}

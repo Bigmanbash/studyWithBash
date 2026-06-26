@@ -1,6 +1,6 @@
 import { db } from "@/lib/neon";
 import { courses } from "@/lib/neon/schema";
-import { eq, and, isNull } from "drizzle-orm";
+import { eq, and, isNull, inArray } from "drizzle-orm";
 import type { NewCourse, Course } from "./interface";
 
 export async function createCourse(data: NewCourse): Promise<Course> {
@@ -25,11 +25,37 @@ export async function createCourse(data: NewCourse): Promise<Course> {
     throw new Error("A course with this category, subject, level, and term already exists.");
   }
 
+  // Ensure slug is unique
+  let baseSlug = data.slug;
+  let currentSlug = baseSlug;
+  let counter = 1;
+  while (true) {
+    const existingSlug = await db.select().from(courses).where(eq(courses.slug, currentSlug)).limit(1);
+    if (existingSlug.length === 0) break;
+    currentSlug = `${baseSlug}-${counter}`;
+    counter++;
+  }
+  data.slug = currentSlug;
+
   const result = await db.insert(courses).values(data).returning();
   return result[0];
 }
 
 export async function updateCourse(id: string, data: Partial<NewCourse>): Promise<Course> {
+  // Ensure slug is unique if it's being updated
+  if (data.slug) {
+    let baseSlug = data.slug;
+    let currentSlug = baseSlug;
+    let counter = 1;
+    while (true) {
+      const existingSlug = await db.select().from(courses).where(eq(courses.slug, currentSlug)).limit(1);
+      if (existingSlug.length === 0 || existingSlug[0].id === id) break;
+      currentSlug = `${baseSlug}-${counter}`;
+      counter++;
+    }
+    data.slug = currentSlug;
+  }
+
   const result = await db
     .update(courses)
     .set({ ...data, updatedAt: new Date() })
@@ -41,8 +67,10 @@ export async function updateCourse(id: string, data: Partial<NewCourse>): Promis
 }
 
 export async function deleteCourse(id: string): Promise<void> {
-  // We'll do a hard delete for now as per Drizzle defaults for cascade if any,
-  // or a soft delete if the user adds a deleted_at column later.
-  // There is no soft delete flag in schema, so hard delete.
   await db.delete(courses).where(eq(courses.id, id));
+}
+
+export async function deleteCourses(ids: string[]): Promise<void> {
+  if (ids.length === 0) return;
+  await db.delete(courses).where(inArray(courses.id, ids));
 }
