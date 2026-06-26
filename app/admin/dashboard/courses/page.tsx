@@ -37,7 +37,7 @@ const AdminCoursesPage = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const queryClient = useQueryClient();
-  
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchQuery);
@@ -47,8 +47,8 @@ const AdminCoursesPage = () => {
 
   const { data: queryData, isLoading } = useQuery({
     queryKey: ['admin-courses', page, activeTab, debouncedSearch],
-    queryFn: () => fetchCourses({ 
-      page, 
+    queryFn: () => fetchCourses({
+      page,
       limit: 10,
       search: debouncedSearch || undefined,
       status: activeTab === "all" ? undefined : activeTab
@@ -221,11 +221,17 @@ const AdminCoursesPage = () => {
         ) : (
           <>
             <div className="flex items-center justify-between mb-4 px-1">
-              <button 
+              <button
                 onClick={handleSelectAll}
-                className="text-xs font-semibold text-[#676E85] hover:text-[#0A1B39] transition-colors"
+                className="flex items-center gap-2 text-sm font-semibold text-[#0A1B39] hover:bg-neutral-50 transition-colors bg-white border border-neutral-200 px-3.5 py-2 rounded-xl shadow-sm"
               >
-                {selectedIds.size === courses.length && courses.length > 0 ? "Deselect All" : "Select All"}
+                <div className={cn(
+                  "w-4 h-4 rounded flex items-center justify-center transition-colors",
+                  selectedIds.size === courses.length && courses.length > 0 ? "bg-[#17A546]" : "bg-neutral-200"
+                )}>
+                  {selectedIds.size === courses.length && courses.length > 0 && <Check className="w-3 h-3 text-white" />}
+                </div>
+                {selectedIds.size === courses.length && courses.length > 0 ? "Deselect All" : "Bulk Select"}
               </button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
@@ -236,8 +242,8 @@ const AdminCoursesPage = () => {
                     onClick={(e) => toggleSelection(e, course.id)}
                     className={cn(
                       "absolute top-5 right-5 z-20 w-5 h-5 rounded border flex items-center justify-center transition-colors",
-                      selectedIds.has(course.id) 
-                        ? "bg-[#17A546] border-[#17A546]" 
+                      selectedIds.has(course.id)
+                        ? "bg-[#17A546] border-[#17A546]"
                         : "bg-white border-neutral-300 opacity-0 group-hover:opacity-100 hover:border-[#17A546]"
                     )}
                   >
@@ -254,96 +260,96 @@ const AdminCoursesPage = () => {
                       selectedIds.has(course.id) && "ring-2 ring-[#17A546] border-transparent"
                     )}
                   >
-                  {/* Color Strip */}
-                  <div className={`h-1.5 bg-[#17A546]`} />
+                    {/* Color Strip */}
+                    <div className={`h-1.5 bg-[#17A546]`} />
 
-                  <div className="p-5 sm:p-6">
-                    {/* Header */}
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`h-11 w-11 rounded-xl bg-[#17A546] flex items-center justify-center text-white font-bold text-sm`}
+                    <div className="p-5 sm:p-6">
+                      {/* Header */}
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`h-11 w-11 rounded-xl bg-[#17A546] flex items-center justify-center text-white font-bold text-sm`}
+                          >
+                            {course.subject[0]}
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-bold text-[#0A1B39] group-hover:text-[#17A546] transition-colors truncate max-w-[140px]">
+                              {course.title}
+                            </h4>
+                            <p className="text-xs text-[#98A2B3] mt-0.5">
+                              {course.category} · {course.level || "N/A"}
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setSelectedIds(new Set([course.id]));
+                            setShowDeleteModal(true);
+                          }}
+                          className="h-8 w-8 rounded-lg hover:bg-red-50 text-[#98A2B3] hover:text-red-500 flex items-center justify-center transition-colors opacity-0 group-hover:opacity-100 z-10 mr-7"
                         >
-                          {course.subject[0]}
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+
+                      {/* Status Badge */}
+                      <div className="mb-4">
+                        {course.status === "active" ? (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-full bg-[#E7F6EC] text-[#0E7B33]">
+                            <CheckCircle2 className="h-3 w-3" />
+                            Active
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-full bg-neutral-100 text-[#676E85]">
+                            <XCircle className="h-3 w-3" />
+                            Draft
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Metrics */}
+                      <div className="grid grid-cols-3 gap-3 mb-4">
+                        <div>
+                          <p className="text-xs text-[#98A2B3]">Students</p>
+                          <p className="text-sm font-bold text-[#0A1B39] mt-0.5">
+                            0
+                          </p>
                         </div>
                         <div>
-                          <h4 className="text-sm font-bold text-[#0A1B39] group-hover:text-[#17A546] transition-colors truncate max-w-[140px]">
-                            {course.title}
-                          </h4>
-                          <p className="text-xs text-[#98A2B3] mt-0.5">
-                            {course.category} · {course.level || "N/A"}
+                          <p className="text-xs text-[#98A2B3]">Revenue</p>
+                          <p className="text-sm font-bold text-[#0A1B39] mt-0.5">
+                            ₦0
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-[#98A2B3]">Price</p>
+                          <p className="text-sm font-bold text-[#0A1B39] mt-0.5">
+                            ₦{(course.price / 100).toLocaleString()}
                           </p>
                         </div>
                       </div>
-                      <button 
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setSelectedIds(new Set([course.id]));
-                          setShowDeleteModal(true);
-                        }}
-                        className="h-8 w-8 rounded-lg hover:bg-red-50 text-[#98A2B3] hover:text-red-500 flex items-center justify-center transition-colors opacity-0 group-hover:opacity-100 z-10 mr-7"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
 
-                    {/* Status Badge */}
-                    <div className="mb-4">
-                      {course.status === "active" ? (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-full bg-[#E7F6EC] text-[#0E7B33]">
-                          <CheckCircle2 className="h-3 w-3" />
-                          Active
+                      {/* Progress Bar (Removed for actual usage unless calculated) */}
+                      <div className="w-full bg-neutral-100 h-1.5 rounded-full overflow-hidden mb-3">
+                        <div
+                          className={`h-full rounded-full transition-all duration-700 bg-neutral-300`}
+                          style={{ width: `0%` }}
+                        />
+                      </div>
+
+                      {/* Footer */}
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] text-[#98A2B3] flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          Updated {new Date(course.updatedAt).toLocaleDateString()}
                         </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-full bg-neutral-100 text-[#676E85]">
-                          <XCircle className="h-3 w-3" />
-                          Draft
+                        <span className="text-xs font-semibold text-[#17A546] flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                          View <ArrowUpRight className="h-3 w-3" />
                         </span>
-                      )}
-                    </div>
-
-                    {/* Metrics */}
-                    <div className="grid grid-cols-3 gap-3 mb-4">
-                      <div>
-                        <p className="text-xs text-[#98A2B3]">Students</p>
-                        <p className="text-sm font-bold text-[#0A1B39] mt-0.5">
-                          0
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-[#98A2B3]">Revenue</p>
-                        <p className="text-sm font-bold text-[#0A1B39] mt-0.5">
-                          ₦0
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-[#98A2B3]">Price</p>
-                        <p className="text-sm font-bold text-[#0A1B39] mt-0.5">
-                          ₦{(course.price / 100).toLocaleString()}
-                        </p>
                       </div>
                     </div>
-
-                    {/* Progress Bar (Removed for actual usage unless calculated) */}
-                    <div className="w-full bg-neutral-100 h-1.5 rounded-full overflow-hidden mb-3">
-                      <div
-                        className={`h-full rounded-full transition-all duration-700 bg-neutral-300`}
-                        style={{ width: `0%` }}
-                      />
-                    </div>
-
-                    {/* Footer */}
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] text-[#98A2B3] flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        Updated {new Date(course.updatedAt).toLocaleDateString()}
-                      </span>
-                      <span className="text-xs font-semibold text-[#17A546] flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
-                        View <ArrowUpRight className="h-3 w-3" />
-                      </span>
-                    </div>
-                  </div>
                   </Link>
                 </div>
               ))}
@@ -368,13 +374,13 @@ const AdminCoursesPage = () => {
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-[#0A1B39] text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-5 animate-in slide-in-from-bottom-8 fade-in duration-300">
           <span className="text-sm font-semibold whitespace-nowrap">{selectedIds.size} selected</span>
           <div className="w-px h-5 bg-white/20" />
-          <button 
+          <button
             onClick={() => setShowDeleteModal(true)}
             className="text-sm font-bold text-red-400 hover:text-red-300 transition-colors flex items-center gap-1.5 whitespace-nowrap"
           >
             <Trash2 className="w-4 h-4" /> Delete
           </button>
-          <button 
+          <button
             onClick={() => setSelectedIds(new Set())}
             className="p-1 hover:bg-white/10 rounded-md transition-colors ml-2"
           >
@@ -386,7 +392,7 @@ const AdminCoursesPage = () => {
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0A1B39]/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-sm w-full shadow-2xl animate-in zoom-in-95 duration-200">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 w-full shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center mb-5 mx-auto">
               <AlertTriangle className="w-6 h-6 text-red-500" />
             </div>
@@ -395,15 +401,15 @@ const AdminCoursesPage = () => {
               Are you sure you want to delete {selectedIds.size} selected course{selectedIds.size > 1 ? "s" : ""}? This action cannot be undone and will permanently remove all related content.
             </p>
             <div className="flex gap-3">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => setShowDeleteModal(false)}
                 className="flex-1 rounded-xl h-11 font-semibold border-neutral-200 text-[#0A1B39] hover:bg-neutral-50"
                 disabled={isDeleting}
               >
                 Cancel
               </Button>
-              <Button 
+              <Button
                 onClick={executeDelete}
                 className="flex-1 rounded-xl h-11 font-bold bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/20"
                 disabled={isDeleting}
