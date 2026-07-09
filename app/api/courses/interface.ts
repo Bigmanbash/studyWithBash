@@ -13,8 +13,13 @@ export interface CourseListQuery {
   status?: "active" | "draft";
 }
 
+export type CourseWithStats = Course & {
+  revenue?: number;
+  studentsCount?: number;
+};
+
 export interface PaginatedCourses {
-  data: Course[];
+  data: CourseWithStats[];
   total: number;
   page: number;
   limit: number;

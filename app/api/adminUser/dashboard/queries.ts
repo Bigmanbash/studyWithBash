@@ -83,3 +83,63 @@ export async function getRevenueOverview(): Promise<RevenueData[]> {
     }))
     .reverse();
 }
+
+export interface RecentPaymentData {
+  student: string;
+  initials: string;
+  course: string;
+  amount: string;
+  status: "pending" | "approved" | "rejected";
+  time: string;
+}
+
+function timeAgo(date: Date): string {
+  const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+  let interval = seconds / 31536000;
+  if (interval > 1) return Math.floor(interval) + " years ago";
+  interval = seconds / 2592000;
+  if (interval > 1) return Math.floor(interval) + " months ago";
+  interval = seconds / 86400;
+  if (interval > 1) return Math.floor(interval) + " days ago";
+  interval = seconds / 3600;
+  if (interval > 1) return Math.floor(interval) + " hours ago";
+  interval = seconds / 60;
+  if (interval > 1) return Math.floor(interval) + " minutes ago";
+  return Math.floor(seconds) + " seconds ago";
+}
+
+export async function getRecentPayments(): Promise<RecentPaymentData[]> {
+  const result = await db
+    .select({
+      studentName: user.name,
+      courseSubject: courses.subject,
+      courseLevel: courses.level,
+      amount: payments.amount,
+      status: payments.status,
+      submittedAt: payments.submittedAt,
+    })
+    .from(payments)
+    .innerJoin(user, eq(payments.userId, user.id))
+    .innerJoin(courses, eq(payments.courseId, courses.id))
+    .orderBy(sql`${payments.submittedAt} DESC`)
+    .limit(5);
+
+  return result.map((r) => {
+    const name = r.studentName || "Unknown User";
+    const initials = name
+      .split(/\s+/)
+      .map((n) => n[0])
+      .join("")
+      .substring(0, 2)
+      .toUpperCase();
+
+    return {
+      student: name,
+      initials,
+      course: `${r.courseSubject} (${r.courseLevel || "N/A"})`,
+      amount: `₦${(r.amount / 100).toLocaleString()}`,
+      status: r.status as "pending" | "approved" | "rejected",
+      time: timeAgo(r.submittedAt),
+    };
+  });
+}

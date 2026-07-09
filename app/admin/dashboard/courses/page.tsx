@@ -21,7 +21,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { fetchCourses } from "@/app/api/courses";
-import type { Course } from "@/app/api/courses";
+import type { Course, CourseWithStats } from "@/app/api/courses/interface";
 import { Pagination } from "@/components/ui/pagination";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Trash2, AlertTriangle, Check } from "lucide-react";
@@ -235,124 +235,137 @@ const AdminCoursesPage = () => {
               </button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-              {courses.map((course: Course) => (
-                <div key={course.id} className="relative group">
-                  {/* Selection Checkbox */}
-                  <button
-                    onClick={(e) => toggleSelection(e, course.id)}
-                    className={cn(
-                      "absolute top-5 right-5 z-20 w-5 h-5 rounded border flex items-center justify-center transition-colors",
-                      selectedIds.has(course.id)
-                        ? "bg-[#17A546] border-[#17A546]"
-                        : "bg-white border-neutral-300 opacity-0 group-hover:opacity-100 hover:border-[#17A546]"
-                    )}
-                  >
-                    {selectedIds.has(course.id) && <Check className="w-3.5 h-3.5 text-white" />}
-                  </button>
+              {courses.map((course: CourseWithStats) => {
+                const colors = [
+                  { bg: "bg-[#17A546]", text: "text-[#17A546]", ring: "ring-[#17A546]" },
+                  { bg: "bg-blue-500", text: "text-blue-500", ring: "ring-blue-500" },
+                  { bg: "bg-purple-500", text: "text-purple-500", ring: "ring-purple-500" },
+                  { bg: "bg-amber-500", text: "text-amber-500", ring: "ring-amber-500" },
+                  { bg: "bg-rose-500", text: "text-rose-500", ring: "ring-rose-500" },
+                  { bg: "bg-indigo-500", text: "text-indigo-500", ring: "ring-indigo-500" },
+                ];
+                const hash = course.id.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+                const theme = colors[hash % colors.length];
 
-                  <Link
-                    href={`/admin/dashboard/courses/${course.id}`}
-                    className={cn(
-                      "bg-white rounded-2xl sm:rounded-3xl border shadow-sm hover:shadow-md transition-all duration-200 block overflow-hidden",
-                      course.status === "draft"
-                        ? "border-neutral-200 opacity-75 hover:opacity-100"
-                        : "border-neutral-100",
-                      selectedIds.has(course.id) && "ring-2 ring-[#17A546] border-transparent"
-                    )}
-                  >
-                    {/* Color Strip */}
-                    <div className={`h-1.5 bg-[#17A546]`} />
+                return (
+                  <div key={course.id} className="relative group">
+                    {/* Selection Checkbox */}
+                    <button
+                      onClick={(e) => toggleSelection(e, course.id)}
+                      className={cn(
+                        "absolute top-5 right-5 z-20 w-5 h-5 rounded border flex items-center justify-center transition-colors",
+                        selectedIds.has(course.id)
+                          ? "bg-[#17A546] border-[#17A546]"
+                          : "bg-white border-neutral-300 opacity-0 group-hover:opacity-100 hover:border-[#17A546]"
+                      )}
+                    >
+                      {selectedIds.has(course.id) && <Check className="w-3.5 h-3.5 text-white" />}
+                    </button>
 
-                    <div className="p-5 sm:p-6">
-                      {/* Header */}
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={`h-11 w-11 rounded-xl bg-[#17A546] flex items-center justify-center text-white font-bold text-sm`}
+                    <Link
+                      href={`/admin/dashboard/courses/${course.id}`}
+                      className={cn(
+                        "bg-white rounded-2xl sm:rounded-3xl border shadow-sm hover:shadow-md transition-all duration-200 block overflow-hidden",
+                        course.status === "draft"
+                          ? "border-neutral-200 opacity-75 hover:opacity-100"
+                          : "border-neutral-100",
+                        selectedIds.has(course.id) && `ring-2 ${theme.ring} border-transparent`
+                      )}
+                    >
+                      {/* Color Strip */}
+                      <div className={`h-1.5 ${theme.bg}`} />
+
+                      <div className="p-5 sm:p-6">
+                        {/* Header */}
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={`h-11 w-11 rounded-xl ${theme.bg} flex items-center justify-center text-white font-bold text-sm`}
+                            >
+                              {course.subject[0]}
+                            </div>
+                            <div>
+                              <h4 className={`text-sm font-bold text-[#0A1B39] group-hover:${theme.text} transition-colors truncate max-w-[140px]`}>
+                                {course.title}
+                              </h4>
+                              <p className="text-xs text-[#98A2B3] mt-0.5">
+                                {course.category} · {course.level || "N/A"}
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setSelectedIds(new Set([course.id]));
+                              setShowDeleteModal(true);
+                            }}
+                            className="h-8 w-8 rounded-lg hover:bg-red-50 text-[#98A2B3] hover:text-red-500 flex items-center justify-center transition-colors opacity-0 group-hover:opacity-100 z-10 mr-7"
                           >
-                            {course.subject[0]}
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+
+                        {/* Status Badge */}
+                        <div className="mb-4">
+                          {course.status === "active" ? (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-full bg-[#E7F6EC] text-[#0E7B33]">
+                              <CheckCircle2 className="h-3 w-3" />
+                              Active
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-full bg-neutral-100 text-[#676E85]">
+                              <XCircle className="h-3 w-3" />
+                              Draft
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Metrics */}
+                        <div className="grid grid-cols-3 gap-3 mb-4">
+                          <div>
+                            <p className="text-xs text-[#98A2B3]">Students</p>
+                            <p className="text-sm font-bold text-[#0A1B39] mt-0.5">
+                              {course.studentsCount || 0}
+                            </p>
                           </div>
                           <div>
-                            <h4 className="text-sm font-bold text-[#0A1B39] group-hover:text-[#17A546] transition-colors truncate max-w-[140px]">
-                              {course.title}
-                            </h4>
-                            <p className="text-xs text-[#98A2B3] mt-0.5">
-                              {course.category} · {course.level || "N/A"}
+                            <p className="text-xs text-[#98A2B3]">Revenue</p>
+                            <p className="text-sm font-bold text-[#0A1B39] mt-0.5">
+                              ₦{((course.revenue || 0) / 100).toLocaleString()}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-[#98A2B3]">Price</p>
+                            <p className="text-sm font-bold text-[#0A1B39] mt-0.5">
+                              ₦{(course.price / 100).toLocaleString()}
                             </p>
                           </div>
                         </div>
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setSelectedIds(new Set([course.id]));
-                            setShowDeleteModal(true);
-                          }}
-                          className="h-8 w-8 rounded-lg hover:bg-red-50 text-[#98A2B3] hover:text-red-500 flex items-center justify-center transition-colors opacity-0 group-hover:opacity-100 z-10 mr-7"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
 
-                      {/* Status Badge */}
-                      <div className="mb-4">
-                        {course.status === "active" ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-full bg-[#E7F6EC] text-[#0E7B33]">
-                            <CheckCircle2 className="h-3 w-3" />
-                            Active
+                        {/* Progress Bar (Removed for actual usage unless calculated) */}
+                        <div className="w-full bg-neutral-100 h-1.5 rounded-full overflow-hidden mb-3">
+                          <div
+                            className={`h-full rounded-full transition-all duration-700 bg-neutral-300`}
+                            style={{ width: `0%` }}
+                          />
+                        </div>
+
+                        {/* Footer */}
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] text-[#98A2B3] flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            Updated {new Date(course.updatedAt).toLocaleDateString()}
                           </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-full bg-neutral-100 text-[#676E85]">
-                            <XCircle className="h-3 w-3" />
-                            Draft
+                          <span className="text-xs font-semibold text-[#17A546] flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                            View <ArrowUpRight className="h-3 w-3" />
                           </span>
-                        )}
-                      </div>
-
-                      {/* Metrics */}
-                      <div className="grid grid-cols-3 gap-3 mb-4">
-                        <div>
-                          <p className="text-xs text-[#98A2B3]">Students</p>
-                          <p className="text-sm font-bold text-[#0A1B39] mt-0.5">
-                            0
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-[#98A2B3]">Revenue</p>
-                          <p className="text-sm font-bold text-[#0A1B39] mt-0.5">
-                            ₦0
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-[#98A2B3]">Price</p>
-                          <p className="text-sm font-bold text-[#0A1B39] mt-0.5">
-                            ₦{(course.price / 100).toLocaleString()}
-                          </p>
                         </div>
                       </div>
-
-                      {/* Progress Bar (Removed for actual usage unless calculated) */}
-                      <div className="w-full bg-neutral-100 h-1.5 rounded-full overflow-hidden mb-3">
-                        <div
-                          className={`h-full rounded-full transition-all duration-700 bg-neutral-300`}
-                          style={{ width: `0%` }}
-                        />
-                      </div>
-
-                      {/* Footer */}
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] text-[#98A2B3] flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          Updated {new Date(course.updatedAt).toLocaleDateString()}
-                        </span>
-                        <span className="text-xs font-semibold text-[#17A546] flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
-                          View <ArrowUpRight className="h-3 w-3" />
-                        </span>
-                      </div>
-                    </div>
-                  </Link>
-                </div>
-              ))}
+                    </Link>
+                  </div>
+                )
+              })}
             </div>
 
             {/* Pagination */}
@@ -392,7 +405,7 @@ const AdminCoursesPage = () => {
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0A1B39]/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 w-full shadow-2xl animate-in zoom-in-95 duration-200">
+          <div className="bg-white rounded-md p-6 sm:p-8 w-full shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center mb-5 mx-auto">
               <AlertTriangle className="w-6 h-6 text-red-500" />
             </div>
@@ -404,14 +417,14 @@ const AdminCoursesPage = () => {
               <Button
                 variant="outline"
                 onClick={() => setShowDeleteModal(false)}
-                className="flex-1 rounded-xl h-11 font-semibold border-neutral-200 text-[#0A1B39] hover:bg-neutral-50"
+                className="flex-1 rounded-md h-11 font-semibold border-neutral-200 text-[#0A1B39] hover:bg-neutral-50"
                 disabled={isDeleting}
               >
                 Cancel
               </Button>
               <Button
                 onClick={executeDelete}
-                className="flex-1 rounded-xl h-11 font-bold bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/20"
+                className="flex-1 rounded-md h-11 font-bold bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/20"
                 disabled={isDeleting}
               >
                 {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Yes, Delete"}

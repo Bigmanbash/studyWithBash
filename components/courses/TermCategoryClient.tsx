@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { LayoutGrid, List } from "lucide-react";
 import { CourseCard } from "@/components/dashboard";
+import { useStudentDashboard } from "@/hooks/useStudentDashboard";
 
 interface Course {
   id: string;
@@ -13,6 +14,14 @@ interface Course {
 
 export function TermCategoryClient({ courses }: { courses: Course[] }) {
   const [view, setView] = useState<"grid" | "list">("grid");
+  const { data } = useStudentDashboard();
+  const [purchasedIds, setPurchasedIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (data?.purchased) {
+      setPurchasedIds(new Set(data.purchased.map(c => c.id)));
+    }
+  }, [data?.purchased]);
 
   return (
     <>
@@ -50,7 +59,7 @@ export function TermCategoryClient({ courses }: { courses: Course[] }) {
       {view === "grid" && (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
           {courses.map((course) => (
-            <CourseCard key={course.id} {...course} isPurchased={false} view="grid" />
+            <CourseCard key={course.id} {...course} isPurchased={purchasedIds.has(course.id)} view="grid" />
           ))}
         </div>
       )}
@@ -59,7 +68,7 @@ export function TermCategoryClient({ courses }: { courses: Course[] }) {
       {view === "list" && (
         <div className="divide-y divide-neutral-100">
           {courses.map((course) => (
-            <CourseCard key={course.id} {...course} isPurchased={false} view="list" />
+            <CourseCard key={course.id} {...course} isPurchased={purchasedIds.has(course.id)} view="list" />
           ))}
         </div>
       )}

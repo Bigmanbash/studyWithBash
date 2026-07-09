@@ -1,6 +1,6 @@
 import { db } from "@/lib/neon";
-import { courses } from "@/lib/neon/schema";
-import { eq, ilike, and, or, count } from "drizzle-orm";
+import { courses, payments } from "@/lib/neon/schema";
+import { eq, ilike, and, or, count, sum } from "drizzle-orm";
 import type { CourseListQuery, PaginatedCourses, Course } from "./interface";
 import { getSignedUrl } from "@/lib/supabase/storage";
 
@@ -61,11 +61,31 @@ export async function listCourses(query: CourseListQuery = {}): Promise<Paginate
   const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
   const [data, totalCount] = await Promise.all([
-    db.select().from(courses).where(whereClause).limit(limit).offset(offset),
+    db
+      .select({
+        course: courses,
+        revenue: sum(payments.amount).mapWith(Number),
+        studentsCount: count(payments.id),
+      })
+      .from(courses)
+      .leftJoin(payments, and(eq(payments.courseId, courses.id), eq(payments.status, "approved")))
+      .where(whereClause)
+      .groupBy(courses.id)
+      .limit(limit)
+      .offset(offset),
     db.select({ count: count() }).from(courses).where(whereClause),
   ]);
 
-  const processedData = await Promise.all(data.map(processCourseUrls));
+  const processedData = await Promise.all(
+    data.map(async (row) => {
+      const processedCourse = await processCourseUrls(row.course);
+      return {
+        ...processedCourse,
+        revenue: row.revenue || 0,
+        studentsCount: row.studentsCount || 0,
+      };
+    })
+  );
 
   return {
     data: processedData,

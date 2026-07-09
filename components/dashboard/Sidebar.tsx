@@ -10,11 +10,12 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useSession } from "@/lib/auth-client";
 import { authClient } from "@/lib/auth-client";
+import { useStudentDashboard } from "@/hooks/useStudentDashboard";
 
 const terms = [
-  { label: "First Term", href: "first-term", available: true },
-  { label: "Second Term", href: "second-term", available: false },
-  { label: "Third Term", href: "third-term", available: false },
+  { label: "First Term", href: "first-term" },
+  { label: "Second Term", href: "second-term" },
+  { label: "Third Term", href: "third-term" },
 ];
 
 export function Sidebar() {
@@ -22,6 +23,17 @@ export function Sidebar() {
   const router = useRouter();
 
   const { data: session } = useSession();
+  const { data: dashboardData } = useStudentDashboard();
+  const allCourses = [...(dashboardData?.purchased || []), ...(dashboardData?.available || [])];
+
+  const isTermAvailable = (levelId: string, termHref: string) => {
+    // levelId is "sss1", "sss2", "sss3" -> level is "SSS1"
+    const levelMatch = levelId.toUpperCase();
+    // termHref is "first-term" -> term is "first"
+    const termMatch = termHref.split("-")[0];
+    return allCourses.some((c) => c.level === levelMatch && c.term === termMatch);
+  };
+
   // pick first name and last name firt letter eg BA
   const getInitials = (name?: string) => {
     if (!name) return "U";
@@ -85,27 +97,29 @@ export function Sidebar() {
 
         {isExpanded && (
           <div className="pl-9 pr-3 pt-0.5 pb-1 space-y-0.5">
-            {terms.map((term) => (
+            {terms.map((term) => {
+              const available = isTermAvailable(id, term.href);
+              return (
               <div key={term.href} className="flex items-center justify-between py-1.5">
                 <Link
                   href={`/dashboard/courses/${id}/${term.href}`}
                   onClick={() => setIsMobileOpen(false)}
                   className={cn(
                     "text-[12px]",
-                    term.available
+                    available
                       ? "text-[#676E85] hover:text-[#17A546] font-medium"
                       : "text-neutral-300 pointer-events-none"
                   )}
                 >
                   {term.label}
                 </Link>
-                {!term.available && (
-                  <span className="text-[10px] bg-neutral-100 text-neutral-400 px-1.5 py-0.5 rounded-md font-medium">
+                {!available && (
+                  <span className="text-[9px] font-bold tracking-widest uppercase bg-neutral-50 text-neutral-400 px-1.5 py-0.5 rounded shadow-sm border border-neutral-100">
                     Soon
                   </span>
                 )}
               </div>
-            ))}
+            )})}
           </div>
         )}
       </div>

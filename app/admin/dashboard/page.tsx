@@ -1,4 +1,4 @@
-import { getDashboardStats, getEnrollmentOverview, getRevenueOverview } from "@/app/api/adminUser/dashboard/queries";
+import { getDashboardStats, getEnrollmentOverview, getRevenueOverview, getRecentPayments } from "@/app/api/adminUser/dashboard/queries";
 import {
   AdminDashboardHeader,
   AdminStatsCards,
@@ -12,6 +12,7 @@ export default async function AdminDashboardPage() {
   const statsData = await getDashboardStats();
   const enrollmentData = await getEnrollmentOverview();
   const revenueData = await getRevenueOverview();
+  const recentPaymentsData = await getRecentPayments();
 
   return (
     <>
@@ -38,7 +39,7 @@ export default async function AdminDashboardPage() {
 
         {/* Payments + Support Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <RecentPayments />
+          <RecentPayments payments={recentPaymentsData} />
           <SupportOverview />
         </div>
       </div>

@@ -26,11 +26,11 @@ export function Header() {
                     <Link href="/courses" className="text-[#676E85] hover:text-[#0A1B39] transition-colors">
                         Courses
                     </Link>
-                    <Link href="/pricing" className="text-[#676E85] hover:text-[#0A1B39] transition-colors">
-                        Pricing
-                    </Link>
                     <Link href="/about" className="text-[#676E85] hover:text-[#0A1B39] transition-colors">
                         About Us
+                    </Link>
+                    <Link href="/contact_us" className="text-[#676E85] hover:text-[#0A1B39] transition-colors">
+                        Contact
                     </Link>
                 </nav>
 
@@ -48,10 +48,10 @@ export function Header() {
                     </Link>
 
                     {/* Mobile Menu Toggle */}
-                    <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="md:hidden hover:bg-neutral-50 rounded-lg text-[#0A1B39]" 
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="md:hidden hover:bg-neutral-50 rounded-lg text-[#0A1B39]"
                         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                     >
                         {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -64,11 +64,11 @@ export function Header() {
             {isMobileMenuOpen && (
                 <>
                     {/* Backdrop */}
-                    <div 
+                    <div
                         className="md:hidden fixed inset-0 top-[72px] z-40 bg-black/20 backdrop-blur-sm transition-opacity"
                         onClick={() => setIsMobileMenuOpen(false)}
                     />
-                    
+
                     {/* Menu Content */}
                     <div className="md:hidden fixed top-[72px] left-0 w-full z-50 bg-white border-b border-neutral-100 shadow-xl animate-in slide-in-from-top-2 duration-200">
                         <div className="container py-6 flex flex-col gap-2">
