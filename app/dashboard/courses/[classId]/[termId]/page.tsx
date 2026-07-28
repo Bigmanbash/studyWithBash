@@ -32,6 +32,10 @@ export default async function TermCategoryPage({ params }: { params: Promise<{ c
     title: c.title,
     image: c.coverImagePath || "/img/hero_section.png",
     price: c.price / 100,
+    level: c.level,
+    term: c.term,
+    category: c.category,
+    subject: c.subject,
   }));
 
   return (

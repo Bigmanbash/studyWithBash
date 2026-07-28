@@ -6,6 +6,7 @@ import { FileText, LayoutGrid, List, Loader2, BookX } from "lucide-react";
 import { useStudentDashboard } from "@/hooks/useStudentDashboard";
 import { AvailableCourses, DashboardSkeleton } from "@/components/dashboard";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { formatCourseMeta } from "@/lib/utils";
 
 export default function PurchasedCoursesPage() {
   const [view, setView] = useState<"grid" | "list">("list");
@@ -80,54 +81,77 @@ export default function PurchasedCoursesPage() {
             {/* Grid view */}
             {view === "grid" && (
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-                {purchased.map((course) => (
-                  <div key={course.id} className="bg-white border border-neutral-100 rounded-md overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col group">
-                    <div className="relative h-32 sm:h-40 w-full bg-neutral-100">
-                      <Image
-                        src={course.coverImagePath || "/img/hero_section.png"}
-                        alt={course.title}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
+                {purchased.map((course) => {
+                  const metaText = formatCourseMeta(course);
+                  return (
+                    <div key={course.id} className="bg-white border border-neutral-100 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col group">
+                      <div className="relative h-32 sm:h-40 w-full bg-neutral-100">
+                        <Image
+                          src={course.coverImagePath || "/img/hero_section.png"}
+                          alt={course.title}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                        {metaText && (
+                          <span className="absolute top-2.5 left-2.5 px-2 py-0.5 text-[10px] font-medium bg-[#0A1B39]/80 backdrop-blur-sm text-white rounded-md shadow-sm">
+                            {metaText}
+                          </span>
+                        )}
+                      </div>
+                      <div className="p-3 sm:p-4 flex-1 flex flex-col gap-2.5">
+                        {metaText && (
+                          <span className="inline-flex items-center text-[10px] font-semibold text-[#17A546] bg-[#17A546]/10 border border-[#17A546]/20 px-2 py-0.5 rounded-md w-fit">
+                            {metaText}
+                          </span>
+                        )}
+                        <h3 className="text-[13px] sm:text-sm font-semibold text-[#0A1B39] line-clamp-2 flex-1 leading-snug">
+                          {course.title}
+                        </h3>
+                        <Link
+                          href={`/dashboard/read/${course.id}`}
+                          className="flex items-center justify-center gap-1.5 w-full px-3 py-2 rounded-md bg-[#17A546] hover:bg-[#128638] text-white text-[12px] sm:text-[13px] font-medium transition-colors mt-auto"
+                        >
+                          <FileText className="w-3.5 h-3.5" />
+                          Open material
+                        </Link>
+                      </div>
                     </div>
-                    <div className="p-3 sm:p-4 flex-1 flex flex-col gap-3">
-                      <h3 className="text-[13px] sm:text-sm font-semibold text-[#0A1B39] line-clamp-2 flex-1 leading-snug">
-                        {course.title}
-                      </h3>
-                      <Link
-                        href={`/dashboard/read/${course.id}`}
-                        className="flex items-center justify-center gap-1.5 w-full px-3 py-2 rounded-md bg-[#17A546] hover:bg-[#128638] text-white text-[12px] sm:text-[13px] font-medium transition-colors mt-auto"
-                      >
-                        <FileText className="w-3.5 h-3.5" />
-                        Open material
-                      </Link>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
 
             {/* List view */}
             {view === "list" && (
               <div className="divide-y divide-neutral-100 bg-white border border-neutral-100 rounded-xl overflow-hidden shadow-sm">
-                {purchased.map((course) => (
-                  <div key={course.id} className="flex items-center gap-4 py-3 px-4 sm:px-5 hover:bg-neutral-50/50 transition-colors">
-                    <div className="relative w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-neutral-100 border border-neutral-200/50">
-                      <Image src={course.coverImagePath || "/img/hero_section.png"} alt={course.title} fill className="object-cover" />
+                {purchased.map((course) => {
+                  const metaText = formatCourseMeta(course);
+                  return (
+                    <div key={course.id} className="flex items-center gap-4 py-3 px-4 sm:px-5 hover:bg-neutral-50/50 transition-colors">
+                      <div className="relative w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-neutral-100 border border-neutral-200/50">
+                        <Image src={course.coverImagePath || "/img/hero_section.png"} alt={course.title} fill className="object-cover" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                          <p className="text-[14px] font-semibold text-[#0A1B39] truncate">{course.title}</p>
+                          {metaText && (
+                            <span className="shrink-0 text-[10px] font-semibold text-[#17A546] bg-[#17A546]/10 border border-[#17A546]/20 px-2 py-0.5 rounded-md">
+                              {metaText}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[12px] text-[#676E85] mt-0.5 truncate">{course.description || "Reading material"}</p>
+                      </div>
+                      <Link
+                        href={`/dashboard/read/${course.id}`}
+                        className="shrink-0 flex items-center gap-1.5 text-[12px] font-medium text-[#0A1B39] bg-white border border-neutral-200 px-3 py-2 rounded-md hover:text-[#17A546] hover:bg-[#17A546]/5 hover:border-[#17A546]/30 transition-all shadow-sm"
+                      >
+                        <FileText className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">Open</span>
+                      </Link>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[14px] font-semibold text-[#0A1B39] truncate">{course.title}</p>
-                      <p className="text-[12px] text-[#676E85] mt-0.5 truncate">{course.description || "Reading material"}</p>
-                    </div>
-                    <Link
-                      href={`/dashboard/read/${course.id}`}
-                      className="shrink-0 flex items-center gap-1.5 text-[12px] font-medium text-[#0A1B39] bg-white border border-neutral-200 px-3 py-2 rounded-md hover:text-[#17A546] hover:bg-[#17A546]/5 hover:border-[#17A546]/30 transition-all shadow-sm"
-                    >
-                      <FileText className="w-3.5 h-3.5" />
-                      <span className="hidden sm:inline">Open</span>
-                    </Link>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </>

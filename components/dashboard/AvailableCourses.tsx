@@ -56,6 +56,10 @@ export function AvailableCourses({ title = "Available Courses", courses = [] }: 
             originalPrice={course.originalPrice ? course.originalPrice / 100 : undefined}
             isPurchased={false} 
             view={view} 
+            level={course.level}
+            term={course.term}
+            category={course.category}
+            subject={course.subject}
           />
         ))}
       </div>

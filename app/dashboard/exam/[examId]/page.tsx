@@ -24,6 +24,10 @@ export default async function ExamCategoryPage({ params }: { params: Promise<{ e
     image: c.coverImagePath || "/img/hero_section.png",
     price: c.price / 100,
     originalPrice: c.originalPrice ? c.originalPrice / 100 : undefined,
+    level: c.level,
+    term: c.term,
+    category: c.category,
+    subject: c.subject,
   }));
 
   return (

@@ -10,6 +10,11 @@ interface Course {
   title: string;
   image: string;
   price: number;
+  originalPrice?: number;
+  level?: string | null;
+  term?: string | null;
+  category?: string | null;
+  subject?: string | null;
 }
 
 export function TermCategoryClient({ courses }: { courses: Course[] }) {
