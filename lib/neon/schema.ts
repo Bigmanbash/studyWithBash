@@ -117,6 +117,8 @@ export const courses = pgTable(
     subject: text("subject").notNull(),
     description: text("description"),
     price: integer("price").notNull(), // store in kobo (lowest denomination)
+    standardPrice: integer("standard_price"), // kobo (null = standard tier disabled)
+    premiumPrice: integer("premium_price"),   // kobo (null = premium tier disabled)
     originalPrice: integer("original_price"),
     coverImagePath: text("cover_image_path"), // Supabase Storage key
     pdfPath: text("pdf_path"),               // DEPRECATED — kept for backward compat
@@ -145,6 +147,23 @@ export const topics = pgTable("topics", {
   order: integer("order").notNull().default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// ── Topic Videos ──────────────────────────────────────────────────────────────
+
+/**
+ * A topic video is a video lecture attached to a topic (e.g. YouTube private link).
+ * Multiple videos per topic supported. Accessible by Standard and Premium tier users.
+ */
+export const topicVideos = pgTable("topic_videos", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  topicId: uuid("topic_id")
+    .notNull()
+    .references(() => topics.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  videoUrl: text("video_url").notNull(),
+  order: integer("order").notNull().default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 // ── Subtopics ─────────────────────────────────────────────────────────────────
@@ -195,6 +214,7 @@ export const payments = pgTable("payments", {
     .notNull()
     .references(() => courses.id, { onDelete: "cascade" }),
   amount: integer("amount").notNull(),         // kobo
+  tier: text("tier").notNull().default("basic"), // "basic" | "standard" | "premium"
   status: paymentStatusEnum("status").notNull().default("pending"),
   method: text("method"),                      // "bank_transfer" | "card" | "ussd"
   reference: text("reference").notNull().unique(), // Paystack transaction reference
@@ -214,6 +234,11 @@ export const coursesRelations = relations(courses, ({ many }) => ({
 export const topicsRelations = relations(topics, ({ one, many }) => ({
   course: one(courses, { fields: [topics.courseId], references: [courses.id] }),
   subtopics: many(subtopics),
+  videos: many(topicVideos),
+}));
+
+export const topicVideosRelations = relations(topicVideos, ({ one }) => ({
+  topic: one(topics, { fields: [topicVideos.topicId], references: [topics.id] }),
 }));
 
 export const subtopicsRelations = relations(subtopics, ({ one, many }) => ({
@@ -239,6 +264,8 @@ export type Payment = typeof payments.$inferSelect;
 export type NewPayment = typeof payments.$inferInsert;
 export type Topic = typeof topics.$inferSelect;
 export type NewTopic = typeof topics.$inferInsert;
+export type TopicVideo = typeof topicVideos.$inferSelect;
+export type NewTopicVideo = typeof topicVideos.$inferInsert;
 export type Subtopic = typeof subtopics.$inferSelect;
 export type NewSubtopic = typeof subtopics.$inferInsert;
 export type SubtopicMaterial = typeof subtopicMaterials.$inferSelect;

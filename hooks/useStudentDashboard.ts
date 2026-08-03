@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import type { Course } from "@/lib/neon/schema";
+import { TierKey } from "@/lib/tiers";
 
 interface DashboardData {
   purchased: Course[];
@@ -8,9 +9,10 @@ interface DashboardData {
   limit: number;
 }
 
-interface CourseDetailsData {
+export interface CourseDetailsData {
   course: Course;
   isPurchased: boolean;
+  purchasedTier?: TierKey | null;
 }
 
 const fetchDashboardData = async (page: number = 1, limit: number = 10): Promise<DashboardData> => {

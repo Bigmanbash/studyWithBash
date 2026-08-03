@@ -33,6 +33,8 @@ const AddCoursePage = () => {
     color: "bg-blue-500",
     status: "draft" as "active" | "draft",
     price: "",
+    standardPrice: "",
+    premiumPrice: "",
     originalPrice: "",
     description: "",
     term: "first" as "first" | "second" | "third" | "",
@@ -91,6 +93,8 @@ const AddCoursePage = () => {
       }
 
       const price = (parseInt(courseData.price) || 0) * 100;
+      const standardPrice = courseData.standardPrice ? parseInt(courseData.standardPrice) * 100 : null;
+      const premiumPrice = courseData.premiumPrice ? parseInt(courseData.premiumPrice) * 100 : null;
       const originalPrice = courseData.originalPrice ? parseInt(courseData.originalPrice) * 100 : null;
 
       const slug = courseData.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
@@ -134,6 +138,8 @@ const AddCoursePage = () => {
         coverImagePath: uploadedCoverPath,
         status,
         price,
+        standardPrice,
+        premiumPrice,
         originalPrice,
       };
 
@@ -406,37 +412,75 @@ const AddCoursePage = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-bold text-[#0A1B39] mb-2">
-                      Price (₦)
-                    </label>
-                    <input
-                      type="number"
-                      placeholder="e.g. 5000"
-                      className="w-full bg-neutral-50/50 border border-neutral-200 rounded-lg px-4 py-3 outline-none focus:border-[#17A546]/40 focus:ring-2 focus:ring-[#17A546]/20 transition-all text-[#0A1B39] font-medium"
-                      value={courseData.price}
-                      onChange={(e) =>
-                        setCourseData({ ...courseData, price: e.target.value })
-                      }
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold text-[#0A1B39] mb-2">
-                      Original Price (₦)
-                    </label>
-                    <input
-                      type="number"
-                      placeholder="e.g. 7500"
-                      className="w-full bg-neutral-50/50 border border-neutral-200 rounded-lg px-4 py-3 outline-none focus:border-[#17A546]/40 focus:ring-2 focus:ring-[#17A546]/20 transition-all text-[#0A1B39] font-medium"
-                      value={courseData.originalPrice}
-                      onChange={(e) =>
-                        setCourseData({
-                          ...courseData,
-                          originalPrice: e.target.value,
-                        })
-                      }
-                    />
+                <div className="space-y-4">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#676E85]">Tier Pricing (Leave empty to disable a tier)</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-bold text-[#0A1B39] mb-1.5">
+                        Basic Tier Price (₦) *
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="e.g. 5000"
+                        className="w-full bg-neutral-50/50 border border-neutral-200 rounded-lg px-4 py-3 outline-none focus:border-[#17A546]/40 focus:ring-2 focus:ring-[#17A546]/20 transition-all text-[#0A1B39] font-medium"
+                        value={courseData.price}
+                        onChange={(e) =>
+                          setCourseData({ ...courseData, price: e.target.value })
+                        }
+                      />
+                      <p className="text-[10px] text-[#676E85] mt-1">Reading materials only</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-bold text-[#0A1B39] mb-1.5">
+                        Standard Tier Price (₦)
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="e.g. 8000 (Optional)"
+                        className="w-full bg-neutral-50/50 border border-neutral-200 rounded-lg px-4 py-3 outline-none focus:border-[#3B82F6]/40 focus:ring-2 focus:ring-[#3B82F6]/20 transition-all text-[#0A1B39] font-medium"
+                        value={courseData.standardPrice}
+                        onChange={(e) =>
+                          setCourseData({ ...courseData, standardPrice: e.target.value })
+                        }
+                      />
+                      <p className="text-[10px] text-[#676E85] mt-1">Notes + Topic Video Lectures</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-bold text-[#0A1B39] mb-1.5">
+                        Premium Tier Price (₦)
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="e.g. 12000 (Optional)"
+                        className="w-full bg-neutral-50/50 border border-neutral-200 rounded-lg px-4 py-3 outline-none focus:border-[#17A546]/40 focus:ring-2 focus:ring-[#17A546]/20 transition-all text-[#0A1B39] font-medium"
+                        value={courseData.premiumPrice}
+                        onChange={(e) =>
+                          setCourseData({ ...courseData, premiumPrice: e.target.value })
+                        }
+                      />
+                      <p className="text-[10px] text-[#676E85] mt-1">Complete access + priority support</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-bold text-[#0A1B39] mb-1.5">
+                        Original / Scratch Price (₦)
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="e.g. 15000 (Optional)"
+                        className="w-full bg-neutral-50/50 border border-neutral-200 rounded-lg px-4 py-3 outline-none focus:border-[#17A546]/40 focus:ring-2 focus:ring-[#17A546]/20 transition-all text-[#0A1B39] font-medium"
+                        value={courseData.originalPrice}
+                        onChange={(e) =>
+                          setCourseData({
+                            ...courseData,
+                            originalPrice: e.target.value,
+                          })
+                        }
+                      />
+                      <p className="text-[10px] text-[#676E85] mt-1">Crossed-out reference price</p>
+                    </div>
                   </div>
                 </div>
               </div>

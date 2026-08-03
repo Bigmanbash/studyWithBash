@@ -23,16 +23,16 @@ export function AdminDashboardHeader() {
         <div className="flex items-center gap-3">
           {/* Search */}
           <div
-            className={`hidden sm:flex items-center bg-neutral-50 rounded-xl px-4 py-2 gap-2 border transition-colors duration-200 ${searchFocused
-              ? "border-[#17A546]/30 bg-white shadow-sm"
-              : "border-neutral-100"
+            className={`hidden sm:flex items-center bg-neutral-50 rounded-md px-3.5 py-1.5 gap-2 border transition-colors duration-200 ${searchFocused
+              ? "border-[#17A546]/30 bg-white shadow-xs"
+              : "border-neutral-200/80"
               }`}
           >
             <Search className="h-4 w-4 text-[#98A2B3]" />
             <input
               type="text"
               placeholder="Search anything..."
-              className="bg-transparent text-sm outline-none w-48 placeholder:text-[#98A2B3]"
+              className="bg-transparent text-xs outline-none w-48 placeholder:text-[#98A2B3] text-[#0A1B39]"
               onFocus={() => setSearchFocused(true)}
               onBlur={() => setSearchFocused(false)}
             />
@@ -40,21 +40,21 @@ export function AdminDashboardHeader() {
 
           {/* Notifications */}
           <button
-            className="relative h-10 w-10 rounded-xl bg-neutral-50 border border-neutral-100 flex items-center justify-center hover:bg-neutral-100 transition-colors"
+            className="relative h-9 w-9 rounded-md bg-neutral-50 border border-neutral-200/80 flex items-center justify-center hover:bg-neutral-100 transition-colors"
             onClick={() => setIsNotificationsOpen(true)}
           >
-            <Bell className="h-5 w-5 text-[#676E85]" />
-            <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 rounded-full text-white text-[10px] flex items-center justify-center font-bold">
+            <Bell className="h-4 w-4 text-[#676E85]" />
+            <span className="absolute -top-1 -right-1 h-3.5 w-3.5 bg-red-500 rounded-full text-white text-[9px] flex items-center justify-center font-bold">
               5
             </span>
           </button>
 
           {/* Admin Avatar */}
           <button
-            className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-neutral-50 transition-colors"
+            className="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-md hover:bg-neutral-50 transition-colors"
             onClick={() => setIsProfileOpen(true)}
           >
-            <div className="h-8 w-8 rounded-full bg-[#17A546]/10 flex items-center justify-center text-[#17A546] font-bold text-xs">
+            <div className="h-7 w-7 rounded-full bg-[#17A546]/10 flex items-center justify-center text-[#17A546] font-bold text-xs">
               A
             </div>
             <ChevronDown className="h-3.5 w-3.5 text-[#98A2B3]" />
