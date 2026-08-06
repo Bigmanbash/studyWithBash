@@ -23,7 +23,7 @@ export function EmptyState({ icon, title, description, actionHref, actionLabel, 
         {title}
       </h3>
 
-      <p className="text-[13px] md:text-[14px] text-[#676E85] max-w-[260px] md:max-w-sm mx-auto mb-6 leading-relaxed">
+      <p className="text-[13px] md:text-[14px] text-[#676E85]  mx-auto mb-6 leading-relaxed">
         {description}
       </p>
 

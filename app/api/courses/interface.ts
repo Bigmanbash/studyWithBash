@@ -1,6 +1,28 @@
-import type { Course, NewCourse, Topic, NewTopic, Subtopic, NewSubtopic, SubtopicMaterial, NewSubtopicMaterial } from "@/lib/neon/schema";
+import type {
+  Course,
+  NewCourse,
+  Topic,
+  NewTopic,
+  TopicVideo,
+  NewTopicVideo,
+  Subtopic,
+  NewSubtopic,
+  SubtopicMaterial,
+  NewSubtopicMaterial,
+} from "@/lib/neon/schema";
 
-export type { Course, NewCourse, Topic, NewTopic, Subtopic, NewSubtopic, SubtopicMaterial, NewSubtopicMaterial };
+export type {
+  Course,
+  NewCourse,
+  Topic,
+  NewTopic,
+  TopicVideo,
+  NewTopicVideo,
+  Subtopic,
+  NewSubtopic,
+  SubtopicMaterial,
+  NewSubtopicMaterial,
+};
 
 export interface CourseListQuery {
   page?: number;
@@ -13,8 +35,13 @@ export interface CourseListQuery {
   status?: "active" | "draft";
 }
 
+export type CourseWithStats = Course & {
+  revenue?: number;
+  studentsCount?: number;
+};
+
 export interface PaginatedCourses {
-  data: Course[];
+  data: CourseWithStats[];
   total: number;
   page: number;
   limit: number;
@@ -22,6 +49,7 @@ export interface PaginatedCourses {
 
 export type TopicWithSubtopics = Topic & {
   subtopics: SubtopicWithMaterials[];
+  videos?: TopicVideo[];
 };
 
 export type SubtopicWithMaterials = Subtopic & {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -97,6 +98,9 @@ export function AdminLoginForm() {
             Keep me signed in
           </label>
         </div>
+        <Link href="/forgot-password" className="font-semibold text-[#17A546] hover:text-[#17A546]/80 transition-colors">
+          Forgot password?
+        </Link>
       </div>
 
       <Button

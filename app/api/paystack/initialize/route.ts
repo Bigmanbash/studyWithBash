@@ -1,13 +1,14 @@
 // ── Paystack Transaction Initialize ───────────────────────────────────────────
 // POST /api/paystack/initialize
-// Body: { courseId: string }
+// Body: { courseId: string, tier?: "basic" | "standard" | "premium" }
 //
 // 1. Authenticates the user via session
-// 2. Fetches the course from DB and reads the canonical price (kobo)
-// 3. Generates a unique reference
-// 4. Inserts a "pending" payment row
-// 5. Calls Paystack's /transaction/initialize with the server-side price
-// 6. Returns { access_code, reference } to the frontend for popup
+// 2. Fetches the course from DB and determines requested tier price
+// 3. Calculates price difference if upgrading from an existing tier
+// 4. Generates a unique reference
+// 5. Inserts a "pending" payment row with the calculated amount and tier
+// 6. Calls Paystack's /transaction/initialize with the server-side price
+// 7. Returns { access_code, reference } to the frontend for popup
 
 import { NextResponse } from "next/server";
 import crypto from "crypto";
@@ -15,6 +16,7 @@ import { db } from "@/lib/neon";
 import { courses, payments } from "@/lib/neon/schema";
 import { eq, and } from "drizzle-orm";
 import { requireServerSession } from "@/app/api/auth/queries";
+import { TierKey, getTierPrice, getEffectiveTier, TIER_ORDER } from "@/lib/tiers";
 
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY!;
 
@@ -25,11 +27,18 @@ export async function POST(request: Request) {
 
     // 2. Parse and validate body
     const body = await request.json();
-    const { courseId } = body as { courseId?: string };
+    const { courseId, tier = "basic" } = body as { courseId?: string; tier?: TierKey };
 
     if (!courseId) {
       return NextResponse.json(
         { error: "courseId is required" },
+        { status: 400 }
+      );
+    }
+
+    if (!(tier in TIER_ORDER)) {
+      return NextResponse.json(
+        { error: "Invalid tier selected" },
         { status: 400 }
       );
     }
@@ -55,9 +64,24 @@ export async function POST(request: Request) {
       );
     }
 
-    // 4. Check if the user already owns this course (approved payment exists)
-    const [existingPurchase] = await db
-      .select({ id: payments.id })
+    // Verify requested tier is enabled on this course
+    if (tier === "standard" && (!course.standardPrice || course.standardPrice <= 0)) {
+      return NextResponse.json(
+        { error: "Standard tier is not available for this course" },
+        { status: 400 }
+      );
+    }
+
+    if (tier === "premium" && (!course.premiumPrice || course.premiumPrice <= 0)) {
+      return NextResponse.json(
+        { error: "Premium tier is not available for this course" },
+        { status: 400 }
+      );
+    }
+
+    // 4. Check user's current access tier for this course
+    const approvedPayments = await db
+      .select({ tier: payments.tier })
       .from(payments)
       .where(
         and(
@@ -65,29 +89,43 @@ export async function POST(request: Request) {
           eq(payments.courseId, courseId),
           eq(payments.status, "approved")
         )
-      )
-      .limit(1);
+      );
 
-    if (existingPurchase) {
+    const currentTier = getEffectiveTier(approvedPayments.map((p) => p.tier));
+
+    if (currentTier && (currentTier === tier || TIER_ORDER[currentTier] >= TIER_ORDER[tier])) {
       return NextResponse.json(
-        { error: "You already own this course" },
+        { error: `You already have access to the ${currentTier} tier or higher` },
         { status: 409 }
       );
     }
 
-    // 5. Generate a unique reference
+    // 5. Calculate upgrade amount (targetTierPrice - currentTierPrice)
+    const targetPrice = getTierPrice(course, tier);
+    const currentPrice = currentTier ? getTierPrice(course, currentTier) : 0;
+    const chargeAmount = targetPrice - currentPrice;
+
+    if (chargeAmount <= 0) {
+      return NextResponse.json(
+        { error: "Invalid price calculation for upgrade" },
+        { status: 400 }
+      );
+    }
+
+    // 6. Generate a unique reference
     const reference = `ba_${Date.now()}_${crypto.randomBytes(6).toString("hex")}`;
 
-    // 6. Insert a pending payment record
+    // 7. Insert a pending payment record with tier
     await db.insert(payments).values({
       userId: user.id,
       courseId: course.id,
-      amount: course.price,
+      amount: chargeAmount,
+      tier,
       status: "pending",
       reference,
     });
 
-    // 7. Initialize transaction with Paystack
+    // 8. Initialize transaction with Paystack
     const paystackRes = await fetch(
       "https://api.paystack.co/transaction/initialize",
       {
@@ -98,12 +136,14 @@ export async function POST(request: Request) {
         },
         body: JSON.stringify({
           email: user.email,
-          amount: course.price, // already in kobo
+          amount: chargeAmount, // in kobo
           reference,
           metadata: {
             course_id: course.id,
             course_title: course.title,
             user_id: user.id,
+            tier,
+            is_upgrade: !!currentTier,
           },
         }),
       }
@@ -124,13 +164,13 @@ export async function POST(request: Request) {
       );
     }
 
-    // 8. Store the access_code for debugging/resumption
+    // 9. Store the access_code for debugging/resumption
     await db
       .update(payments)
       .set({ paystackAccessCode: paystackData.data.access_code })
       .where(eq(payments.reference, reference));
 
-    // 9. Return only what the frontend needs
+    // 10. Return access_code and reference
     return NextResponse.json({
       access_code: paystackData.data.access_code,
       reference,

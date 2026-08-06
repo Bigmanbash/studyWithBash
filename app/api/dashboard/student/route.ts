@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/neon";
 import { courses, payments } from "@/lib/neon/schema";
-import { eq, desc, and, notInArray } from "drizzle-orm";
+import { eq, desc, and, notInArray, inArray } from "drizzle-orm";
 import { requireServerSession } from "@/app/api/auth/queries";
+import { isHigherTier, TierKey } from "@/lib/tiers";
 
 export async function GET(request: Request) {
   try {
@@ -17,22 +18,41 @@ export async function GET(request: Request) {
     const limit = parseInt(searchParams.get("limit") || "10", 10);
     const offset = (page - 1) * limit;
 
-    // Fetch recently purchased
-    // We only care about approved payments, or maybe all depending on logic.
-    // Let's get approved payments
-    const purchasedData = await db
+    // Fetch all approved payments for this student
+    const approvedPayments = await db
       .select({
-        course: courses,
+        courseId: payments.courseId,
+        tier: payments.tier,
+        submittedAt: payments.submittedAt,
       })
       .from(payments)
-      .innerJoin(courses, eq(payments.courseId, courses.id))
       .where(and(eq(payments.userId, user.id), eq(payments.status, "approved")))
-      .orderBy(desc(payments.submittedAt))
-      .limit(4);
+      .orderBy(desc(payments.submittedAt));
 
-    let purchasedCourses = purchasedData.map((p) => p.course);
+    // Map courseId -> effective highest tier
+    const tierMap = new Map<string, TierKey>();
+    for (const p of approvedPayments) {
+      const existing = tierMap.get(p.courseId);
+      const paymentTier = (p.tier as TierKey) || "basic";
+      if (!existing || isHigherTier(paymentTier, existing)) {
+        tierMap.set(p.courseId, paymentTier);
+      }
+    }
 
-    const purchasedIds = purchasedCourses.map((c) => c.id);
+    const purchasedIds = Array.from(tierMap.keys());
+    let purchasedCourses: any[] = [];
+
+    if (purchasedIds.length > 0) {
+      const courseRecords = await db
+        .select()
+        .from(courses)
+        .where(inArray(courses.id, purchasedIds));
+
+      purchasedCourses = courseRecords.map((c) => ({
+        ...c,
+        purchasedTier: tierMap.get(c.id) || "basic",
+      }));
+    }
 
     // Fetch available courses (paginated, excluding already purchased)
     const availableData = await db

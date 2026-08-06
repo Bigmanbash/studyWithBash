@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 100" width="400" height="100">
+  <!-- B Icon Box -->
+  <g transform="translate(10, 20)">
+    <rect x="0" y="0" width="60" height="60" rx="12" fill="#17A546" />
+    <text x="30" y="42" font-family="Times New Roman, serif" font-size="34" font-weight="bold" fill="#ffffff" text-anchor="middle">B</text>
+  </g>
+  
+  <!-- Text -->
+  <g transform="translate(86, 60)" font-family="system-ui, -apple-system, sans-serif" letter-spacing="-0.5">
+    <text x="0" y="0" font-size="38">
+      <tspan font-weight="bold" fill="#0A1B39">Bash</tspan><tspan font-weight="500" fill="#676E85">Academy</tspan>
+    </text>
+  </g>
+</svg>

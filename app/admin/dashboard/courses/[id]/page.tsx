@@ -219,21 +219,84 @@ const CourseDetailsPage = ({ params }: { params: Promise<{ id: string }> }) => {
               </div>
             </div>
 
-            {/* Pricing Information */}
+            {/* Pricing & Tiers Information */}
             <div className="bg-white rounded-xl border border-neutral-200 shadow-sm p-5 sm:p-6">
-              <h3 className="text-base font-bold text-[#0A1B39] mb-4">Pricing Information</h3>
-              <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                <div className="col-span-2 xl:col-span-1 p-4 rounded-xl bg-neutral-50 border border-neutral-100">
-                  <p className="text-xs text-[#676E85] mb-1 font-medium">Current Price</p>
-                  <p className="text-lg font-bold text-[#0A1B39]">₦{(course.price / 100).toLocaleString()}</p>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-base font-bold text-[#0A1B39]">Course Tiers & Pricing</h3>
+                <span className="text-[11px] font-semibold text-[#676E85] bg-neutral-100 px-2 py-0.5 rounded">
+                  Configured Tiers
+                </span>
+              </div>
+
+              <div className="space-y-2.5">
+                {/* Basic Tier */}
+                <div className="p-3.5 rounded-xl bg-neutral-50 border border-neutral-100 flex items-center justify-between">
+                  <div>
+                    <div className="flex items-center gap-1.5 mb-0.5">
+                      <span className="text-xs font-bold text-[#0A1B39]">Basic Tier</span>
+                      <span className="text-[9px] font-bold bg-[#17A546]/10 text-[#17A546] border border-[#17A546]/20 px-1.5 py-0.2 rounded uppercase">
+                        Default
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-[#676E85]">PDF & Materials only</p>
+                  </div>
+                  <span className="text-sm font-extrabold text-[#0A1B39]">
+                    ₦{(course.price / 100).toLocaleString()}
+                  </span>
                 </div>
-                <div className="col-span-2 xl:col-span-1 p-4 rounded-xl bg-neutral-50 border border-neutral-100">
-                  <p className="text-xs text-[#676E85] mb-1 font-medium">Original Price</p>
-                  <p className="text-lg font-bold text-[#98A2B3] line-through">₦{course.originalPrice ? (course.originalPrice / 100).toLocaleString() : "N/A"}</p>
+
+                {/* Standard Tier */}
+                <div className="p-3.5 rounded-xl bg-neutral-50 border border-neutral-100 flex items-center justify-between">
+                  <div>
+                    <div className="flex items-center gap-1.5 mb-0.5">
+                      <span className="text-xs font-bold text-[#0A1B39]">Standard Tier</span>
+                      <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded uppercase ${
+                        course.standardPrice 
+                          ? "bg-blue-50 text-blue-600 border border-blue-200/80"
+                          : "bg-neutral-200/60 text-neutral-500"
+                      }`}>
+                        {course.standardPrice ? "Active" : "Disabled"}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-[#676E85]">Materials + Topic Videos</p>
+                  </div>
+                  <span className="text-sm font-extrabold text-[#0A1B39]">
+                    {course.standardPrice ? `₦${(course.standardPrice / 100).toLocaleString()}` : "—"}
+                  </span>
                 </div>
-                <div className="col-span-2 p-4 rounded-xl bg-[#17A546]/5 border border-[#17A546]/20">
-                  <p className="text-xs text-[#17A546] mb-1 font-semibold">Total Revenue</p>
-                  <p className="text-xl font-bold text-[#17A546]">₦0</p>
+
+                {/* Premium Tier */}
+                <div className="p-3.5 rounded-xl bg-neutral-50 border border-neutral-100 flex items-center justify-between">
+                  <div>
+                    <div className="flex items-center gap-1.5 mb-0.5">
+                      <span className="text-xs font-bold text-[#0A1B39]">Premium Tier</span>
+                      <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded uppercase ${
+                        course.premiumPrice 
+                          ? "bg-amber-50 text-amber-700 border border-amber-200/80"
+                          : "bg-neutral-200/60 text-neutral-500"
+                      }`}>
+                        {course.premiumPrice ? "Active" : "Disabled"}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-[#676E85]">All Features & Priority Support</p>
+                  </div>
+                  <span className="text-sm font-extrabold text-[#0A1B39]">
+                    {course.premiumPrice ? `₦${(course.premiumPrice / 100).toLocaleString()}` : "—"}
+                  </span>
+                </div>
+
+                {/* Original Price Reference & Revenue */}
+                <div className="grid grid-cols-2 gap-2 pt-2">
+                  <div className="p-3 rounded-lg bg-neutral-50 border border-neutral-100">
+                    <p className="text-[10px] text-[#676E85] mb-0.5 font-medium">Original Anchor</p>
+                    <p className="text-xs font-bold text-[#98A2B3] line-through">
+                      {course.originalPrice ? `₦${(course.originalPrice / 100).toLocaleString()}` : "N/A"}
+                    </p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-[#17A546]/5 border border-[#17A546]/20">
+                    <p className="text-[10px] text-[#17A546] mb-0.5 font-semibold">Total Revenue</p>
+                    <p className="text-xs font-extrabold text-[#17A546]">₦0</p>
+                  </div>
                 </div>
               </div>
             </div>

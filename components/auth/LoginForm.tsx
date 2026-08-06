@@ -114,7 +114,7 @@ export function LoginForm() {
             Remember me
           </label>
         </div>
-        <Link href="#" className="font-semibold text-brand-green hover:text-brand-green/80 transition-colors">
+        <Link href="/forgot-password" className="font-semibold text-brand-green hover:text-brand-green/80 transition-colors">
           Forgot password?
         </Link>
       </div>

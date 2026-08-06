@@ -1,23 +1,31 @@
 "use client";
 
 import { useAdminStore } from "@/store/adminStore";
+import { useStudentStore } from "@/store/studentStore";
 import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { useEffect } from "react";
 
 export function StatusModal() {
-  const { statusModal, closeStatusModal } = useAdminStore();
-  const { isOpen, title, message, type } = statusModal;
+  const adminStore = useAdminStore();
+  const studentStore = useStudentStore();
+  
+  const adminModal = adminStore.statusModal;
+  const studentModal = studentStore.statusModal;
+
+  const isOpen = adminModal.isOpen || studentModal.isOpen;
+  const activeModal = adminModal.isOpen ? adminModal : studentModal;
+  const closeActiveModal = adminModal.isOpen ? adminStore.closeStatusModal : studentStore.closeStatusModal;
+
+  const { title, message, type } = activeModal;
 
   useEffect(() => {
-    // If it's a success or error, we can auto-close or let the user close it.
-    // We'll let the user close it for errors, and maybe auto-close for success.
     if (isOpen && type === "success") {
       const timer = setTimeout(() => {
-        closeStatusModal();
+        closeActiveModal();
       }, 3000);
       return () => clearTimeout(timer);
     }
-  }, [isOpen, type, closeStatusModal]);
+  }, [isOpen, type, closeActiveModal]);
 
   if (!isOpen) return null;
 
@@ -35,7 +43,7 @@ export function StatusModal() {
 
         {type !== "loading" && (
           <button
-            onClick={closeStatusModal}
+            onClick={closeActiveModal}
             className="w-full py-2.5 bg-neutral-100 hover:bg-neutral-200 text-[#0A1B39] font-medium rounded-lg transition-colors"
           >
             Close

@@ -122,3 +122,19 @@ export const deleteMaterialRequest = async (courseId: string, topicId: string, s
     method: "DELETE",
   });
 };
+
+// --- Videos ---
+
+export const addTopicVideoRequest = async (courseId: string, topicId: string, data: { title: string; videoUrl: string }): Promise<import('./interface').TopicVideo> => {
+  return apiFetch<import('./interface').TopicVideo>(`/api/courses/${courseId}/topics/${topicId}/videos`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+};
+
+export const deleteTopicVideoRequest = async (courseId: string, topicId: string, videoId: string): Promise<void> => {
+  return apiFetch<void>(`/api/courses/${courseId}/topics/${topicId}/videos`, {
+    method: "DELETE",
+    body: JSON.stringify({ videoId }),
+  });
+};

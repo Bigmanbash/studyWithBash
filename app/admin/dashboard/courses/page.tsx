@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AdminDashboardHeader } from "@/components/admin/dashboard";
+import { AdminDashboardHeader, AdminFilterBar } from "@/components/admin/dashboard";
 import {
   BookOpen,
   Search,
@@ -16,15 +16,17 @@ import {
   XCircle,
   Filter,
   Loader2,
+  Trash2,
+  Check,
+  AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { fetchCourses } from "@/app/api/courses";
-import type { Course } from "@/app/api/courses";
+import type { Course, CourseWithStats } from "@/app/api/courses/interface";
 import { Pagination } from "@/components/ui/pagination";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Trash2, AlertTriangle, Check } from "lucide-react";
 
 type CourseStatus = "active" | "draft" | "all";
 
@@ -59,147 +61,136 @@ const AdminCoursesPage = () => {
   const totalPages = queryData ? Math.ceil(queryData.total / queryData.limit) : 1;
   const totalCount = queryData?.total || 0;
 
-  // Derived stats (normally these would come from an aggregated stats endpoint)
-  const activeCount = courses.filter((c) => c.status === "active").length;
-  const draftCount = courses.filter((c) => c.status === "draft").length;
-
   const stats = [
-    { label: "Total Courses", value: totalCount.toString(), icon: BookOpen, color: "text-[#17A546]", bg: "bg-[#17A546]/10" },
-    { label: "Active Courses", value: activeCount.toString(), icon: Eye, color: "text-blue-500", bg: "bg-blue-500/10" },
-    { label: "Draft Courses", value: draftCount.toString(), icon: EyeOff, color: "text-[#98A2B3]", bg: "bg-neutral-100" },
-    { label: "Total Students", value: "0", icon: Users, color: "text-purple-500", bg: "bg-purple-500/10" },
+    {
+      label: "Total Courses",
+      value: totalCount.toString(),
+      icon: BookOpen,
+      color: "text-[#17A546]",
+      bg: "bg-[#17A546]/10",
+    },
+    {
+      label: "Active Courses",
+      value: courses.filter((c: any) => c.status === "active").length.toString(),
+      icon: CheckCircle2,
+      color: "text-[#0E7B33]",
+      bg: "bg-[#0E7B33]/10",
+    },
+    {
+      label: "Drafts",
+      value: courses.filter((c: any) => c.status === "draft").length.toString(),
+      icon: Clock,
+      color: "text-[#F5B546]",
+      bg: "bg-[#FEF6E7]",
+    },
+    {
+      label: "Total Enrollments",
+      value: courses.reduce((acc: number, c: any) => acc + (c.enrolledCount || 0), 0).toString(),
+      icon: Users,
+      color: "text-[#0A1B39]",
+      bg: "bg-neutral-100",
+    },
   ];
 
-  const toggleSelection = (e: React.MouseEvent, id: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const newSet = new Set(selectedIds);
-    if (newSet.has(id)) newSet.delete(id);
-    else newSet.add(id);
-    setSelectedIds(newSet);
-  };
-
-  const handleSelectAll = () => {
-    if (selectedIds.size === courses.length) {
-      setSelectedIds(new Set());
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedIds(new Set(courses.map((c: any) => c.id)));
     } else {
-      setSelectedIds(new Set(courses.map((c: Course) => c.id)));
+      setSelectedIds(new Set());
     }
   };
 
-  const executeDelete = async () => {
-    if (selectedIds.size === 0) return;
+  const handleSelectOne = (id: string, checked: boolean) => {
+    const newSelected = new Set(selectedIds);
+    if (checked) {
+      newSelected.add(id);
+    } else {
+      newSelected.delete(id);
+    }
+    setSelectedIds(newSelected);
+  };
+
+  const handleDeleteSelected = async () => {
     setIsDeleting(true);
     try {
-      const res = await fetch("/api/courses", {
+      const response = await fetch("/api/courses", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ids: Array.from(selectedIds) })
+        body: JSON.stringify({ ids: Array.from(selectedIds) }),
       });
-      if (res.ok) {
-        setSelectedIds(new Set());
-        setShowDeleteModal(false);
-        queryClient.invalidateQueries({ queryKey: ['admin-courses'] });
-      } else {
-        alert("Failed to delete courses");
-      }
-    } catch (e) {
-      console.error(e);
-      alert("Error deleting courses");
+
+      if (!response.ok) throw new Error("Failed to delete courses");
+
+      setSelectedIds(new Set());
+      setShowDeleteModal(false);
+      queryClient.invalidateQueries({ queryKey: ['admin-courses'] });
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete courses");
     } finally {
       setIsDeleting(false);
     }
   };
 
   return (
-    <>
+    <div className="min-h-screen bg-[#F7F9FC]">
       <AdminDashboardHeader />
-      <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
-        {/* Page Header */}
+      <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 max-w-7xl mx-auto">
+        {/* Unboxed Modern Page Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-[#0A1B39]">
-              Courses
-            </h2>
-            <p className="text-sm sm:text-base text-[#676E85] mt-1">
-              Manage and monitor all courses on the platform.
+            <h1 className="text-2xl font-bold tracking-tight text-[#0A1B39]">
+              Courses Catalog
+            </h1>
+            <p className="text-xs sm:text-sm text-[#676E85] mt-1 font-normal">
+              Manage course materials, subject assignments, tier pricing, and enrollment status.
             </p>
           </div>
           <Link href="/admin/dashboard/courses/add">
-            <Button className="bg-[#17A546] hover:bg-[#17A546]/90 text-white rounded-md h-11 px-5 font-semibold shadow-lg shadow-[#17A546]/20 w-fit">
-              <Plus className="h-4 w-4 mr-2" />
+            <Button className="bg-[#17A546] hover:bg-[#128638] text-white rounded-md h-9 px-4 font-semibold text-xs shadow-xs flex items-center gap-1.5 w-fit shrink-0 active:scale-[0.98]">
+              <Plus className="h-4 w-4" />
               Add Course
             </Button>
           </Link>
         </div>
 
-        {/* Quick Stats */}
+        {/* Quick Stats Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {stats.map((stat) => (
             <div
               key={stat.label}
-              className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-neutral-100 shadow-sm"
+              className="bg-white rounded-md p-4 border border-neutral-200/80 shadow-2xs hover:border-[#17A546]/30 transition-all"
             >
-              <div className={`${stat.bg} rounded-xl p-2 w-fit mb-3`}>
+              <div className={`${stat.bg} rounded-md p-2 w-fit mb-2.5 border border-neutral-100`}>
                 <stat.icon className={`h-4 w-4 ${stat.color}`} />
               </div>
               <p className="text-xl sm:text-2xl font-bold text-[#0A1B39]">
                 {stat.value}
               </p>
-              <p className="text-xs text-[#98A2B3] mt-0.5">{stat.label}</p>
+              <p className="text-xs text-[#676E85] font-medium mt-0.5">{stat.label}</p>
             </div>
           ))}
         </div>
 
-        {/* Filters & Search */}
-        <div className="bg-white rounded-2xl sm:rounded-3xl border border-neutral-100 shadow-sm p-4 sm:p-5">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-            {/* Tabs */}
-            <div className="flex items-center bg-neutral-50 rounded-md p-1 border border-neutral-100">
-              {[
-                { key: "all" as const, label: "All" },
-                { key: "active" as const, label: "Active" },
-                { key: "draft" as const, label: "Draft" },
-              ].map((tab) => (
-                <button
-                  key={tab.key}
-                  onClick={() => {
-                    setActiveTab(tab.key);
-                    setPage(1); // Reset to first page on tab change
-                  }}
-                  className={cn(
-                    "flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200",
-                    activeTab === tab.key
-                      ? "bg-white text-[#0A1B39] shadow-sm"
-                      : "text-[#98A2B3] hover:text-[#676E85]"
-                  )}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Search */}
-            <div className="flex-1 flex items-center gap-3 w-full sm:w-auto sm:justify-end">
-              <div className="flex items-center bg-neutral-50 rounded-xl px-4 py-2.5 gap-2 border border-neutral-100 focus-within:border-[#17A546]/30 transition-colors flex-1 sm:flex-initial sm:w-64">
-                <Search className="h-4 w-4 text-[#98A2B3]" />
-                <input
-                  type="text"
-                  placeholder="Search courses..."
-                  className="bg-transparent text-sm outline-none w-full placeholder:text-[#98A2B3]"
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    setPage(1); // Reset page on search
-                  }}
-                />
-              </div>
-              <button className="h-10 w-10 rounded-xl bg-neutral-50 border border-neutral-100 flex items-center justify-center hover:bg-neutral-100 transition-colors shrink-0">
-                <Filter className="h-4 w-4 text-[#676E85]" />
-              </button>
-            </div>
-          </div>
-        </div>
+        {/* Unified Filter & Search Bar */}
+        <AdminFilterBar
+          tabs={[
+            { key: "all", label: "All Courses", count: totalCount },
+            { key: "active", label: "Active", count: courses.filter((c: any) => c.status === "active").length },
+            { key: "draft", label: "Drafts", count: courses.filter((c: any) => c.status === "draft").length },
+          ]}
+          activeTab={activeTab}
+          onTabChange={(tab) => {
+            setActiveTab(tab);
+            setPage(1);
+          }}
+          searchQuery={searchQuery}
+          onSearchChange={(val) => {
+            setSearchQuery(val);
+            setPage(1);
+          }}
+          searchPlaceholder="Search courses..."
+        />
 
         {/* Course Cards Grid */}
         {isLoading ? (
@@ -207,152 +198,142 @@ const AdminCoursesPage = () => {
             <Loader2 className="h-8 w-8 animate-spin text-[#17A546]" />
           </div>
         ) : courses.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="h-16 w-16 rounded-2xl bg-neutral-100 flex items-center justify-center mx-auto mb-4">
-              <BookOpen className="h-7 w-7 text-[#98A2B3]" />
+          <div className="text-center py-16 bg-white rounded-md border border-neutral-200/80 p-8">
+            <div className="h-12 w-12 rounded-md bg-neutral-100 flex items-center justify-center mx-auto mb-3 text-[#98A2B3]">
+              <BookOpen className="h-6 w-6" />
             </div>
-            <h3 className="text-lg font-bold text-[#0A1B39] mb-1">
+            <h3 className="text-base font-bold text-[#0A1B39] mb-1">
               No courses found
             </h3>
-            <p className="text-sm text-[#676E85]">
-              Try adjusting your search or filter criteria.
+            <p className="text-xs text-[#676E85]">
+              Try adjusting your search query or filter criteria.
             </p>
           </div>
         ) : (
           <>
-            <div className="flex items-center justify-between mb-4 px-1">
-              <button
-                onClick={handleSelectAll}
-                className="flex items-center gap-2 text-sm font-semibold text-[#0A1B39] hover:bg-neutral-50 transition-colors bg-white border border-neutral-200 px-3.5 py-2 rounded-xl shadow-sm"
-              >
-                <div className={cn(
-                  "w-4 h-4 rounded flex items-center justify-center transition-colors",
-                  selectedIds.size === courses.length && courses.length > 0 ? "bg-[#17A546]" : "bg-neutral-200"
-                )}>
-                  {selectedIds.size === courses.length && courses.length > 0 && <Check className="w-3 h-3 text-white" />}
-                </div>
-                {selectedIds.size === courses.length && courses.length > 0 ? "Deselect All" : "Bulk Select"}
-              </button>
-            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-              {courses.map((course: Course) => (
-                <div key={course.id} className="relative group">
-                  {/* Selection Checkbox */}
-                  <button
-                    onClick={(e) => toggleSelection(e, course.id)}
+              {courses.map((course: CourseWithStats) => {
+                const colors = [
+                  { bg: "bg-[#17A546]", text: "text-[#17A546]" },
+                  { bg: "bg-blue-600", text: "text-blue-600" },
+                  { bg: "bg-purple-600", text: "text-purple-600" },
+                  { bg: "bg-amber-600", text: "text-amber-600" },
+                ];
+                const hash = course.id.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+                const theme = colors[hash % colors.length];
+
+                return (
+                  <div
+                    key={course.id}
                     className={cn(
-                      "absolute top-5 right-5 z-20 w-5 h-5 rounded border flex items-center justify-center transition-colors",
-                      selectedIds.has(course.id)
-                        ? "bg-[#17A546] border-[#17A546]"
-                        : "bg-white border-neutral-300 opacity-0 group-hover:opacity-100 hover:border-[#17A546]"
+                      "bg-white rounded-md border border-neutral-200/80 shadow-xs hover:shadow-md hover:border-[#17A546]/30 transition-all overflow-hidden flex flex-col justify-between group relative",
+                      selectedIds.has(course.id) && "border-[#17A546] ring-2 ring-[#17A546]/20"
                     )}
                   >
-                    {selectedIds.has(course.id) && <Check className="w-3.5 h-3.5 text-white" />}
-                  </button>
+                    {/* Top Accent Strip */}
+                    <div className={`h-1.5 ${theme.bg}`} />
 
-                  <Link
-                    href={`/admin/dashboard/courses/${course.id}`}
-                    className={cn(
-                      "bg-white rounded-2xl sm:rounded-3xl border shadow-sm hover:shadow-md transition-all duration-200 block overflow-hidden",
-                      course.status === "draft"
-                        ? "border-neutral-200 opacity-75 hover:opacity-100"
-                        : "border-neutral-100",
-                      selectedIds.has(course.id) && "ring-2 ring-[#17A546] border-transparent"
-                    )}
-                  >
-                    {/* Color Strip */}
-                    <div className={`h-1.5 bg-[#17A546]`} />
-
-                    <div className="p-5 sm:p-6">
+                    <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-3.5">
                       {/* Header */}
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={`h-11 w-11 rounded-xl bg-[#17A546] flex items-center justify-center text-white font-bold text-sm`}
-                          >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className={`h-9 w-9 rounded-md ${theme.bg} flex items-center justify-center text-white font-bold text-xs shrink-0 shadow-xs`}>
                             {course.subject[0]}
                           </div>
-                          <div>
-                            <h4 className="text-sm font-bold text-[#0A1B39] group-hover:text-[#17A546] transition-colors truncate max-w-[140px]">
+                          <div className="min-w-0">
+                            <h4 className="text-sm font-semibold text-[#0A1B39] truncate group-hover:text-[#17A546] transition-colors">
                               {course.title}
                             </h4>
-                            <p className="text-xs text-[#98A2B3] mt-0.5">
-                              {course.category} · {course.level || "N/A"}
+                            <p className="text-[11px] text-[#676E85] truncate capitalize">
+                              {course.category} {course.level && `· ${course.level}`}
                             </p>
                           </div>
                         </div>
+
+                        {/* Bulk Select Checkbox */}
                         <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setSelectedIds(new Set([course.id]));
-                            setShowDeleteModal(true);
-                          }}
-                          className="h-8 w-8 rounded-lg hover:bg-red-50 text-[#98A2B3] hover:text-red-500 flex items-center justify-center transition-colors opacity-0 group-hover:opacity-100 z-10 mr-7"
+                          onClick={() => handleSelectOne(course.id, !selectedIds.has(course.id))}
+                          className={cn(
+                            "w-4 h-4 rounded-sm border flex items-center justify-center transition-colors shrink-0",
+                            selectedIds.has(course.id)
+                              ? "bg-[#17A546] border-[#17A546]"
+                              : "bg-neutral-100 border-neutral-300 hover:border-[#17A546]"
+                          )}
                         >
-                          <Trash2 className="h-4 w-4" />
+                          {selectedIds.has(course.id) && <Check className="w-3 h-3 text-white" />}
                         </button>
                       </div>
 
-                      {/* Status Badge */}
-                      <div className="mb-4">
+                      {/* Status & Tier Badges */}
+                      <div className="flex items-center gap-1.5 flex-wrap">
                         {course.status === "active" ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-full bg-[#E7F6EC] text-[#0E7B33]">
-                            <CheckCircle2 className="h-3 w-3" />
-                            Active
+                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md bg-[#17A546]/10 text-[#17A546] border border-[#17A546]/20">
+                            <CheckCircle2 className="h-3 w-3" /> Active
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-full bg-neutral-100 text-[#676E85]">
-                            <XCircle className="h-3 w-3" />
-                            Draft
+                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md bg-neutral-100 text-[#676E85] border border-neutral-200">
+                            <XCircle className="h-3 w-3" /> Draft
                           </span>
                         )}
+                        <span className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-md bg-blue-50 text-blue-600 border border-blue-200/80">
+                          {[true, !!course.standardPrice, !!course.premiumPrice].filter(Boolean).length} Tiers
+                        </span>
                       </div>
 
-                      {/* Metrics */}
-                      <div className="grid grid-cols-3 gap-3 mb-4">
+                      {/* Financial & Student Metrics */}
+                      <div className="grid grid-cols-3 gap-2 p-2.5 rounded-md bg-[#F7F9FC] border border-neutral-200/60 text-center">
                         <div>
-                          <p className="text-xs text-[#98A2B3]">Students</p>
-                          <p className="text-sm font-bold text-[#0A1B39] mt-0.5">
-                            0
+                          <p className="text-[10px] text-[#676E85] font-medium">Students</p>
+                          <p className="text-xs font-bold text-[#0A1B39] mt-0.5">
+                            {course.studentsCount || 0}
                           </p>
                         </div>
                         <div>
-                          <p className="text-xs text-[#98A2B3]">Revenue</p>
-                          <p className="text-sm font-bold text-[#0A1B39] mt-0.5">
-                            ₦0
+                          <p className="text-[10px] text-[#676E85] font-medium">Revenue</p>
+                          <p className="text-xs font-bold text-[#0A1B39] mt-0.5 truncate">
+                            ₦{((course.revenue || 0) / 100).toLocaleString()}
                           </p>
                         </div>
                         <div>
-                          <p className="text-xs text-[#98A2B3]">Price</p>
-                          <p className="text-sm font-bold text-[#0A1B39] mt-0.5">
+                          <p className="text-[10px] text-[#676E85] font-medium">Base Price</p>
+                          <p className="text-xs font-bold text-[#0A1B39] mt-0.5 truncate">
                             ₦{(course.price / 100).toLocaleString()}
                           </p>
                         </div>
                       </div>
 
-                      {/* Progress Bar (Removed for actual usage unless calculated) */}
-                      <div className="w-full bg-neutral-100 h-1.5 rounded-full overflow-hidden mb-3">
-                        <div
-                          className={`h-full rounded-full transition-all duration-700 bg-neutral-300`}
-                          style={{ width: `0%` }}
-                        />
-                      </div>
+                      {/* Card Action Buttons */}
+                      <div className="pt-2 border-t border-neutral-100 flex items-center justify-between gap-2">
+                        <Link
+                          href={`/admin/dashboard/courses/${course.id}`}
+                          className="text-xs font-bold text-[#0A1B39] hover:text-[#17A546] transition-colors flex items-center gap-1"
+                        >
+                          View Details <ArrowUpRight className="h-3.5 w-3.5 text-[#17A546]" />
+                        </Link>
 
-                      {/* Footer */}
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] text-[#98A2B3] flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          Updated {new Date(course.updatedAt).toLocaleDateString()}
-                        </span>
-                        <span className="text-xs font-semibold text-[#17A546] flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
-                          View <ArrowUpRight className="h-3 w-3" />
-                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <Link
+                            href={`/admin/dashboard/courses/${course.id}/edit`}
+                            className="text-xs font-semibold text-[#676E85] hover:text-[#0A1B39] bg-neutral-100 hover:bg-neutral-200 px-2 py-1 rounded-md transition-colors"
+                          >
+                            Edit
+                          </Link>
+                          <button
+                            onClick={() => {
+                              setSelectedIds(new Set([course.id]));
+                              setShowDeleteModal(true);
+                            }}
+                            className="p-1 rounded-md text-neutral-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                            title="Delete Course"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </Link>
-                </div>
-              ))}
+                  </div>
+                );
+              })}
             </div>
 
             {/* Pagination */}
@@ -371,47 +352,47 @@ const AdminCoursesPage = () => {
 
       {/* Floating Action Bar */}
       {selectedIds.size > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-[#0A1B39] text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-5 animate-in slide-in-from-bottom-8 fade-in duration-300">
-          <span className="text-sm font-semibold whitespace-nowrap">{selectedIds.size} selected</span>
-          <div className="w-px h-5 bg-white/20" />
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-[#0A1B39] text-white px-4 py-2.5 rounded-md shadow-2xl flex items-center gap-4 animate-in slide-in-from-bottom-8 fade-in duration-300">
+          <span className="text-xs font-semibold whitespace-nowrap">{selectedIds.size} selected</span>
+          <div className="w-px h-4 bg-white/20" />
           <button
             onClick={() => setShowDeleteModal(true)}
-            className="text-sm font-bold text-red-400 hover:text-red-300 transition-colors flex items-center gap-1.5 whitespace-nowrap"
+            className="text-xs font-bold text-red-400 hover:text-red-300 transition-colors flex items-center gap-1.5 whitespace-nowrap"
           >
-            <Trash2 className="w-4 h-4" /> Delete
+            <Trash2 className="w-3.5 h-3.5" /> Delete
           </button>
           <button
             onClick={() => setSelectedIds(new Set())}
             className="p-1 hover:bg-white/10 rounded-md transition-colors ml-2"
           >
-            <XCircle className="w-5 h-5 text-neutral-400" />
+            <XCircle className="w-4 h-4 text-neutral-400" />
           </button>
         </div>
       )}
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0A1B39]/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 w-full shadow-2xl animate-in zoom-in-95 duration-200">
-            <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center mb-5 mx-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0A1B39]/40 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white rounded-md p-6 sm:p-8 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mb-4 mx-auto">
               <AlertTriangle className="w-6 h-6 text-red-500" />
             </div>
-            <h3 className="text-xl font-bold text-[#0A1B39] text-center mb-2">Delete Course{selectedIds.size > 1 ? "s" : ""}</h3>
-            <p className="text-[13px] text-[#676E85] text-center mb-8 leading-relaxed">
+            <h3 className="text-lg font-bold text-[#0A1B39] text-center mb-2">Delete Course{selectedIds.size > 1 ? "s" : ""}</h3>
+            <p className="text-xs text-[#676E85] text-center mb-6 leading-relaxed">
               Are you sure you want to delete {selectedIds.size} selected course{selectedIds.size > 1 ? "s" : ""}? This action cannot be undone and will permanently remove all related content.
             </p>
             <div className="flex gap-3">
               <Button
                 variant="outline"
                 onClick={() => setShowDeleteModal(false)}
-                className="flex-1 rounded-xl h-11 font-semibold border-neutral-200 text-[#0A1B39] hover:bg-neutral-50"
+                className="flex-1 rounded-md h-10 font-semibold border-neutral-200 text-[#0A1B39] hover:bg-neutral-50 text-xs"
                 disabled={isDeleting}
               >
                 Cancel
               </Button>
               <Button
-                onClick={executeDelete}
-                className="flex-1 rounded-xl h-11 font-bold bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/20"
+                onClick={handleDeleteSelected}
+                className="flex-1 rounded-md h-10 font-bold bg-red-500 hover:bg-red-600 text-white shadow-xs text-xs"
                 disabled={isDeleting}
               >
                 {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Yes, Delete"}
@@ -420,8 +401,9 @@ const AdminCoursesPage = () => {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 };
+
 
 export default AdminCoursesPage;

@@ -12,8 +12,8 @@ const contactMethods = [
   {
     title: "Call Us",
     description: "Mon–Fri from 8am to 5pm WAT.",
-    value: "+234 800 000 0000",
-    href: "tel:+2348000000000",
+    value: "+234 907 810 6774",
+    href: "tel:+2349078106774",
     icon: Phone,
     color: "bg-[#17A546]/10 text-[#17A546]",
   },
