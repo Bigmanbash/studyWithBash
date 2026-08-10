@@ -4,7 +4,7 @@
 
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import type { AuthUser } from "./interface";
+import type { AuthUser, UserRole } from "./interface";
 
 /**
  * Get the current session from the request headers.
@@ -19,12 +19,18 @@ export async function getServerSession(): Promise<AuthUser | null> {
 
     if (!session?.user) return null;
 
+    const u = session.user as Record<string, unknown>;
+
     return {
       id: session.user.id,
       name: session.user.name,
       email: session.user.email,
-      role: (session.user as { role?: string }).role as AuthUser["role"] ?? "student",
+      role: (u.role as UserRole) ?? "student",
       image: session.user.image,
+      referredBy: u.referredBy as string | undefined,
+      referralCodeUsed: u.referralCodeUsed as string | undefined,
+      schoolName: u.schoolName as string | undefined,
+      estimatedStudents: u.estimatedStudents as number | undefined,
     };
   } catch {
     return null;
@@ -48,5 +54,14 @@ export async function requireServerSession(): Promise<AuthUser> {
 export async function requireAdminSession(): Promise<AuthUser> {
   const user = await requireServerSession();
   if (user.role !== "admin") throw new Error("FORBIDDEN");
+  return user;
+}
+
+/**
+ * Assert the user is an approved agent. Throws if session missing or role isn't "agent".
+ */
+export async function requireAgentSession(): Promise<AuthUser> {
+  const user = await requireServerSession();
+  if (user.role !== "agent") throw new Error("FORBIDDEN");
   return user;
 }

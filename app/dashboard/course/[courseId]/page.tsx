@@ -7,13 +7,17 @@ import {
   ArrowLeft, CheckCircle, FileText, Lock, ShoppingCart,
   Eye, Loader2, BookOpen, Tag, ChevronDown,
   X,
+  Sparkles,
 } from "lucide-react";
 import { AvailableCourses, PageHeader } from "@/components/dashboard";
 import { use, useState, useEffect } from "react";
+import { useSession } from "@/lib/auth-client";
 import { useCourseDetails, useStudentDashboard } from "@/hooks/useStudentDashboard";
 import { usePaystack } from "@/hooks/usePaystack";
 import { PaymentSuccessModal } from "@/components/modals/PaymentSuccessModal";
 import { fetchCourseTopics, TopicWithSubtopics } from "@/app/api/courses";
+
+import { TierKey, TIERS, getAvailableTiers, getTierPrice, isHigherTier } from "@/lib/tiers";
 
 export default function CourseDetailsPage({ params }: { params: Promise<{ courseId: string }> }) {
   const resolvedParams = use(params);
@@ -22,15 +26,31 @@ export default function CourseDetailsPage({ params }: { params: Promise<{ course
 
   const { data: courseData, isLoading, error } = useCourseDetails(courseId);
   const { data: dashboardData } = useStudentDashboard(1, 10);
+  const { data: session } = useSession();
   const { checkout, status: payStatus, error: payError, reset: payReset } = usePaystack();
 
   const course = courseData?.course;
   const isPurchased = courseData?.isPurchased;
+  const purchasedTier = courseData?.purchasedTier || (isPurchased ? "basic" : null);
   const otherCourses = dashboardData?.available?.filter((c) => c.id !== courseId).slice(0, 4) || [];
 
+  const [selectedTier, setSelectedTier] = useState<TierKey>("basic");
+  const [quantity, setQuantity] = useState(1);
   const [topics, setTopics] = useState<TopicWithSubtopics[]>([]);
   const [topicsLoading, setTopicsLoading] = useState(true);
   const [expandedTopics, setExpandedTopics] = useState<Set<string>>(new Set());
+
+  const isAgent = (session?.user as any)?.role === "agent";
+
+  // Auto-select standard/premium tier if basic is default but standard/premium is available
+  useEffect(() => {
+    if (course) {
+      const avail = getAvailableTiers(course);
+      if (avail.includes("standard")) setSelectedTier("standard");
+      else if (avail.includes("premium")) setSelectedTier("premium");
+      else setSelectedTier("basic");
+    }
+  }, [course]);
 
   useEffect(() => {
     fetchCourseTopics(courseId)
@@ -53,8 +73,8 @@ export default function CourseDetailsPage({ params }: { params: Promise<{ course
     });
   };
 
-  const handlePayNow = async () => {
-    await checkout(courseId);
+  const handlePayNow = async (targetTier?: TierKey) => {
+    await checkout(courseId, targetTier || selectedTier, isAgent ? quantity : 1);
   };
 
   if (isLoading) {
@@ -102,9 +122,9 @@ export default function CourseDetailsPage({ params }: { params: Promise<{ course
       </header>
 
       <main className="px-4 sm:px-6 lg:px-8 py-5 sm:py-8 max-w-5xl mx-auto space-y-4 sm:space-y-6">
-        <div className="bg-white rounded-xl border border-neutral-100 shadow-sm overflow-hidden flex flex-col lg:flex-row">
-          <div className="w-full lg:w-[42%] bg-neutral-50/50 p-6 sm:p-10 flex flex-col items-center justify-start border-b lg:border-b-0 lg:border-r border-neutral-100">
-            <div className="relative w-full aspect-[4/5] sm:aspect-3/4 rounded-xl overflow-hidden border border-neutral-200/80 shadow-md">
+        <div className="bg-white rounded-xl border border-neutral-100 shadow-sm overflow-hidden flex flex-col lg:flex-row lg:items-stretch">
+          <div className="w-full lg:w-[42%] bg-neutral-50/50 p-5 sm:p-8 lg:p-8 flex flex-col items-center justify-between border-b lg:border-b-0 lg:border-r border-neutral-100 shrink-0">
+            <div className="relative w-full h-full min-h-[340px] sm:min-h-[400px] lg:min-h-0 flex-1 rounded-xl overflow-hidden border border-neutral-200/80 shadow-md">
               <Image
                 src={course?.coverImagePath || "/img/hero_section.png"}
                 alt={`${course.title} cover`}
@@ -133,7 +153,7 @@ export default function CourseDetailsPage({ params }: { params: Promise<{ course
             </div>
 
             {isPurchased && (
-              <p className="mt-4 text-sm text-[#17A546] flex items-center gap-1.5 font-medium">
+              <p className="mt-4 text-sm text-[#17A546] flex items-center gap-1.5 font-medium shrink-0">
                 <CheckCircle className="w-4 h-4" />
                 You own this material
               </p>
@@ -220,82 +240,242 @@ export default function CourseDetailsPage({ params }: { params: Promise<{ course
               </div>
             </div>
 
+            {/* ── Tier Selection & Purchase ────────────────────────── */}
             <div className="pt-5 border-t border-neutral-100 mt-auto">
               {!isPurchased ? (
-                <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-                  <div>
-                    <p className="text-[10px] text-[#676E85] mb-1 uppercase tracking-wide font-medium">One-time payment</p>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-2xl sm:text-3xl font-extrabold text-[#0A1B39]">
-                        ₦{(course.price / 100).toLocaleString()}
-                      </span>
-                      {course.originalPrice && (
-                        <span className="text-sm text-[#98A2B3] line-through font-medium">
-                          ₦{(course.originalPrice / 100).toLocaleString()}
-                        </span>
-                      )}
-                    </div>
-                    {course.originalPrice && (
-                      <p className="text-[11px] text-[#17A546] font-semibold mt-0.5">
-                        Save ₦{((course.originalPrice - course.price) / 100).toLocaleString()}
-                      </p>
-                    )}
-                  </div>
+                <div className="space-y-5">
+                  {/* Tier Selection Cards (shown if more than basic is available) */}
+                  {getAvailableTiers(course).length > 1 && (
+                    <div>
+                      <label className="block text-[11px] font-bold text-[#0A1B39] uppercase tracking-wider mb-2.5">
+                        Select Access Tier
+                      </label>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                        {getAvailableTiers(course).map((tierKey) => {
+                          const tier = TIERS[tierKey];
+                          const price = getTierPrice(course, tierKey);
+                          const isSelected = selectedTier === tierKey;
 
-                  <div className="flex flex-col gap-2 w-full sm:w-[340px]">
-                    {payStatus === "failed" && payError && (
-                      <div className="p-2.5 rounded-lg bg-red-50 border border-red-200 text-red-600 text-xs flex items-center justify-between">
-                        <span>{payError}</span>
-                        <button onClick={payReset} className="p-1 hover:bg-red-100 rounded">
-                          <X className="w-3 h-3" />
+                          return (
+                            <button
+                              key={tierKey}
+                              type="button"
+                              onClick={() => setSelectedTier(tierKey)}
+                              className={`
+                                flex flex-col justify-between p-3.5 rounded-xl border text-left transition-all relative
+                                ${isSelected
+                                  ? "border-[#17A546] bg-[#17A546]/[0.03] ring-1 ring-[#17A546] shadow-sm"
+                                  : "border-neutral-200 hover:border-neutral-300 bg-white"
+                                }
+                              `}
+                            >
+                              {tier.badge && (
+                                <span className={`absolute -top-2.5 right-3 text-[9px] font-bold px-2 py-0.5 rounded-full ${tier.badgeBg} ${tier.badgeText}`}>
+                                  {tier.badge}
+                                </span>
+                              )}
+                              <div>
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className="font-bold text-xs text-[#0A1B39]">
+                                    {tier.label}
+                                  </span>
+                                  {isSelected && (
+                                    <CheckCircle className="w-4 h-4 text-[#17A546]" />
+                                  )}
+                                </div>
+                                <p className="text-[10px] text-[#676E85] leading-tight mb-2.5">
+                                  {tier.description}
+                                </p>
+                              </div>
+                              <div className="pt-2 border-t border-neutral-100 flex items-baseline justify-between w-full mt-1">
+                                <span className="text-base font-extrabold text-[#0A1B39]">
+                                  ₦{(price / 100).toLocaleString()}
+                                </span>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Checkout & Price Summary */}
+                  <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pt-2 border-t border-neutral-100">
+                    <div>
+                      <p className="text-[10px] text-[#676E85] mb-1 uppercase tracking-wide font-medium">
+                        {selectedTier ? `${TIERS[selectedTier].label} Tier · One-time payment` : "One-time payment"}
+                      </p>
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-2xl sm:text-3xl font-extrabold text-[#0A1B39]">
+                            ₦{((getTierPrice(course, selectedTier) * quantity) / 100).toLocaleString()}
+                          </span>
+                          {course.originalPrice && quantity === 1 && (
+                            <p className="text-[11px] text-[#17A546] font-semibold mt-0.5">
+                              Save ₦{((course.originalPrice - getTierPrice(course, selectedTier)) / 100).toLocaleString()}
+                            </p>
+                          )}
+                        </div>
+                        {isAgent && (
+                          <div className="flex items-center gap-2 mt-2">
+                            <span className="text-xs font-semibold text-[#0A1B39]">Quantity:</span>
+                            <div className="flex items-center border border-neutral-200 rounded-md bg-white overflow-hidden">
+                              <button 
+                                onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                                className="px-2.5 py-1 text-[#676E85] hover:bg-neutral-50 hover:text-[#0A1B39]"
+                              >-</button>
+                              <span className="px-3 py-1 text-sm font-semibold text-[#0A1B39] border-x border-neutral-200 min-w-[40px] text-center">
+                                {quantity}
+                              </span>
+                              <button 
+                                onClick={() => setQuantity(quantity + 1)}
+                                className="px-2.5 py-1 text-[#676E85] hover:bg-neutral-50 hover:text-[#0A1B39]"
+                              >+</button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-2 w-full sm:w-[340px]">
+                      {payStatus === "failed" && payError && (
+                        <div className="p-2.5 rounded-lg bg-red-50 border border-red-200 text-red-600 text-xs flex items-center justify-between">
+                          <span>{payError}</span>
+                          <button onClick={payReset} className="p-1 hover:bg-red-100 rounded">
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      )}
+                      <div className="flex gap-3 w-full">
+                        <button
+                          onClick={handlePreview}
+                          className="shrink-0 bg-neutral-100 hover:bg-neutral-200 text-[#0A1B39] px-4 py-2.5 rounded-lg font-semibold text-[13px] flex items-center justify-center gap-1.5 transition-colors"
+                        >
+                          <Eye className="w-4 h-4" />
+                          Preview
+                        </button>
+                        <button
+                          onClick={() => handlePayNow(selectedTier)}
+                          disabled={payStatus === "loading"}
+                          className="flex-1 bg-[#17A546] hover:bg-[#128638] text-white px-6 py-2.5 rounded-lg font-bold text-[14px] flex items-center justify-center gap-2 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {payStatus === "loading" ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <ShoppingCart className="w-4 h-4" />
+                          )}
+                          {payStatus === "loading" ? "Processing..." : `Get ${TIERS[selectedTier].label}`}
                         </button>
                       </div>
-                    )}
-                    <div className="flex gap-3 w-full">
-                      <button
-                        onClick={handlePreview}
-                        className="shrink-0 bg-neutral-100 hover:bg-neutral-200 text-[#0A1B39] px-4 py-2.5 rounded-lg font-semibold text-[13px] flex items-center justify-center gap-1.5 transition-colors"
-                      >
-                        <Eye className="w-4 h-4" />
-                        Preview
-                      </button>
-                      <button
-                        onClick={handlePayNow}
-                        disabled={payStatus === "loading"}
-                        className="flex-1 bg-[#17A546] hover:bg-[#128638] text-white px-6 py-2.5 rounded-lg font-bold text-[14px] flex items-center justify-center gap-2 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {payStatus === "loading" ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <ShoppingCart className="w-4 h-4" />
-                        )}
-                        {payStatus === "loading" ? "Processing..." : "Pay Now"}
-                      </button>
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-[10px] text-[#676E85] mb-1 uppercase tracking-wide font-medium">Status</p>
-                    <p className="font-bold text-[#17A546] flex items-center gap-1.5 text-sm">
-                      <CheckCircle className="w-4 h-4" />
-                      Purchased
-                    </p>
+                <div className="space-y-4">
+                  {/* Current Active Tier Pill */}
+                  <div className="flex items-center justify-between bg-[#17A546]/10 border border-[#17A546]/20 p-4 rounded-xl">
+                    <div>
+                      <p className="text-[10px] text-[#676E85] mb-0.5 uppercase tracking-wide font-medium">Your Current Access</p>
+                      <p className="font-extrabold text-[#17A546] flex items-center gap-1.5 text-base capitalize">
+                        <CheckCircle className="w-4 h-4" />
+                        {purchasedTier} Access
+                      </p>
+                    </div>
+                    <Link
+                      href={`/dashboard/read/${resolvedParams.courseId}`}
+                      className="bg-[#0A1B39] hover:bg-[#0A1B39]/90 text-white px-4 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-1.5 transition-colors shadow-sm"
+                    >
+                      <FileText className="w-4 h-4" />
+                      Open Material
+                    </Link>
                   </div>
-                  <Link
-                    href={`/dashboard/read/${resolvedParams.courseId}`}
-                    className="bg-[#0A1B39] hover:bg-[#0A1B39]/90 text-white px-4 py-2 rounded-md font-semibold text-sm flex items-center gap-1.5 transition-colors"
-                  >
-                    <FileText className="w-4 h-4" />
-                    Open Material
-                  </Link>
+
+                  {/* Multi-Tier Upgrade Options for Existing Owners */}
+                  {purchasedTier && (
+                    (() => {
+                      const available = getAvailableTiers(course);
+                      const higherTiers = available.filter((t) => isHigherTier(t, purchasedTier));
+                      if (higherTiers.length === 0) return null;
+
+                      const currentPrice = getTierPrice(course, purchasedTier);
+
+                      return (
+                        <div className="space-y-3 pt-2">
+                          <div className="flex items-center justify-between">
+                            <label className="block text-[11px] font-bold text-[#0A1B39] uppercase tracking-wider">
+                              Available Upgrades (Pay Only Difference)
+                            </label>
+                            <span className="text-[10px] font-bold text-[#17A546] bg-[#17A546]/10 border border-[#17A546]/20 px-2 py-0.5 rounded-full">
+                              Instant Access
+                            </span>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                            {higherTiers.map((tierKey) => {
+                              const tier = TIERS[tierKey];
+                              const targetPrice = getTierPrice(course, tierKey);
+                              const upgradeCost = targetPrice - currentPrice;
+                              const isPremium = tierKey === "premium";
+
+                              return (
+                                <div
+                                  key={tierKey}
+                                  className={`p-4 rounded-xl border flex flex-col justify-between space-y-3.5 transition-all shadow-sm ${
+                                    isPremium
+                                      ? "bg-[#17A546]/[0.06] border-[#17A546]/30 hover:border-[#17A546]/50 hover:shadow-md"
+                                      : "bg-[#17A546]/[0.03] border-[#17A546]/20 hover:border-[#17A546]/40 hover:shadow-md"
+                                  }`}
+                                >
+                                  <div>
+                                    <div className="flex items-center justify-between mb-1.5">
+                                      <span className="font-bold text-xs sm:text-sm text-[#0A1B39] flex items-center gap-1.5">
+                                        <Sparkles className="w-3.5 h-3.5 text-[#17A546]" />
+                                        {tier.label} Tier
+                                      </span>
+                                      {tier.badge && (
+                                        <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${tier.badgeBg} ${tier.badgeText}`}>
+                                          {tier.badge}
+                                        </span>
+                                      )}
+                                    </div>
+                                    <p className="text-[11px] text-[#676E85] leading-relaxed">
+                                      {tier.description}
+                                    </p>
+                                  </div>
+
+                                  <div className="pt-3 border-t border-[#17A546]/15 flex items-center justify-between gap-2">
+                                    <div>
+                                      <p className="text-[10px] text-[#676E85] font-medium uppercase tracking-wider">Pay Difference</p>
+                                      <p className="text-sm sm:text-base font-extrabold text-[#0A1B39]">
+                                        ₦{(upgradeCost / 100).toLocaleString()}
+                                      </p>
+                                    </div>
+                                    <button
+                                      onClick={() => handlePayNow(tierKey)}
+                                      disabled={payStatus === "loading"}
+                                      className="bg-[#17A546] hover:bg-[#128638] text-white text-[12px] font-bold px-3.5 py-2 rounded-lg transition-all shadow-sm shrink-0 whitespace-nowrap flex items-center gap-1.5 disabled:opacity-50"
+                                    >
+                                      {payStatus === "loading" ? (
+                                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                      ) : (
+                                        <ShoppingCart className="w-3.5 h-3.5" />
+                                      )}
+                                      Upgrade
+                                    </button>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })()
+                  )}
                 </div>
               )}
             </div>
           </div>
         </div>
-
 
         {/* ── Curriculum ──────────────────────────────────────────── */}
         <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm overflow-hidden">

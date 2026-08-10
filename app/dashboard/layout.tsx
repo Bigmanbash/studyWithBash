@@ -13,6 +13,14 @@ export default async function DashboardLayout({ children }: { children: React.Re
     redirect("/admin/dashboard");
   }
 
+  if (session.role === "agent") {
+    redirect("/agent/dashboard");
+  }
+
+  if (session.role === "pending_agent") {
+    redirect("/login");
+  }
+
   return (
     <div className="min-h-screen bg-[#F7F9FC]">
       <Sidebar />

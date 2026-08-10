@@ -1,5 +1,5 @@
 import { db } from "@/lib/neon";
-import { topics, subtopics, subtopicMaterials } from "@/lib/neon/schema";
+import { topics, subtopics, subtopicMaterials, topicVideos, TopicVideo } from "@/lib/neon/schema";
 import { eq, asc } from "drizzle-orm";
 import { getSignedUrl } from "@/lib/supabase/storage";
 
@@ -12,6 +12,7 @@ export type TopicWithSubtopics = {
   createdAt: Date;
   updatedAt: Date;
   subtopics: SubtopicWithMaterials[];
+  videos?: TopicVideo[];
 };
 
 export type SubtopicWithMaterials = {
@@ -38,7 +39,7 @@ export type MaterialWithUrl = {
 };
 
 /**
- * Get all topics for a course with nested subtopics and materials.
+ * Get all topics for a course with nested subtopics, materials, and videos.
  * Materials get signed URLs generated for them.
  */
 export async function getCourseTopics(courseId: string): Promise<TopicWithSubtopics[]> {
@@ -51,20 +52,20 @@ export async function getCourseTopics(courseId: string): Promise<TopicWithSubtop
 
   if (topicRows.length === 0) return [];
 
-  // Fetch all subtopics for these topics
   const topicIds = topicRows.map((t) => t.id);
-  const allSubtopics = await db
-    .select()
-    .from(subtopics)
-    .where(
-      // Use 'in' for multiple topic IDs
-      topicIds.length === 1
-        ? eq(subtopics.topicId, topicIds[0])
-        : eq(subtopics.topicId, topicIds[0]) // fallback, we'll filter below
-    )
-    .orderBy(asc(subtopics.order), asc(subtopics.createdAt));
 
-  // Actually fetch all subtopics properly using relational query
+  // Fetch all topic videos
+  const videoRows: TopicVideo[] = [];
+  for (const tid of topicIds) {
+    const vids = await db
+      .select()
+      .from(topicVideos)
+      .where(eq(topicVideos.topicId, tid))
+      .orderBy(asc(topicVideos.order), asc(topicVideos.createdAt));
+    videoRows.push(...vids);
+  }
+
+  // Fetch all subtopics for these topics
   const subtopicRows: (typeof subtopics.$inferSelect)[] = [];
   for (const tid of topicIds) {
     const subs = await db
@@ -105,6 +106,7 @@ export async function getCourseTopics(courseId: string): Promise<TopicWithSubtop
 
   return topicRows.map((topic) => ({
     ...topic,
+    videos: videoRows.filter((v) => v.topicId === topic.id),
     subtopics: subtopicRows
       .filter((s) => s.topicId === topic.id)
       .map((s) => subtopicMap.get(s.id)!),

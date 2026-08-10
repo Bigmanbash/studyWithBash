@@ -1,168 +1,26 @@
 "use client";
 
 import { useState } from "react";
-import { AdminDashboardHeader } from "@/components/admin/dashboard";
+import { AdminDashboardHeader, AdminFilterBar } from "@/components/admin/dashboard";
 import {
   CreditCard,
-  Search,
   Clock,
   CheckCircle2,
   XCircle,
-  AlertCircle,
-  Filter,
   Download,
   Eye,
   Check,
   X,
-  ArrowUpRight,
-  ArrowDownRight,
   Banknote,
-  Users,
-  Receipt,
+  FileText,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { TierKey, TIERS } from "@/lib/tiers";
+import { useAdminPayments, useUpdatePaymentStatus, AdminPaymentData } from "@/app/api/adminUser/payments/client";
 
 type PaymentStatus = "pending" | "approved" | "rejected";
-
-interface Payment {
-  id: string;
-  student: string;
-  initials: string;
-  email: string;
-  course: string;
-  courseLevel: string;
-  amount: string;
-  rawAmount: number;
-  method: string;
-  reference: string;
-  status: PaymentStatus;
-  submittedAt: string;
-  proofUploaded: boolean;
-}
-
-const payments: Payment[] = [
-  {
-    id: "PAY-4821",
-    student: "Adaeze Okonkwo",
-    initials: "AO",
-    email: "adaeze@email.com",
-    course: "Physics",
-    courseLevel: "SS2",
-    amount: "₦15,000",
-    rawAmount: 15000,
-    method: "Bank Transfer",
-    reference: "TRF-789456123",
-    status: "pending",
-    submittedAt: "2 min ago",
-    proofUploaded: true,
-  },
-  {
-    id: "PAY-4820",
-    student: "Tunde Bakare",
-    initials: "TB",
-    email: "tunde.b@email.com",
-    course: "Mathematics",
-    courseLevel: "SS3",
-    amount: "₦15,000",
-    rawAmount: 15000,
-    method: "Bank Transfer",
-    reference: "TRF-456789012",
-    status: "pending",
-    submittedAt: "15 min ago",
-    proofUploaded: true,
-  },
-  {
-    id: "PAY-4819",
-    student: "Blessing Eze",
-    initials: "BE",
-    email: "blessing.e@email.com",
-    course: "Chemistry",
-    courseLevel: "SS1",
-    amount: "₦12,000",
-    rawAmount: 12000,
-    method: "USSD",
-    reference: "USR-321654987",
-    status: "pending",
-    submittedAt: "45 min ago",
-    proofUploaded: false,
-  },
-  {
-    id: "PAY-4818",
-    student: "Emeka Nwosu",
-    initials: "EN",
-    email: "emeka.n@email.com",
-    course: "Biology",
-    courseLevel: "SS2",
-    amount: "₦15,000",
-    rawAmount: 15000,
-    method: "Bank Transfer",
-    reference: "TRF-654987321",
-    status: "pending",
-    submittedAt: "1 hour ago",
-    proofUploaded: true,
-  },
-  {
-    id: "PAY-4817",
-    student: "Fatima Yusuf",
-    initials: "FY",
-    email: "fatima.y@email.com",
-    course: "English",
-    courseLevel: "SS3",
-    amount: "₦10,000",
-    rawAmount: 10000,
-    method: "Card",
-    reference: "CRD-147258369",
-    status: "approved",
-    submittedAt: "3 hours ago",
-    proofUploaded: true,
-  },
-  {
-    id: "PAY-4816",
-    student: "Uche Okoro",
-    initials: "UO",
-    email: "uche.o@email.com",
-    course: "Government",
-    courseLevel: "SS2",
-    amount: "₦12,000",
-    rawAmount: 12000,
-    method: "Bank Transfer",
-    reference: "TRF-258369147",
-    status: "approved",
-    submittedAt: "5 hours ago",
-    proofUploaded: true,
-  },
-  {
-    id: "PAY-4815",
-    student: "Ngozi Chukwu",
-    initials: "NC",
-    email: "ngozi.c@email.com",
-    course: "Economics",
-    courseLevel: "SS1",
-    amount: "₦10,000",
-    rawAmount: 10000,
-    method: "Bank Transfer",
-    reference: "TRF-963852741",
-    status: "rejected",
-    submittedAt: "1 day ago",
-    proofUploaded: false,
-  },
-  {
-    id: "PAY-4814",
-    student: "Aisha Mohammed",
-    initials: "AM",
-    email: "aisha.m@email.com",
-    course: "Literature",
-    courseLevel: "SS3",
-    amount: "₦12,000",
-    rawAmount: 12000,
-    method: "USSD",
-    reference: "USR-741852963",
-    status: "approved",
-    submittedAt: "1 day ago",
-    proofUploaded: true,
-  },
-];
 
 const statusConfig = {
   pending: {
@@ -188,49 +46,94 @@ const statusConfig = {
   },
 };
 
+function formatAmount(amountKobo: number): string {
+  return `₦${(amountKobo / 100).toLocaleString()}`;
+}
+
+function getInitials(name: string | null | undefined): string {
+  if (!name) return "UK";
+  return name
+    .split(/\s+/)
+    .map((n) => n[0])
+    .join("")
+    .substring(0, 2)
+    .toUpperCase();
+}
+
+function timeAgo(dateString: string): string {
+  const date = new Date(dateString);
+  const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+  let interval = seconds / 31536000;
+  if (interval > 1) return Math.floor(interval) + " years ago";
+  interval = seconds / 2592000;
+  if (interval > 1) return Math.floor(interval) + " months ago";
+  interval = seconds / 86400;
+  if (interval > 1) return Math.floor(interval) + " days ago";
+  interval = seconds / 3600;
+  if (interval > 1) return Math.floor(interval) + " hours ago";
+  interval = seconds / 60;
+  if (interval > 1) return Math.floor(interval) + " minutes ago";
+  return "just now";
+}
+
 export default function AdminPaymentsPage() {
+  const { data: paymentsList = [], isLoading } = useAdminPayments();
+  const updateStatusMutation = useUpdatePaymentStatus();
+  
   const [activeTab, setActiveTab] = useState<"all" | PaymentStatus>("pending");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedPayment, setSelectedPayment] = useState<string | null>(null);
+  const [selectedPaymentId, setSelectedPaymentId] = useState<string | null>(null);
+  const [viewingReceipt, setViewingReceipt] = useState<AdminPaymentData | null>(null);
 
-  const filteredPayments = payments.filter((payment) => {
+  const handleUpdatePaymentStatus = (id: string, newStatus: PaymentStatus) => {
+    updateStatusMutation.mutate({ id, status: newStatus as "approved" | "rejected" });
+  };
+
+  const filteredPayments = paymentsList.filter((payment) => {
     const matchesTab = activeTab === "all" || payment.status === activeTab;
-    const matchesSearch =
-      payment.student.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      payment.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      payment.reference.toLowerCase().includes(searchQuery.toLowerCase());
+    const searchString = `${payment.student?.name || ""} ${payment.id} ${payment.reference}`.toLowerCase();
+    const matchesSearch = searchString.includes(searchQuery.toLowerCase());
     return matchesTab && matchesSearch;
   });
 
-  const pendingCount = payments.filter((p) => p.status === "pending").length;
-  const approvedCount = payments.filter((p) => p.status === "approved").length;
-  const rejectedCount = payments.filter((p) => p.status === "rejected").length;
-  const totalPending = payments
+  const pendingCount = paymentsList.filter((p) => p.status === "pending").length;
+  const approvedCount = paymentsList.filter((p) => p.status === "approved").length;
+  const rejectedCount = paymentsList.filter((p) => p.status === "rejected").length;
+  const totalPending = paymentsList
     .filter((p) => p.status === "pending")
-    .reduce((sum, p) => sum + p.rawAmount, 0);
+    .reduce((sum, p) => sum + p.amount, 0);
+    
+  const totalRevenue = paymentsList
+    .filter((p) => p.status === "approved")
+    .reduce((sum, p) => sum + p.amount, 0);
 
-  const selected = payments.find((p) => p.id === selectedPayment);
+  // If selected payment is not found in the list (or null), use the first one if available
+  let selected = paymentsList.find((p) => p.id === selectedPaymentId) || null;
+  if (!selected && paymentsList.length > 0) {
+    selected = paymentsList[0];
+  }
 
   return (
-    <>
+    <div className="min-h-screen bg-[#F7F9FC]">
       <AdminDashboardHeader />
-      <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
-        {/* Page Header */}
+      <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 max-w-7xl mx-auto">
+        
+        {/* Unboxed Modern Page Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-[#0A1B39]">
-              Payment Approvals
-            </h2>
-            <p className="text-sm sm:text-base text-[#676E85] mt-1">
-              Review and process student payment submissions.
+            <h1 className="text-2xl font-bold tracking-tight text-[#0A1B39]">
+              Payments & Approvals
+            </h1>
+            <p className="text-xs sm:text-sm text-[#676E85] mt-1 font-normal">
+              Review transaction receipts, approve bank transfers, and grant course access.
             </p>
           </div>
           <Button
             variant="outline"
-            className="border-neutral-200 text-[#0A1B39] rounded-md h-10 px-4 font-medium w-fit hover:bg-neutral-50 shadow-sm"
+            className="border-neutral-200 text-[#0A1B39] rounded-md h-9 px-4 font-semibold text-xs w-fit hover:bg-neutral-50 shadow-2xs"
           >
-            <Download className="h-4 w-4 mr-2" />
-            Export
+            <Download className="h-4 w-4 mr-1.5" />
+            Export Payments
           </Button>
         </div>
 
@@ -243,15 +146,15 @@ export default function AdminPaymentsPage() {
               icon: Clock,
               color: "text-[#F5B546]",
               bg: "bg-[#F5B546]/10",
-              sub: `₦${(totalPending / 1000).toFixed(0)}K total`,
+              sub: `${formatAmount(totalPending)} total`,
             },
             {
-              label: "Approved Today",
+              label: "Approved",
               value: approvedCount.toString(),
               icon: CheckCircle2,
               color: "text-[#0E7B33]",
               bg: "bg-[#0E7B33]/10",
-              sub: "+₦37K revenue",
+              sub: "Verified access",
             },
             {
               label: "Rejected",
@@ -259,350 +162,355 @@ export default function AdminPaymentsPage() {
               icon: XCircle,
               color: "text-[#940803]",
               bg: "bg-[#940803]/10",
-              sub: "1 this week",
+              sub: "Decline notice",
             },
             {
               label: "Total Revenue",
-              value: "₦4.2M",
+              value: formatAmount(totalRevenue),
               icon: Banknote,
               color: "text-[#17A546]",
               bg: "bg-[#17A546]/10",
-              sub: "+23% this month",
+              sub: "All time approved",
             },
           ].map((stat) => (
             <div
               key={stat.label}
-              className="bg-white rounded-xl p-4 sm:p-5 border border-neutral-200 shadow-sm"
+              className="bg-white rounded-md p-4 border border-neutral-200/80 shadow-2xs"
             >
-              <div className={`${stat.bg} rounded-md p-2 w-fit mb-3`}>
+              <div className={`${stat.bg} rounded-md p-2 w-fit mb-2.5 border border-neutral-100`}>
                 <stat.icon className={`h-4 w-4 ${stat.color}`} />
               </div>
               <p className="text-xl sm:text-2xl font-bold text-[#0A1B39]">
                 {stat.value}
               </p>
-              <p className="text-xs text-[#98A2B3] mt-0.5">{stat.label}</p>
-              <p className="text-[10px] text-[#17A546] font-medium mt-1">
+              <p className="text-xs text-[#676E85] font-medium mt-0.5">{stat.label}</p>
+              <p className="text-[10px] text-[#17A546] font-semibold mt-1">
                 {stat.sub}
               </p>
             </div>
           ))}
         </div>
 
-        {/* Main Content */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-          {/* Payment List */}
-          <div className="xl:col-span-2 bg-white rounded-xl border border-neutral-200 shadow-sm overflow-hidden">
-            {/* Filters */}
-            <div className="p-4 sm:p-5 border-b border-neutral-100">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                <div className="flex items-center bg-neutral-50 rounded-md p-1 border border-neutral-200 overflow-x-auto">
-                  {[
-                    { key: "pending" as const, label: "Pending", count: pendingCount },
-                    { key: "all" as const, label: "All", count: payments.length },
-                    { key: "approved" as const, label: "Approved", count: approvedCount },
-                    { key: "rejected" as const, label: "Rejected", count: rejectedCount },
-                  ].map((tab) => (
-                    <button
-                      key={tab.key}
-                      onClick={() => setActiveTab(tab.key)}
-                      className={cn(
-                        "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 whitespace-nowrap",
-                        activeTab === tab.key
-                          ? "bg-white text-[#0A1B39] shadow-sm"
-                          : "text-[#98A2B3] hover:text-[#676E85]"
-                      )}
-                    >
-                      {tab.label}
-                      <span
-                        className={cn(
-                          "text-[10px] font-bold px-1.5 py-0.5 rounded-full",
-                          activeTab === tab.key
-                            ? "bg-[#17A546]/10 text-[#17A546]"
-                            : "bg-neutral-100 text-[#98A2B3]"
-                        )}
-                      >
-                        {tab.count}
-                      </span>
-                    </button>
-                  ))}
-                </div>
+        {/* Unified Filter & Search Bar */}
+        <AdminFilterBar
+          tabs={[
+            { key: "pending", label: "Pending Review", count: pendingCount },
+            { key: "all", label: "All Payments", count: paymentsList.length },
+            { key: "approved", label: "Approved", count: approvedCount },
+            { key: "rejected", label: "Rejected", count: rejectedCount },
+          ]}
+          activeTab={activeTab}
+          onTabChange={(tab) => setActiveTab(tab)}
+          searchQuery={searchQuery}
+          onSearchChange={(val) => setSearchQuery(val)}
+          searchPlaceholder="Search by name, ID, ref..."
+        />
 
-                <div className="flex-1 flex items-center gap-2 w-full sm:w-auto sm:justify-end">
-                  <div className="flex items-center bg-neutral-50 rounded-md px-3 py-2 gap-2 border border-neutral-200 focus-within:border-[#17A546]/30 transition-colors flex-1 sm:flex-initial sm:w-56 shadow-sm">
-                    <Search className="h-3.5 w-3.5 text-[#98A2B3]" />
-                    <input
-                      type="text"
-                      placeholder="Search by name, ID, ref..."
-                      className="bg-transparent text-xs outline-none w-full placeholder:text-[#98A2B3]"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                  </div>
-                  <button className="h-9 w-9 rounded-md bg-neutral-50 border border-neutral-200 flex items-center justify-center hover:bg-neutral-100 transition-colors flex-shrink-0 shadow-sm">
-                    <Filter className="h-3.5 w-3.5 text-[#676E85]" />
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Payment Table */}
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          {/* Payment Table */}
+          <div className="lg:col-span-2 bg-white rounded-md border border-neutral-200/80 shadow-2xs overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-neutral-100">
-                    <th className="text-left text-[10px] uppercase tracking-wider font-semibold text-[#98A2B3] px-5 py-3">
+                  <tr className="border-b border-neutral-200/80 bg-neutral-50/60">
+                    <th className="text-left text-[10px] uppercase tracking-wider font-semibold text-[#676E85] px-4 py-3">
                       Student
                     </th>
-                    <th className="text-left text-[10px] uppercase tracking-wider font-semibold text-[#98A2B3] px-5 py-3 hidden sm:table-cell">
+                    <th className="text-left text-[10px] uppercase tracking-wider font-semibold text-[#676E85] px-4 py-3 hidden sm:table-cell">
                       Course
                     </th>
-                    <th className="text-left text-[10px] uppercase tracking-wider font-semibold text-[#98A2B3] px-5 py-3">
+                    <th className="text-left text-[10px] uppercase tracking-wider font-semibold text-[#676E85] px-4 py-3">
                       Amount
                     </th>
-                    <th className="text-left text-[10px] uppercase tracking-wider font-semibold text-[#98A2B3] px-5 py-3 hidden md:table-cell">
-                      Method
-                    </th>
-                    <th className="text-left text-[10px] uppercase tracking-wider font-semibold text-[#98A2B3] px-5 py-3">
+                    <th className="text-left text-[10px] uppercase tracking-wider font-semibold text-[#676E85] px-4 py-3">
                       Status
                     </th>
-                    <th className="text-right text-[10px] uppercase tracking-wider font-semibold text-[#98A2B3] px-5 py-3">
-                      Action
+                    <th className="text-right text-[10px] uppercase tracking-wider font-semibold text-[#676E85] px-4 py-3">
+                      Actions
                     </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-neutral-100">
-                  {filteredPayments.map((payment) => {
-                    const status = statusConfig[payment.status];
-                    return (
-                      <tr
-                        key={payment.id}
-                        className={cn(
-                          "hover:bg-neutral-50/50 transition-colors cursor-pointer",
-                          selectedPayment === payment.id && "bg-[#17A546]/[0.02]"
-                        )}
-                        onClick={() => setSelectedPayment(payment.id)}
-                      >
-                        <td className="px-5 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className="h-9 w-9 rounded-full bg-[#030E36]/5 flex items-center justify-center text-[#030E36] font-bold text-[10px] flex-shrink-0">
-                              {payment.initials}
+                  {isLoading ? (
+                    <tr>
+                      <td colSpan={5} className="py-16 text-center">
+                        <Loader2 className="w-8 h-8 text-[#17A546] animate-spin mx-auto" />
+                        <p className="text-sm font-semibold text-[#0A1B39] mt-3">Loading payments...</p>
+                      </td>
+                    </tr>
+                  ) : filteredPayments.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="text-center py-16">
+                        <CreditCard className="h-10 w-10 text-[#98A2B3] mx-auto mb-3" />
+                        <p className="text-sm font-semibold text-[#0A1B39]">
+                          No payments found
+                        </p>
+                        <p className="text-xs text-[#676E85] mt-1">
+                          Try adjusting your filter selection.
+                        </p>
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredPayments.map((payment) => {
+                      const status = statusConfig[payment.status];
+                      const isSelected = selected?.id === payment.id;
+                      const tierKey = payment.tier as TierKey;
+                      const hasTier = tierKey && TIERS[tierKey];
+                      return (
+                        <tr
+                          key={payment.id}
+                          className={cn(
+                            "hover:bg-neutral-50/60 transition-colors cursor-pointer",
+                            isSelected && "bg-[#17A546]/[0.04]"
+                          )}
+                          onClick={() => setSelectedPaymentId(payment.id)}
+                        >
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-2.5">
+                              <div className="h-8 w-8 rounded-full bg-[#17A546]/10 flex items-center justify-center text-[#17A546] font-bold text-xs shrink-0">
+                                {getInitials(payment.student?.name)}
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-xs font-semibold text-[#0A1B39] truncate">
+                                  {payment.student?.name || "Unknown"}
+                                </p>
+                                <p className="text-[10px] text-[#676E85] truncate">
+                                  {payment.id.split("-")[0].substring(0,8)}...
+                                </p>
+                              </div>
                             </div>
-                            <div className="min-w-0">
-                              <p className="text-sm font-semibold text-[#0A1B39] truncate">
-                                {payment.student}
+                          </td>
+                          <td className="px-4 py-3 hidden sm:table-cell">
+                            <p className="text-xs font-medium text-[#0A1B39]">{payment.course?.subject || "N/A"}</p>
+                            <p className="text-[10px] text-[#676E85]">{payment.course?.level || "N/A"}</p>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-1.5">
+                              <p className="text-xs font-bold text-[#0A1B39]">
+                                {formatAmount(payment.amount)}
                               </p>
-                              <p className="text-[10px] text-[#98A2B3] truncate">
-                                {payment.id}
-                              </p>
+                              {hasTier && (
+                                <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-md capitalize ${TIERS[tierKey].badgeBg} ${TIERS[tierKey].badgeText}`}>
+                                  {TIERS[tierKey].label}
+                                </span>
+                              )}
                             </div>
-                          </div>
-                        </td>
-                        <td className="px-5 py-4 hidden sm:table-cell">
-                          <p className="text-sm text-[#0A1B39]">{payment.course}</p>
-                          <p className="text-[10px] text-[#98A2B3]">{payment.courseLevel}</p>
-                        </td>
-                        <td className="px-5 py-4">
-                          <p className="text-sm font-bold text-[#0A1B39]">
-                            {payment.amount}
-                          </p>
-                        </td>
-                        <td className="px-5 py-4 hidden md:table-cell">
-                          <p className="text-xs text-[#676E85]">{payment.method}</p>
-                        </td>
-                        <td className="px-5 py-4">
-                          <span
-                            className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-full ${status.color} ${status.bg}`}
-                          >
-                            <status.icon className="h-3 w-3" />
-                            {status.label}
-                          </span>
-                        </td>
-                        <td className="px-5 py-4">
-                          <div className="flex items-center justify-end gap-1.5">
-                            {payment.status === "pending" && (
-                              <>
-                                <button
-                                  className="h-7 w-7 rounded-lg bg-[#E7F6EC] flex items-center justify-center hover:bg-[#17A546]/20 transition-colors"
-                                  title="Approve"
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  <Check className="h-3.5 w-3.5 text-[#0E7B33]" />
-                                </button>
-                                <button
-                                  className="h-7 w-7 rounded-lg bg-[#FBEAE9] flex items-center justify-center hover:bg-red-100 transition-colors"
-                                  title="Reject"
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  <X className="h-3.5 w-3.5 text-[#940803]" />
-                                </button>
-                              </>
-                            )}
-                            <button
-                              className="h-7 w-7 rounded-md bg-neutral-50 border border-neutral-200 flex items-center justify-center hover:bg-neutral-100 transition-colors shadow-sm"
-                              title="View"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedPayment(payment.id);
-                              }}
+                          </td>
+                          <td className="px-4 py-3">
+                            <span
+                              className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md ${status.color} ${status.bg} border ${status.border}`}
                             >
-                              <Eye className="h-3.5 w-3.5 text-[#676E85]" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                              <status.icon className="h-3 w-3" />
+                              {status.label}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center justify-end gap-1">
+                              {payment.status === "pending" && (
+                                <>
+                                  <button
+                                    className="h-7 w-7 rounded-md bg-[#E7F6EC] flex items-center justify-center hover:bg-[#17A546]/20 transition-colors disabled:opacity-50"
+                                    title="Approve Payment"
+                                    disabled={updateStatusMutation.isPending}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleUpdatePaymentStatus(payment.id, "approved");
+                                    }}
+                                  >
+                                    <Check className="h-3.5 w-3.5 text-[#0E7B33]" />
+                                  </button>
+                                  <button
+                                    className="h-7 w-7 rounded-md bg-[#FBEAE9] flex items-center justify-center hover:bg-red-100 transition-colors disabled:opacity-50"
+                                    title="Reject Payment"
+                                    disabled={updateStatusMutation.isPending}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleUpdatePaymentStatus(payment.id, "rejected");
+                                    }}
+                                  >
+                                    <X className="h-3.5 w-3.5 text-[#940803]" />
+                                  </button>
+                                </>
+                              )}
+                              <button
+                                className="h-7 w-7 rounded-md bg-neutral-100 flex items-center justify-center hover:bg-neutral-200 text-[#676E85] transition-colors"
+                                title="View Details"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedPaymentId(payment.id);
+                                }}
+                              >
+                                <Eye className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
                 </tbody>
               </table>
             </div>
-
-            {filteredPayments.length === 0 && (
-              <div className="text-center py-16">
-                <CreditCard className="h-10 w-10 text-[#98A2B3] mx-auto mb-3" />
-                <p className="text-sm font-semibold text-[#0A1B39]">
-                  No payments found
-                </p>
-                <p className="text-xs text-[#676E85] mt-1">
-                  Try adjusting your filters.
-                </p>
-              </div>
-            )}
           </div>
 
-          {/* Detail Panel */}
-          <div className="bg-white rounded-xl border border-neutral-200 shadow-sm overflow-hidden">
+          {/* Payment Detail Inspector */}
+          <div className="bg-white rounded-md border border-neutral-200/80 shadow-2xs overflow-hidden p-5 flex flex-col justify-between space-y-4">
             {selected ? (
-              <div className="h-full flex flex-col">
-                {/* Header */}
-                <div className="p-5 border-b border-neutral-100">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-mono text-[#98A2B3]">
-                      {selected.id}
-                    </span>
-                    <span
-                      className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-full ${statusConfig[selected.status].color} ${statusConfig[selected.status].bg}`}
-                    >
+              <div className="space-y-4 flex-1 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between pb-3 border-b border-neutral-100 mb-4">
+                    <div>
+                      <span className="text-[10px] font-mono text-[#98A2B3] block">{selected.id}</span>
+                      <h3 className="text-sm font-bold text-[#0A1B39]">Payment Details</h3>
+                    </div>
+                    <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-md", statusConfig[selected.status].bg, statusConfig[selected.status].color)}>
                       {statusConfig[selected.status].label}
                     </span>
                   </div>
-                  <h3 className="text-base font-bold text-[#0A1B39]">
-                    Payment Details
-                  </h3>
-                </div>
 
-                {/* Student Info */}
-                <div className="p-5 border-b border-neutral-100">
-                  <p className="text-[10px] uppercase tracking-wider font-semibold text-[#98A2B3] mb-3">
-                    Student
-                  </p>
-                  <div className="flex items-center gap-3">
-                    <div className="h-11 w-11 rounded-full bg-[#030E36]/5 flex items-center justify-center text-[#030E36] font-bold text-xs">
-                      {selected.initials}
+                  {/* Student Info */}
+                  <div className="flex items-center gap-3 p-3 bg-neutral-50 rounded-md border border-neutral-200/60 mb-4">
+                    <div className="h-9 w-9 rounded-full bg-[#17A546]/10 flex items-center justify-center text-[#17A546] font-bold text-xs shrink-0">
+                      {getInitials(selected.student?.name)}
                     </div>
-                    <div>
-                      <p className="text-sm font-semibold text-[#0A1B39]">
-                        {selected.student}
-                      </p>
-                      <p className="text-xs text-[#98A2B3]">{selected.email}</p>
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold text-[#0A1B39] truncate">{selected.student?.name || "Unknown"}</p>
+                      <p className="text-[11px] text-[#676E85] truncate">{selected.student?.email || "N/A"}</p>
                     </div>
                   </div>
-                </div>
 
-                {/* Payment Info */}
-                <div className="p-5 flex-1">
-                  <p className="text-[10px] uppercase tracking-wider font-semibold text-[#98A2B3] mb-3">
-                    Transaction
-                  </p>
-                  <div className="grid grid-cols-2 gap-3">
-                    {[
-                      { label: "Course", value: `${selected.course} (${selected.courseLevel})` },
-                      { label: "Amount", value: selected.amount },
-                      { label: "Method", value: selected.method },
-                      { label: "Reference", value: selected.reference },
-                      { label: "Submitted", value: selected.submittedAt },
-                      {
-                        label: "Proof",
-                        value: selected.proofUploaded ? "Uploaded" : "Missing",
-                      },
-                    ].map((item) => (
-                      <div
-                        key={item.label}
-                        className="p-3 rounded-md bg-neutral-50 border border-neutral-200"
-                      >
-                        <p className="text-[10px] text-[#98A2B3] font-medium">
-                          {item.label}
-                        </p>
-                        <p
-                          className={cn(
-                            "text-xs font-bold mt-0.5",
-                            item.label === "Proof" && !selected.proofUploaded
-                              ? "text-[#940803]"
-                              : "text-[#0A1B39]"
-                          )}
-                        >
-                          {item.value}
-                        </p>
+                  {/* Transaction Details */}
+                  <div className="space-y-2 text-xs">
+                    <div className="flex justify-between py-1.5 border-b border-neutral-100">
+                      <span className="text-[#676E85]">Course & Level:</span>
+                      <span className="font-semibold text-[#0A1B39]">{selected.course?.subject || "N/A"} ({selected.course?.level || "N/A"})</span>
+                    </div>
+                    <div className="flex justify-between py-1.5 border-b border-neutral-100">
+                      <span className="text-[#676E85]">Amount Paid:</span>
+                      <span className="font-bold text-[#17A546]">{formatAmount(selected.amount)}</span>
+                    </div>
+                    <div className="flex justify-between py-1.5 border-b border-neutral-100">
+                      <span className="text-[#676E85]">Payment Method:</span>
+                      <span className="font-medium text-[#0A1B39] capitalize">{selected.method || "N/A"}</span>
+                    </div>
+                    <div className="flex justify-between py-1.5 border-b border-neutral-100">
+                      <span className="text-[#676E85]">Transaction Ref:</span>
+                      <span className="font-mono text-[#0A1B39]">{selected.reference || "N/A"}</span>
+                    </div>
+                    <div className="flex justify-between py-1.5 border-b border-neutral-100">
+                      <span className="text-[#676E85]">Submitted Time:</span>
+                      <span className="text-[#0A1B39]">{timeAgo(selected.submittedAt)}</span>
+                    </div>
+                    {/* New Affiliate Information Block */}
+                    {selected.affiliate && (
+                      <div className="flex justify-between py-1.5 bg-[#17A546]/5 px-2 rounded-md border border-[#17A546]/20 mt-2">
+                        <span className="text-[#676E85] flex items-center gap-1.5"><Banknote className="w-3.5 h-3.5 text-[#17A546]" /> Affiliate Link:</span>
+                        <span className="font-bold text-[#0A1B39]">{selected.affiliate.code}</span>
                       </div>
-                    ))}
+                    )}
                   </div>
 
-                  {/* Proof Preview Placeholder */}
-                  {selected.proofUploaded && (
-                    <div className="mt-4 p-4 rounded-md border border-dashed border-neutral-200 bg-neutral-50 text-center">
-                      <Receipt className="h-6 w-6 text-[#98A2B3] mx-auto mb-2" />
-                      <p className="text-xs text-[#676E85]">Payment proof uploaded</p>
-                      <button className="text-xs font-semibold text-[#17A546] mt-1 hover:underline flex items-center gap-1 mx-auto">
-                        <Eye className="h-3 w-3" />
-                        View Receipt
+                  {/* Receipt Proof Attachment */}
+                  {selected.proofUrl && (
+                    <div className="mt-4 p-3 rounded-md bg-[#17A546]/5 border border-[#17A546]/20 text-center">
+                      <p className="text-xs text-[#0A1B39] font-medium flex items-center justify-center gap-1.5">
+                        <FileText className="w-3.5 h-3.5 text-[#17A546]" /> Payment Receipt Attached
+                      </p>
+                      <button
+                        onClick={() => setViewingReceipt(selected)}
+                        className="text-xs font-bold text-[#17A546] hover:underline mt-1.5 inline-flex items-center gap-1"
+                      >
+                        <Eye className="w-3 h-3" /> View Receipt Image
                       </button>
                     </div>
                   )}
                 </div>
 
-                {/* Actions */}
-                {selected.status === "pending" && (
-                  <div className="p-5 border-t border-neutral-100 space-y-2">
-                    <button className="w-full h-10 rounded-md bg-[#17A546] text-white text-sm font-semibold hover:bg-[#17A546]/90 transition-colors flex items-center justify-center gap-2 shadow-sm">
-                      <CheckCircle2 className="h-4 w-4" />
-                      Approve Payment
-                    </button>
-                    <button className="w-full h-10 rounded-md bg-[#FBEAE9] text-[#940803] text-sm font-medium hover:bg-[#FBEAE9]/80 transition-colors flex items-center justify-center gap-2 shadow-sm">
-                      <XCircle className="h-4 w-4" />
-                      Reject Payment
-                    </button>
-                  </div>
-                )}
-
-                {selected.status !== "pending" && (
-                  <div className="p-5 border-t border-neutral-100">
-                    <div
-                      className={`p-3 rounded-md text-center ${statusConfig[selected.status].bg}`}
+                {/* Approve / Reject Actions */}
+                {selected.status === "pending" ? (
+                  <div className="space-y-2 pt-2 border-t border-neutral-100">
+                    <Button
+                      onClick={() => handleUpdatePaymentStatus(selected.id, "approved")}
+                      disabled={updateStatusMutation.isPending}
+                      className="w-full h-9 rounded-md bg-[#17A546] hover:bg-[#128638] text-white text-xs font-bold shadow-xs flex items-center justify-center gap-1.5"
                     >
-                      <p className={`text-xs font-semibold ${statusConfig[selected.status].color}`}>
-                        This payment has been {selected.status}.
-                      </p>
-                    </div>
+                      {updateStatusMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+                      Approve & Unlock Access
+                    </Button>
+                    <Button
+                      onClick={() => handleUpdatePaymentStatus(selected.id, "rejected")}
+                      disabled={updateStatusMutation.isPending}
+                      variant="outline"
+                      className="w-full h-9 rounded-md bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 text-xs font-semibold flex items-center justify-center gap-1.5"
+                    >
+                      {updateStatusMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="h-4 w-4" />}
+                      Reject Payment Proof
+                    </Button>
+                  </div>
+                ) : (
+                  <div className={cn("p-2.5 rounded-md text-center text-xs font-semibold border", statusConfig[selected.status].bg, statusConfig[selected.status].color, statusConfig[selected.status].border)}>
+                    Payment marked as {selected.status}
                   </div>
                 )}
               </div>
             ) : (
-              <div className="h-full flex items-center justify-center p-8">
-                <div className="text-center">
-                  <div className="h-14 w-14 rounded-2xl bg-neutral-100 flex items-center justify-center mx-auto mb-4">
-                    <CreditCard className="h-6 w-6 text-[#98A2B3]" />
-                  </div>
-                  <p className="text-sm font-semibold text-[#0A1B39]">
-                    Select a payment
-                  </p>
-                  <p className="text-xs text-[#676E85] mt-1">
-                    Choose a payment from the table to view details.
-                  </p>
-                </div>
+              <div className="text-center py-16 text-[#676E85]">
+                <CreditCard className="w-8 h-8 text-[#98A2B3] mx-auto mb-2" />
+                <p className="text-xs font-medium">Select a payment from the table to inspect details.</p>
               </div>
             )}
           </div>
         </div>
       </div>
-    </>
+
+      {/* Receipt Proof Preview Modal */}
+      {viewingReceipt && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0A1B39]/40 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white rounded-md p-6 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200 relative space-y-4">
+            <button
+              onClick={() => setViewingReceipt(null)}
+              className="absolute top-4 right-4 text-[#676E85] hover:text-[#0A1B39] bg-neutral-100 rounded-full p-1 transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </button>
+            
+            <div>
+              <h3 className="text-base font-bold text-[#0A1B39]">Payment Receipt Proof</h3>
+              <p className="text-xs text-[#676E85] mt-0.5">Reference: {viewingReceipt.reference || "N/A"}</p>
+            </div>
+
+            {/* If it's a real URL, show an image, otherwise show simulated receipt block */}
+            {viewingReceipt.proofUrl?.startsWith("http") ? (
+              <div className="w-full aspect-auto max-h-[60vh] overflow-hidden rounded-md border border-neutral-200">
+                <img src={viewingReceipt.proofUrl} alt="Receipt" className="w-full h-full object-contain" />
+              </div>
+            ) : (
+              <div className="p-4 bg-neutral-50 rounded-md border border-neutral-200 space-y-3 text-xs font-mono text-[#0A1B39]">
+                <div className="flex justify-between border-b border-neutral-200 pb-2 font-sans font-bold text-[#17A546]">
+                  <span>OFFICIAL RECEIPT</span>
+                  <span>{formatAmount(viewingReceipt.amount)}</span>
+                </div>
+                <div className="space-y-1 text-[11px]">
+                  <p><span className="text-[#676E85]">Payer:</span> {viewingReceipt.student?.name || "Unknown"}</p>
+                  <p><span className="text-[#676E85]">Email:</span> {viewingReceipt.student?.email || "Unknown"}</p>
+                  <p><span className="text-[#676E85]">Bank:</span> Access Bank PLC</p>
+                  <p><span className="text-[#676E85]">Account:</span> Bash Academy Course Fee</p>
+                  <p><span className="text-[#676E85]">Ref:</span> {viewingReceipt.reference || "N/A"}</p>
+                  <p><span className="text-[#676E85]">Status:</span> SUCCESSFUL</p>
+                </div>
+              </div>
+            )}
+
+            <Button
+              onClick={() => setViewingReceipt(null)}
+              className="w-full bg-[#17A546] hover:bg-[#128638] text-white rounded-md h-9 text-xs font-bold shadow-2xs"
+            >
+              Done Reviewing
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
-import type { AuthUser } from "@/app/api/auth";
+import type { AuthUser } from "@/app/api/auth/interface";
 import { Loader2 } from "lucide-react";
 
 export function AdminGuard({ children }: { children: React.ReactNode }) {

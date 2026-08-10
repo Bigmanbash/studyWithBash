@@ -10,9 +10,13 @@
 
 import { NextResponse } from "next/server";
 import { db } from "@/lib/neon";
-import { payments } from "@/lib/neon/schema";
+import { payments, courses } from "@/lib/neon/schema";
 import { eq } from "drizzle-orm";
 import { requireServerSession } from "@/app/api/auth/queries";
+import { creditCommission } from "@/app/api/affiliates/mutations";
+import { generateProxyAccessCodes } from "@/app/api/access-codes/mutations";
+import { getAffiliateByCode } from "@/app/api/affiliates/queries";
+import { DEFAULT_COMMISSION_RATE } from "@/lib/affiliate-constants";
 
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY!;
 
@@ -112,6 +116,62 @@ export async function POST(request: Request) {
         reviewedAt: new Date(),
       })
       .where(eq(payments.reference, reference));
+
+    // 8. Handle Affiliate Commissions & Access Codes
+    try {
+      if (payment.isProxy && payment.affiliateId && payment.proxyQuantity) {
+        // --- PROXY PURCHASE ---
+        // 1. Generate access codes
+        const [courseInfo] = await db
+          .select({ subject: courses.subject })
+          .from(courses)
+          .where(eq(courses.id, payment.courseId))
+          .limit(1);
+
+        if (courseInfo) {
+          await generateProxyAccessCodes({
+            affiliateId: payment.affiliateId,
+            courseId: payment.courseId,
+            courseSubject: courseInfo.subject,
+            tier: payment.tier,
+            paymentId: payment.id,
+            quantity: payment.proxyQuantity,
+          });
+        }
+
+        // 2. Credit commission (Agent gets commission on their bulk purchase)
+        await creditCommission({
+          affiliateId: payment.affiliateId,
+          paymentId: payment.id,
+          studentId: user.id, // Agent acts as the buyer here
+          courseId: payment.courseId,
+          type: "proxy",
+          saleAmount: payment.amount,
+          commissionRate: DEFAULT_COMMISSION_RATE, // Or dynamic if we extend schema
+        });
+        
+      } else if (!payment.isProxy && payment.referralCode) {
+        // --- REFERRAL PURCHASE ---
+        // 1. Get the affiliate by code to get their ID and rate
+        const affiliate = await getAffiliateByCode(payment.referralCode);
+        
+        if (affiliate) {
+          // 2. Credit commission
+          await creditCommission({
+            affiliateId: affiliate.affiliateId,
+            paymentId: payment.id,
+            studentId: user.id,
+            courseId: payment.courseId,
+            type: "referral",
+            saleAmount: payment.amount,
+            commissionRate: affiliate.commissionRate,
+          });
+        }
+      }
+    } catch (commissionError) {
+      // Don't fail the verification if commission logic fails (e.g. duplicate constraint)
+      console.error("[Affiliate Commission/Code Generation Error]", commissionError);
+    }
 
     return NextResponse.json({
       status: "approved",

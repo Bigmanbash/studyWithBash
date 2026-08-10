@@ -15,6 +15,27 @@
       "when": 1781796210360,
       "tag": "0001_messy_starbolt",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1785430516685,
+      "tag": "0002_quick_mindworm",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1786031866649,
+      "tag": "0003_fancy_trish_tilby",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1786033997836,
+      "tag": "0004_loose_sally_floyd",
+      "breakpoints": true
     }
   ]
 }

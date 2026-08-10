@@ -3,14 +3,15 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { 
   Plus, Trash2, File as FileIcon, ChevronDown, ChevronRight, 
-  UploadCloud, Settings2, Check, X, Loader2, AlertCircle
+  UploadCloud, Settings2, Check, X, Loader2, AlertCircle, Video, Play, Link as LinkIcon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
   fetchCourseTopics, 
   createTopicRequest, updateTopicRequest, deleteTopicRequest, reorderTopicsRequest,
   createSubtopicRequest, updateSubtopicRequest, deleteSubtopicRequest, reorderSubtopicsRequest,
-  uploadMaterialRequest, deleteMaterialRequest
+  uploadMaterialRequest, deleteMaterialRequest,
+  addTopicVideoRequest, deleteTopicVideoRequest
 } from "@/app/api/courses/httpClient";
 import { TopicWithSubtopics, SubtopicWithMaterials } from "@/app/api/courses";
 
@@ -25,6 +26,11 @@ export function TopicManager({ courseId }: { courseId: string }) {
   const [editingTopicTitle, setEditingTopicTitle] = useState("");
   const [editingSubtopicId, setEditingSubtopicId] = useState<string | null>(null);
   const [editingSubtopicTitle, setEditingSubtopicTitle] = useState("");
+
+  // Video state
+  const [addingVideoTopicId, setAddingVideoTopicId] = useState<string | null>(null);
+  const [videoTitle, setVideoTitle] = useState("");
+  const [videoUrl, setVideoUrl] = useState("");
 
   // Operational state
   const [isUploading, setIsUploading] = useState<string | null>(null);
@@ -342,6 +348,61 @@ export function TopicManager({ courseId }: { courseId: string }) {
     }
   };
 
+  // ── Videos ──────────────────────────────────────────────────────────
+
+  const handleAddVideo = async (topicId: string) => {
+    if (!videoTitle.trim() || !videoUrl.trim()) {
+      showToast("Title and Video URL are required", "error");
+      return;
+    }
+    try {
+      setIsSaving(true);
+      const video = await addTopicVideoRequest(courseId, topicId, {
+        title: videoTitle.trim(),
+        videoUrl: videoUrl.trim(),
+      });
+      setTopics((prev) =>
+        prev.map((t) => {
+          if (t.id === topicId) {
+            return { ...t, videos: [...(t.videos || []), video] };
+          }
+          return t;
+        })
+      );
+      setAddingVideoTopicId(null);
+      setVideoTitle("");
+      setVideoUrl("");
+      showToast("Video added successfully");
+    } catch (e) {
+      console.error(e);
+      showToast("Failed to add video", "error");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDeleteVideo = async (topicId: string, videoId: string) => {
+    if (!confirm("Are you sure you want to remove this video?")) return;
+    try {
+      setIsSaving(true);
+      await deleteTopicVideoRequest(courseId, topicId, videoId);
+      setTopics((prev) =>
+        prev.map((t) => {
+          if (t.id === topicId) {
+            return { ...t, videos: (t.videos || []).filter((v) => v.id !== videoId) };
+          }
+          return t;
+        })
+      );
+      showToast("Video removed");
+    } catch (e) {
+      console.error(e);
+      showToast("Failed to delete video", "error");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   // ── Render ──────────────────────────────────────────────────────────
 
   if (isLoading) {
@@ -550,6 +611,88 @@ export function TopicManager({ courseId }: { courseId: string }) {
                 <Plus className="h-3.5 w-3.5 mr-1" />
                 Add Subtopic
               </Button>
+
+              {/* Topic Videos Section */}
+              <div className="mx-2 sm:mx-6 mt-4 p-3.5 bg-neutral-50/70 rounded-xl border border-neutral-200/80 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Video className="w-4 h-4 text-[#3B82F6]" />
+                    <span className="text-xs font-bold text-[#0A1B39]">Topic Video Lectures</span>
+                    <span className="text-[10px] font-semibold bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full border border-blue-200/80">
+                      {topic.videos?.length || 0}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setAddingVideoTopicId(addingVideoTopicId === topic.id ? null : topic.id)}
+                    className="text-xs text-[#17A546] font-semibold flex items-center gap-1 hover:underline"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    Add Video
+                  </button>
+                </div>
+
+                {/* Existing Videos List */}
+                {topic.videos && topic.videos.length > 0 && (
+                  <div className="space-y-1.5">
+                    {topic.videos.map((vid) => (
+                      <div key={vid.id} className="flex items-center justify-between p-2.5 bg-white rounded-lg border border-neutral-200/60 text-xs shadow-2xs">
+                        <div className="flex items-center gap-2.5 min-w-0 flex-1 pr-2">
+                          <div className="w-6 h-6 rounded-md bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                            <Play className="w-3 h-3 fill-current" />
+                          </div>
+                          <span className="font-semibold text-[#0A1B39] truncate">{vid.title}</span>
+                          <span className="text-neutral-400 truncate text-[10px] hidden sm:inline">{vid.videoUrl}</span>
+                        </div>
+                        <button
+                          onClick={() => handleDeleteVideo(topic.id, vid.id)}
+                          className="text-red-400 hover:text-red-600 p-1 shrink-0 rounded hover:bg-red-50 transition-colors"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Add Video Form */}
+                {addingVideoTopicId === topic.id && (
+                  <div className="p-3 bg-white rounded-lg border border-neutral-200 space-y-2 mt-2 shadow-sm">
+                    <input
+                      type="text"
+                      placeholder="Video Title (e.g. Introduction to Motion)"
+                      className="w-full border border-neutral-200 rounded-md px-3 py-1.5 text-xs outline-none focus:border-[#17A546]"
+                      value={videoTitle}
+                      onChange={(e) => setVideoTitle(e.target.value)}
+                    />
+                    <input
+                      type="url"
+                      placeholder="YouTube Video URL (e.g. https://www.youtube.com/watch?v=...)"
+                      className="w-full border border-neutral-200 rounded-md px-3 py-1.5 text-xs outline-none focus:border-[#17A546]"
+                      value={videoUrl}
+                      onChange={(e) => setVideoUrl(e.target.value)}
+                    />
+                    <div className="flex justify-end gap-2 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => { setAddingVideoTopicId(null); setVideoTitle(""); setVideoUrl(""); }}
+                        className="text-xs text-neutral-500 hover:text-neutral-700 px-3 py-1.5 font-medium"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleAddVideo(topic.id)}
+                        disabled={isSaving}
+                        className="bg-[#17A546] hover:bg-[#14933E] text-white text-xs font-bold px-3 py-1.5 rounded-md flex items-center gap-1 shadow-sm"
+                      >
+                        {isSaving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                        Save Video
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>

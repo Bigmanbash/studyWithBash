@@ -7,5 +7,6 @@ export { CourseCard } from "./CourseCard";
 export { AvailableCourses } from "./AvailableCourses";
 export { QuickActions } from "./QuickActions";
 export { EmbedPDF } from "./EmbedPDF";
+export { VideoPlayer } from "./VideoPlayer";
 export { PageHeader } from "./PageHeader";
 export * from "./DashboardSkeleton";

@@ -1,13 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { User, Mail, Shield, Save } from "lucide-react";
+import { User, Mail, Shield, Save, Lock, Phone, UserPlus, Hash } from "lucide-react";
 import { authClient, useSession } from "@/lib/auth-client";
 import { useStudentStore } from "@/store/studentStore";
 import { PageHeader } from "@/components/dashboard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Lock } from "lucide-react";
 
 export default function ProfilePage() {
   const { data: session } = useSession();
@@ -114,161 +113,231 @@ export default function ProfilePage() {
         description="Manage your personal information."
       />
 
-      <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-6 sm:p-8 space-y-8">
+      <div className="space-y-6">
 
-        {/* Profile Header */}
-        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 sm:gap-6 text-center sm:text-left">
-          <div className="h-24 w-24 rounded-full bg-[#17A546]/10 flex items-center justify-center text-[#17A546] font-extrabold text-4xl uppercase ring-4 ring-white shadow-sm border border-[#17A546]/20">
-            {session?.user?.name?.charAt(0) || "U"}
-          </div>
-          <div className="flex flex-col justify-center mt-1 sm:mt-3">
-            <h2 className="text-2xl font-bold text-[#0A1B39] tracking-tight">{session?.user?.name || "Loading..."}</h2>
-            <p className="text-[15px] text-[#676E85] mt-0.5">{session?.user?.email || "..."}</p>
-            <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#17A546]/10 text-[#17A546] text-xs font-semibold w-fit mx-auto sm:mx-0">
-              <Shield className="w-3.5 h-3.5" /> Student Account
+        {/* Profile Header Card */}
+        <div className="bg-white border border-neutral-200/80 rounded-md p-6 sm:p-8 shadow-2xs">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 sm:gap-6 text-center sm:text-left">
+            <div className="h-24 w-24 shrink-0 rounded-full bg-linear-to-br from-[#17A546]/20 to-[#17A546]/5 flex items-center justify-center text-[#17A546] font-extrabold text-4xl uppercase ring-4 ring-white shadow-sm border border-[#17A546]/20">
+              {session?.user?.name?.charAt(0) || "U"}
+            </div>
+            <div className="flex flex-col justify-center mt-1 sm:mt-3">
+              <h2 className="text-2xl font-bold text-[#0A1B39] tracking-tight">{session?.user?.name || "Loading..."}</h2>
+              <p className="text-[15px] text-[#676E85] mt-0.5 font-medium">{session?.user?.email || "..."}</p>
+              <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-[#17A546]/10 text-[#17A546] text-xs font-bold uppercase tracking-wider w-fit mx-auto sm:mx-0 border border-[#17A546]/20">
+                <Shield className="w-3.5 h-3.5" /> 
+                {(session?.user as any)?.role || "Student"} Account
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Profile Form */}
-        <div className="space-y-6 pt-4">
-          <div>
-            <label className="text-[13px] font-bold uppercase tracking-wider text-[#98A2B3] flex items-center gap-2 mb-2.5">
-              Full Name
-            </label>
-            <div className="flex flex-col sm:flex-row gap-3 items-start">
-              <div className="flex-1 w-full">
-                <Input
-                  id="full-name"
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Enter your full name"
-                  icon={<User size={18} />}
-                />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Personal Info Form */}
+          <div className="bg-white border border-neutral-200/80 rounded-md p-6 sm:p-8 shadow-2xs">
+            <h3 className="font-bold text-[#0A1B39] text-lg mb-6 flex items-center gap-2">
+              <User className="w-5 h-5 text-[#17A546]" />
+              Personal Information
+            </h3>
+            
+            <div className="space-y-6">
+              <div>
+                <label className="text-sm font-semibold text-[#0A1B39] block mb-2">
+                  Full Name
+                </label>
+                <div className="flex flex-col sm:flex-row gap-3 items-start">
+                  <div className="flex-1 w-full relative">
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#98A2B3]" />
+                    <Input
+                      id="full-name"
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Enter your full name"
+                      className="pl-11 h-12 bg-white rounded-md border-neutral-200/80 shadow-sm focus:border-[#17A546] focus:ring-[#17A546]/20"
+                    />
+                  </div>
+                  <Button
+                    onClick={handleUpdateName}
+                    disabled={isUpdatingName || name === session?.user?.name || !name.trim()}
+                    className="w-full sm:w-auto h-12 bg-[#17A546] hover:bg-[#128a39] text-white px-7 rounded-md font-bold shadow-sm transition-all shrink-0"
+                  >
+                    {isUpdatingName ? (
+                      <span className="flex items-center gap-2">
+                        <span className="w-4 h-4 border-2 border-white/20 border-t-white rounded-md animate-spin" />
+                        Saving...
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-2">
+                        <Save className="w-4 h-4" /> Save
+                      </span>
+                    )}
+                  </Button>
+                </div>
               </div>
-              <Button
-                onClick={handleUpdateName}
-                disabled={isUpdatingName || name === session?.user?.name || !name.trim()}
-                className="w-full sm:w-auto h-11 sm:h-12 bg-brand-green hover:bg-brand-green/90 text-white px-7 rounded-md font-bold shadow-lg shadow-[#17A546]/20 transition-all disabled:opacity-70"
-              >
-                {isUpdatingName ? (
-                  <span className="flex items-center gap-2">
-                    <span className="w-4 h-4 border-2 border-white/20 border-t-white rounded-md animate-spin" />
-                    Saving...
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-2">
-                    <Save className="w-4 h-4" /> Save
-                  </span>
-                )}
-              </Button>
+
+              <div>
+                <label className="text-sm font-semibold text-[#0A1B39] block mb-2">
+                  Email Address
+                </label>
+                <div className="w-full relative">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#98A2B3]" />
+                  <Input
+                    id="email-address"
+                    type="email"
+                    value={session?.user?.email || ""}
+                    disabled
+                    className="pl-11 h-12 bg-neutral-50/70 border-neutral-200/80 text-neutral-500 cursor-not-allowed shadow-none"
+                  />
+                </div>
+                <p className="text-xs text-[#98A2B3] mt-2 italic">Email address cannot be changed currently.</p>
+              </div>
             </div>
           </div>
 
-          <div>
-            <label className="text-[13px] font-bold uppercase tracking-wider text-[#98A2B3] flex items-center gap-2 mb-2.5">
-              Email Address
-            </label>
-            <div className="w-full">
-              <Input
-                id="email-address"
-                type="email"
-                value={session?.user?.email || ""}
-                disabled
-                icon={<Mail size={18} />}
-                className="opacity-70 cursor-not-allowed"
-              />
-            </div>
-            <p className="text-xs text-[#98A2B3] mt-2">Email address cannot be changed currently.</p>
-          </div>
+          {/* Account Details */}
+          <div className="bg-white border border-neutral-200/80 rounded-md p-6 sm:p-8 shadow-2xs">
+            <h3 className="font-bold text-[#0A1B39] text-lg mb-6 flex items-center gap-2">
+              <UserPlus className="w-5 h-5 text-[#17A546]" />
+              Account Details
+            </h3>
 
-          <div className="pt-6 border-t border-neutral-100">
-            {!showPasswordForm ? (
+            <div className="space-y-5">
+              <div>
+                <label className="text-[11px] font-bold uppercase tracking-wider text-[#98A2B3] flex items-center gap-2 mb-1.5">
+                  <UserPlus className="w-3.5 h-3.5" /> Referred By
+                </label>
+                <div className="flex items-center gap-3 bg-neutral-50/80 px-4 py-3 rounded-md border border-neutral-200/80 text-sm font-medium text-[#0A1B39]">
+                  {(session?.user as any)?.referredBy || "No referrer"}
+                </div>
+              </div>
+              
+              <div>
+                <label className="text-[11px] font-bold uppercase tracking-wider text-[#98A2B3] flex items-center gap-2 mb-1.5">
+                  <Hash className="w-3.5 h-3.5" /> Referral Code Used
+                </label>
+                <div className="flex items-center gap-3 bg-neutral-50/80 px-4 py-3 rounded-md border border-neutral-200/80 text-sm font-medium text-[#0A1B39]">
+                  {(session?.user as any)?.referralCodeUsed || "None"}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[11px] font-bold uppercase tracking-wider text-[#98A2B3] flex items-center gap-2 mb-1.5">
+                  <Phone className="w-3.5 h-3.5" /> WhatsApp Number
+                </label>
+                <div className="flex items-center gap-3 bg-neutral-50/80 px-4 py-3 rounded-md border border-neutral-200/80 text-sm font-medium text-[#0A1B39]">
+                  {(session?.user as any)?.whatsappNumber || "Not provided"}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Security Section */}
+        <div className="bg-white border border-neutral-200/80 rounded-md p-6 sm:p-8 shadow-2xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div>
+              <h3 className="font-bold text-[#0A1B39] text-lg flex items-center gap-2">
+                <Shield className="w-5 h-5 text-[#17A546]" />
+                Security Settings
+              </h3>
+              <p className="text-sm text-[#676E85] mt-1">Manage your password and security preferences.</p>
+            </div>
+            
+            {!showPasswordForm && (
               <Button
                 variant="outline"
                 onClick={() => setShowPasswordForm(true)}
-                className="flex items-center justify-center gap-2 w-full sm:w-auto h-11 sm:h-12 border-neutral-200 hover:border-brand-green hover:bg-brand-green/5 text-[#0A1B39] hover:text-brand-green rounded-md font-bold transition-all"
+                className="h-11 border-neutral-200/80 hover:border-[#17A546] hover:bg-[#17A546]/5 text-[#0A1B39] hover:text-[#17A546] rounded-md font-bold transition-all shadow-sm bg-white"
               >
-                <Shield className="w-4 h-4" />
+                <Lock className="w-4 h-4 mr-2" />
                 Change Password
               </Button>
-            ) : (
-              <form onSubmit={handleUpdatePassword} className="space-y-5 bg-neutral-50/80 p-5 sm:p-6 rounded- border border-neutral-200/80 shadow-sm animate-in fade-in slide-in-from-top-4 duration-300">
-                <h3 className="font-bold text-[#0A1B39] text-lg flex items-center gap-2 border-b border-neutral-200 pb-3">
-                  <Shield className="w-5 h-5 text-[#17A546]" /> Security
-                </h3>
+            )}
+          </div>
 
-                <div className="space-y-4 pt-2">
-                  <Input
-                    id="current-password"
-                    label="Current Password"
-                    type="password"
-                    required
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                    placeholder="••••••••"
-                    iconType="password"
-                    icon={<Lock size={18} />}
-                  />
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {showPasswordForm && (
+            <form onSubmit={handleUpdatePassword} className="space-y-5 bg-neutral-50/50 p-5 sm:p-6 rounded-md border border-neutral-200/80 shadow-sm animate-in fade-in slide-in-from-top-4 duration-300">
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-semibold text-[#0A1B39] block mb-2">Current Password</label>
+                  <div className="relative">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#98A2B3]" />
                     <Input
-                      id="new-password"
-                      label="New Password"
+                      id="current-password"
                       type="password"
                       required
-                      minLength={8}
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
                       placeholder="••••••••"
-                      iconType="password"
-                      icon={<Lock size={18} />}
-                    />
-                    <Input
-                      id="confirm-password"
-                      label="Confirm Password"
-                      type="password"
-                      required
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      placeholder="••••••••"
-                      iconType="password"
-                      icon={<Lock size={18} />}
+                      className="pl-11 h-12 bg-white rounded-md border-neutral-200/80 shadow-sm focus:border-[#17A546] focus:ring-[#17A546]/20"
                     />
                   </div>
                 </div>
 
-                <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 pt-6 mt-2 border-t border-neutral-200">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setShowPasswordForm(false)}
-                    disabled={isUpdatingPassword}
-                    className="w-full sm:w-auto h-11 border-neutral-200 text-[#676E85] rounded-md font-bold transition-all"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
-                    disabled={isUpdatingPassword}
-                    className="w-full sm:w-auto h-11 bg-brand-green hover:bg-brand-green/90 text-white px-8 rounded-md font-bold shadow-lg shadow-[#0A1B39]/10 transition-all disabled:opacity-70"
-                  >
-                    {isUpdatingPassword ? (
-                      <span className="flex items-center gap-2">
-                        <span className="w-4 h-4 border-2 border-white/20 border-t-white rounded-md animate-spin" />
-                        Updating...
-                      </span>
-                    ) : (
-                      "Update Password"
-                    )}
-                  </Button>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-semibold text-[#0A1B39] block mb-2">New Password</label>
+                    <div className="relative">
+                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#98A2B3]" />
+                      <Input
+                        id="new-password"
+                        type="password"
+                        required
+                        minLength={8}
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder="••••••••"
+                        className="pl-11 h-12 bg-white rounded-md border-neutral-200/80 shadow-sm focus:border-[#17A546] focus:ring-[#17A546]/20"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-sm font-semibold text-[#0A1B39] block mb-2">Confirm Password</label>
+                    <div className="relative">
+                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#98A2B3]" />
+                      <Input
+                        id="confirm-password"
+                        type="password"
+                        required
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="••••••••"
+                        className="pl-11 h-12 bg-white rounded-md border-neutral-200/80 shadow-sm focus:border-[#17A546] focus:ring-[#17A546]/20"
+                      />
+                    </div>
+                  </div>
                 </div>
-              </form>
-            )}
-          </div>
-        </div>
+              </div>
 
+              <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 pt-6 mt-2 border-t border-neutral-200/80">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowPasswordForm(false)}
+                  disabled={isUpdatingPassword}
+                  className="w-full sm:w-auto h-11 border-neutral-200/80 text-[#676E85] hover:text-[#0A1B39] hover:bg-neutral-50 rounded-md font-bold transition-all shadow-sm"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isUpdatingPassword}
+                  className="w-full sm:w-auto h-11 bg-[#17A546] hover:bg-[#128a39] text-white px-8 rounded-md font-bold shadow-sm transition-all"
+                >
+                  {isUpdatingPassword ? (
+                    <span className="flex items-center gap-2">
+                      <span className="w-4 h-4 border-2 border-white/20 border-t-white rounded-md animate-spin" />
+                      Updating...
+                    </span>
+                  ) : (
+                    "Update Password"
+                  )}
+                </Button>
+              </div>
+            </form>
+          )}
+        </div>
       </div>
     </div>
   );

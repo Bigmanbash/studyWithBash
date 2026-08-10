@@ -4,6 +4,7 @@ import { getCourse } from "@/app/api/courses/queries";
 import { db } from "@/lib/neon";
 import { payments } from "@/lib/neon/schema";
 import { and, eq } from "drizzle-orm";
+import { getEffectiveTier } from "@/lib/tiers";
 
 export const GET = async (req: Request, { params }: { params: Promise<{ id: string }> }) => {
   try {
@@ -19,9 +20,9 @@ export const GET = async (req: Request, { params }: { params: Promise<{ id: stri
       return NextResponse.json({ error: "Course not found" }, { status: 404 });
     }
 
-    // Check if the user has purchased the course
+    // Fetch approved payment records to determine purchase status & effective tier
     const purchaseRecords = await db
-      .select()
+      .select({ tier: payments.tier })
       .from(payments)
       .where(
         and(
@@ -29,10 +30,10 @@ export const GET = async (req: Request, { params }: { params: Promise<{ id: stri
           eq(payments.courseId, id),
           eq(payments.status, "approved")
         )
-      )
-      .limit(1);
+      );
 
     const isPurchased = purchaseRecords.length > 0;
+    const purchasedTier = getEffectiveTier(purchaseRecords.map((p) => p.tier));
 
     // Secure the PDF path if not purchased
     if (!isPurchased && course.pdfPath) {
@@ -42,6 +43,7 @@ export const GET = async (req: Request, { params }: { params: Promise<{ id: stri
     return NextResponse.json({
       course,
       isPurchased,
+      purchasedTier,
     });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

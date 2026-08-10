@@ -1,137 +1,118 @@
 "use client";
 
-import { useState } from "react";
-import { AdminDashboardHeader } from "@/components/admin/dashboard";
+import { useState, useEffect } from "react";
+import { AdminDashboardHeader, AdminFilterBar } from "@/components/admin/dashboard";
 import {
-  Search,
   CheckCircle2,
   XCircle,
-  Filter,
   Download,
-  Eye,
   Users,
   BookOpen,
   Calendar,
-  MoreHorizontal
+  X,
+  Mail,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
+import { fetchStudents, fetchStudentById, toggleStudent } from "@/app/api/students";
+import type { Student } from "@/app/api/students/interface";
+import { Pagination } from "@/components/ui/pagination";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
 
-type StudentStatus = "active" | "inactive";
-
-interface Student {
-  id: string;
-  name: string;
-  initials: string;
-  email: string;
-  enrolledCourses: number;
-  joinDate: string;
-  status: StudentStatus;
-  lastActive: string;
-}
-
-const students: Student[] = [
-  {
-    id: "STD-1042",
-    name: "Adaeze Okonkwo",
-    initials: "AO",
-    email: "adaeze@email.com",
-    enrolledCourses: 3,
-    joinDate: "Oct 12, 2023",
-    status: "active",
-    lastActive: "2 hours ago",
-  },
-  {
-    id: "STD-1041",
-    name: "Tunde Bakare",
-    initials: "TB",
-    email: "tunde.b@email.com",
-    enrolledCourses: 1,
-    joinDate: "Nov 05, 2023",
-    status: "active",
-    lastActive: "1 day ago",
-  },
-  {
-    id: "STD-1040",
-    name: "Blessing Eze",
-    initials: "BE",
-    email: "blessing.e@email.com",
-    enrolledCourses: 4,
-    joinDate: "Sep 28, 2023",
-    status: "inactive",
-    lastActive: "2 weeks ago",
-  },
-  {
-    id: "STD-1039",
-    name: "Emeka Nwosu",
-    initials: "EN",
-    email: "emeka.n@email.com",
-    enrolledCourses: 2,
-    joinDate: "Dec 01, 2023",
-    status: "active",
-    lastActive: "5 hours ago",
-  },
-  {
-    id: "STD-1038",
-    name: "Fatima Yusuf",
-    initials: "FY",
-    email: "fatima.y@email.com",
-    enrolledCourses: 2,
-    joinDate: "Jan 15, 2024",
-    status: "active",
-    lastActive: "Just now",
-  },
-];
+type StudentStatusTab = "all" | "active" | "inactive";
 
 const statusConfig = {
   active: {
     label: "Active",
     color: "text-[#0E7B33]",
     bg: "bg-[#E7F6EC]",
+    border: "border-[#0E7B33]/20",
   },
   inactive: {
     label: "Inactive",
     color: "text-[#676E85]",
     bg: "bg-neutral-100",
+    border: "border-neutral-200",
   },
 };
 
 export default function AdminStudentsPage() {
-  const [activeTab, setActiveTab] = useState<"all" | StudentStatus>("all");
+  const [activeTab, setActiveTab] = useState<StudentStatusTab>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  const filteredStudents = students.filter((student) => {
-    const matchesTab = activeTab === "all" || student.status === activeTab;
-    const matchesSearch =
-      student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      student.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      student.id.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesTab && matchesSearch;
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Fetch real students list using query function from @/app/api/students
+  const { data: queryData, isLoading } = useQuery({
+    queryKey: ["admin-students", page, debouncedSearch, activeTab],
+    queryFn: () => fetchStudents({ page, limit: 10, search: debouncedSearch || undefined, status: activeTab }),
   });
 
-  const activeCount = students.filter((s) => s.status === "active").length;
-  const inactiveCount = students.filter((s) => s.status === "inactive").length;
+  // Fetch single student details when modal is opened
+  const { data: studentDetail, isLoading: isLoadingDetail } = useQuery({
+    queryKey: ["admin-student-detail", selectedStudentId],
+    queryFn: () => (selectedStudentId ? fetchStudentById(selectedStudentId) : null),
+    enabled: !!selectedStudentId,
+  });
+
+  const fetchedStudents = queryData?.data || [];
+  const rawStudentsList = fetchedStudents;
+  const stats = queryData?.stats || { total: 0, active: 0, inactive: 0 };
+  const totalCount = activeTab === "all" ? stats.total : (activeTab === "active" ? stats.active : stats.inactive);
+  const totalPages = queryData ? Math.ceil(queryData.total / queryData.limit) : 1;
+
+  const studentsList = rawStudentsList.map((s: any) => ({
+    ...s,
+    status: s.isSuspended ? "inactive" : "active",
+  }));
+
+  const toggleMutation = useMutation({
+    mutationFn: ({ id, isSuspended }: { id: string, isSuspended: boolean }) => toggleStudent(id, isSuspended),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-students"] });
+    }
+  });
+
+  const toggleStudentStatus = (id: string, isSuspended: boolean) => {
+    toggleMutation.mutate({ id, isSuspended: !isSuspended });
+  };
+
+  const activeCount = stats.active;
+  const inactiveCount = stats.inactive;
+
+  const filteredStudents = studentsList;
 
   return (
     <div className="min-h-screen bg-[#F7F9FC]">
       <AdminDashboardHeader />
-      <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8 max-w-[1400px] mx-auto">
-        
-        {/* Page Header */}
+      <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 max-w-7xl mx-auto">
+
+        {/* Unboxed Modern Page Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-[#0A1B39]">
-              Students
-            </h2>
-            <p className="text-sm sm:text-base text-[#676E85] mt-1">
-              Manage and monitor registered students.
+            <h1 className="text-2xl font-bold tracking-tight text-[#0A1B39]">
+              Students Management
+            </h1>
+            <p className="text-xs sm:text-sm text-[#676E85] mt-1 font-normal">
+              View registered students, monitor course enrollments, and manage account statuses.
             </p>
           </div>
           <Button
             variant="outline"
-            className="border-neutral-200 text-[#0A1B39] rounded-md h-10 px-4 font-medium w-fit hover:bg-neutral-50 shadow-sm"
+            className="border-neutral-200 text-[#0A1B39] rounded-md h-9 px-4 font-semibold text-xs w-fit hover:bg-neutral-50 shadow-2xs"
           >
-            <Download className="h-4 w-4 mr-2" />
+            <Download className="h-4 w-4 mr-1.5" />
             Export List
           </Button>
         </div>
@@ -140,8 +121,8 @@ export default function AdminStudentsPage() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
             {
-              label: "Total Students",
-              value: students.length.toString(),
+              label: "Total Registered",
+              value: stats.total.toString(),
               icon: Users,
               color: "text-[#17A546]",
               bg: "bg-[#17A546]/10",
@@ -154,7 +135,7 @@ export default function AdminStudentsPage() {
               bg: "bg-[#0E7B33]/10",
             },
             {
-              label: "Inactive Students",
+              label: "Inactive / Suspended",
               value: inactiveCount.toString(),
               icon: XCircle,
               color: "text-[#676E85]",
@@ -163,9 +144,9 @@ export default function AdminStudentsPage() {
           ].map((stat) => (
             <div
               key={stat.label}
-              className="bg-white rounded-xl p-4 sm:p-5 border border-neutral-200 shadow-sm flex items-center gap-4"
+              className="bg-white rounded-md p-4 border border-neutral-200/80 shadow-2xs flex items-center gap-4"
             >
-              <div className={`${stat.bg} rounded-md p-3 w-fit shrink-0`}>
+              <div className={`${stat.bg} rounded-md p-2.5 w-fit shrink-0 border border-neutral-100`}>
                 <stat.icon className={`h-5 w-5 ${stat.color}`} />
               </div>
               <div>
@@ -176,164 +157,235 @@ export default function AdminStudentsPage() {
           ))}
         </div>
 
-        {/* Main Content */}
-        <div className="bg-white rounded-xl border border-neutral-200 shadow-sm overflow-hidden">
-          {/* Filters */}
-          <div className="p-4 sm:p-5 border-b border-neutral-100">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div className="flex items-center bg-neutral-50 rounded-md p-1 border border-neutral-200 overflow-x-auto w-full sm:w-auto">
-                {[
-                  { key: "all" as const, label: "All Students", count: students.length },
-                  { key: "active" as const, label: "Active", count: activeCount },
-                  { key: "inactive" as const, label: "Inactive", count: inactiveCount },
-                ].map((tab) => (
-                  <button
-                    key={tab.key}
-                    onClick={() => setActiveTab(tab.key)}
-                    className={cn(
-                      "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 whitespace-nowrap",
-                      activeTab === tab.key
-                        ? "bg-white text-[#0A1B39] shadow-sm"
-                        : "text-[#676E85] hover:text-[#0A1B39]"
-                    )}
-                  >
-                    {tab.label}
-                    <span
-                      className={cn(
-                        "text-[10px] font-bold px-1.5 py-0.5 rounded-full",
-                        activeTab === tab.key
-                          ? "bg-[#17A546]/10 text-[#17A546]"
-                          : "bg-neutral-200 text-[#676E85]"
-                      )}
-                    >
-                      {tab.count}
-                    </span>
-                  </button>
-                ))}
-              </div>
+        {/* Unified Filter & Search Bar */}
+        <AdminFilterBar
+          tabs={[
+            { key: "all", label: "All Students", count: stats.total },
+            { key: "active", label: "Active", count: stats.active },
+            { key: "inactive", label: "Inactive", count: stats.inactive },
+          ]}
+          activeTab={activeTab}
+          onTabChange={(tab) => {
+            setActiveTab(tab);
+            setPage(1);
+          }}
+          searchQuery={searchQuery}
+          onSearchChange={(val) => {
+            setSearchQuery(val);
+            setPage(1);
+          }}
+          searchPlaceholder="Search by name, email..."
+        />
 
-              <div className="flex items-center gap-2 w-full sm:w-auto">
-                <div className="flex items-center bg-neutral-50 rounded-md px-3 py-2 gap-2 border border-neutral-200 focus-within:border-[#17A546]/30 transition-colors flex-1 sm:w-64 shadow-sm">
-                  <Search className="h-3.5 w-3.5 text-[#98A2B3]" />
-                  <input
-                    type="text"
-                    placeholder="Search by name, email, ID..."
-                    className="bg-transparent text-xs outline-none w-full placeholder:text-[#98A2B3]"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </div>
-                <button className="h-9 w-9 rounded-md bg-neutral-50 border border-neutral-200 flex items-center justify-center hover:bg-neutral-100 transition-colors shrink-0 shadow-sm">
-                  <Filter className="h-3.5 w-3.5 text-[#676E85]" />
-                </button>
-              </div>
+        {/* Student Table Container */}
+        <div className="bg-white rounded-md border border-neutral-200/80 shadow-2xs overflow-hidden">
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center py-20 text-[#676E85]">
+              <Loader2 className="w-8 h-8 animate-spin text-[#17A546] mb-2" />
+              <p className="text-xs font-semibold">Loading students from database...</p>
             </div>
-          </div>
-
-          {/* Student Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-neutral-100 bg-neutral-50/50">
-                  <th className="text-left text-[10px] uppercase tracking-wider font-semibold text-[#676E85] px-5 py-3">
-                    Student
-                  </th>
-                  <th className="text-left text-[10px] uppercase tracking-wider font-semibold text-[#676E85] px-5 py-3 hidden sm:table-cell">
-                    Enrolled Courses
-                  </th>
-                  <th className="text-left text-[10px] uppercase tracking-wider font-semibold text-[#676E85] px-5 py-3 hidden md:table-cell">
-                    Join Date
-                  </th>
-                  <th className="text-left text-[10px] uppercase tracking-wider font-semibold text-[#676E85] px-5 py-3">
-                    Status
-                  </th>
-                  <th className="text-right text-[10px] uppercase tracking-wider font-semibold text-[#676E85] px-5 py-3">
-                    Action
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-neutral-100">
-                {filteredStudents.map((student) => {
-                  const status = statusConfig[student.status];
-                  return (
-                    <tr
-                      key={student.id}
-                      className="hover:bg-neutral-50/50 transition-colors group"
-                    >
-                      <td className="px-5 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="h-9 w-9 rounded-full bg-[#17A546]/10 flex items-center justify-center text-[#17A546] font-bold text-xs shrink-0">
-                            {student.initials}
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-neutral-200/80 bg-neutral-50/60">
+                    <th className="text-left text-[10px] uppercase tracking-wider font-semibold text-[#676E85] px-5 py-3">
+                      Student
+                    </th>
+                    <th className="text-left text-[10px] uppercase tracking-wider font-semibold text-[#676E85] px-5 py-3 hidden sm:table-cell">
+                      Contact / Phone
+                    </th>
+                    <th className="text-left text-[10px] uppercase tracking-wider font-semibold text-[#676E85] px-5 py-3 hidden md:table-cell">
+                      Join Date
+                    </th>
+                    <th className="text-left text-[10px] uppercase tracking-wider font-semibold text-[#676E85] px-5 py-3">
+                      Status
+                    </th>
+                    <th className="text-right text-[10px] uppercase tracking-wider font-semibold text-[#676E85] px-5 py-3">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-neutral-100">
+                  {filteredStudents.map((student: any) => {
+                    const status = statusConfig[student.status as "active" | "inactive"];
+                    const initials = student.name
+                      ? student.name.split(" ").map((n: string) => n[0]).join("").substring(0, 2).toUpperCase()
+                      : "ST";
+                    return (
+                      <tr
+                        key={student.id}
+                        className="hover:bg-neutral-50/60 transition-colors group"
+                      >
+                        <td className="px-5 py-3.5">
+                          <div className="flex items-center gap-3">
+                            <div className="h-8 w-8 rounded-full bg-[#17A546]/10 flex items-center justify-center text-[#17A546] font-bold text-xs shrink-0">
+                              {initials}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-xs font-semibold text-[#0A1B39] truncate">
+                                {student.name || "Student"}
+                              </p>
+                              <p className="text-[11px] text-[#676E85] truncate">
+                                {student.email}
+                              </p>
+                            </div>
                           </div>
-                          <div className="min-w-0">
-                            <p className="text-sm font-semibold text-[#0A1B39] truncate">
-                              {student.name}
-                            </p>
-                            <p className="text-xs text-[#676E85] truncate">
-                              {student.email}
-                            </p>
+                        </td>
+                        <td className="px-5 py-3.5 hidden sm:table-cell">
+                          <span className="text-xs font-mono text-[#0A1B39]">
+                            {student.whatsappNumber || "N/A"}
+                          </span>
+                        </td>
+                        <td className="px-5 py-3.5 hidden md:table-cell">
+                          <div className="flex items-center gap-1.5">
+                            <Calendar className="h-3.5 w-3.5 text-[#98A2B3]" />
+                            <span className="text-xs text-[#676E85]">
+                              {student.createdAt ? new Date(student.createdAt).toLocaleDateString() : "Recent"}
+                            </span>
                           </div>
-                        </div>
-                      </td>
-                      <td className="px-5 py-4 hidden sm:table-cell">
-                        <div className="flex items-center gap-1.5">
-                          <BookOpen className="h-4 w-4 text-[#98A2B3]" />
-                          <span className="text-sm font-medium text-[#0A1B39]">
-                            {student.enrolledCourses} courses
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-5 py-4 hidden md:table-cell">
-                        <div className="flex items-center gap-1.5">
-                          <Calendar className="h-4 w-4 text-[#98A2B3]" />
-                          <span className="text-sm text-[#676E85]">
-                            {student.joinDate}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-5 py-4">
-                        <span
-                          className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-full ${status.color} ${status.bg}`}
-                        >
-                          {status.label}
-                        </span>
-                      </td>
-                      <td className="px-5 py-4">
-                        <div className="flex items-center justify-end gap-2">
-                          <button
-                            className="h-8 w-8 rounded-md bg-white border border-neutral-200 flex items-center justify-center text-[#676E85] hover:bg-neutral-50 hover:text-[#0A1B39] transition-colors shadow-sm"
-                            title="View Details"
+                        </td>
+                        <td className="px-5 py-3.5">
+                          <span
+                            className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md ${status.color} ${status.bg} border ${status.border}`}
                           >
-                            <Eye className="h-4 w-4" />
-                          </button>
-                          <button
-                            className="h-8 w-8 rounded-md bg-white border border-neutral-200 flex items-center justify-center text-[#676E85] hover:bg-neutral-50 hover:text-[#0A1B39] transition-colors shadow-sm"
-                            title="More Actions"
-                          >
-                            <MoreHorizontal className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                            {status.label}
+                          </span>
+                        </td>
+                        <td className="px-5 py-3.5">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              onClick={() => setSelectedStudentId(student.id)}
+                              className="text-xs font-semibold text-[#0A1B39] hover:text-[#17A546] bg-neutral-100 hover:bg-neutral-200 px-2.5 py-1 rounded-md transition-colors"
+                            >
+                              View
+                            </button>
+                            <button
+                              onClick={() => toggleStudentStatus(student.id, student.isSuspended)}
+                              disabled={toggleMutation.isPending}
+                              className={cn(
+                                "text-xs font-medium px-2.5 py-1 rounded-md transition-colors",
+                                student.status === "active"
+                                  ? "text-red-600 hover:bg-red-50"
+                                  : "text-[#17A546] hover:bg-[#17A546]/10",
+                                toggleMutation.isPending && "opacity-50 cursor-not-allowed"
+                              )}
+                              title={student.status === "active" ? "Suspend Student" : "Activate Student"}
+                            >
+                              {student.status === "active" ? "Suspend" : "Activate"}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
 
-          {filteredStudents.length === 0 && (
+          {!isLoading && filteredStudents.length === 0 && (
             <div className="text-center py-16">
               <Users className="h-10 w-10 text-[#98A2B3] mx-auto mb-3" />
               <p className="text-sm font-semibold text-[#0A1B39]">
-                No students found
+                No students match your criteria
               </p>
               <p className="text-xs text-[#676E85] mt-1">
-                Try adjusting your search or filters.
+                Try adjusting your search query or status filter.
               </p>
+            </div>
+          )}
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="p-4 border-t border-neutral-100 flex items-center justify-center">
+              <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
             </div>
           )}
         </div>
       </div>
+
+      {/* Student Details View Modal (Powered by getStudent API) */}
+      {selectedStudentId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0A1B39]/40 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white rounded-md p-6 w-full max-w-fit shadow-2xl animate-in zoom-in-95 duration-200 relative space-y-5">
+            <button
+              onClick={() => setSelectedStudentId(null)}
+              className="absolute top-4 right-4 text-[#676E85] hover:text-[#0A1B39] bg-neutral-100 rounded-full p-1 transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </button>
+
+            {isLoadingDetail ? (
+              <div className="py-12 text-center text-[#676E85]">
+                <Loader2 className="w-8 h-8 animate-spin text-[#17A546] mx-auto mb-2" />
+                <p className="text-xs font-medium">Fetching student record...</p>
+              </div>
+            ) : studentDetail ? (
+              <>
+                {/* Profile Header */}
+                <div className="flex items-center gap-3.5 pb-4 border-b border-neutral-100">
+                  <div className="h-12 w-12 rounded-full bg-[#17A546]/10 flex items-center justify-center text-[#17A546] font-bold text-base shrink-0">
+                    {studentDetail.name ? studentDetail.name.substring(0, 2).toUpperCase() : "ST"}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-base font-bold text-[#0A1B39] truncate">{studentDetail.name || "Student"}</h3>
+                    </div>
+                    <p className="text-xs text-[#676E85] truncate flex items-center gap-1 mt-0.5">
+                      <Mail className="w-3 h-3 text-[#98A2B3]" /> {studentDetail.email}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Account Details Grid */}
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div className="p-3 bg-neutral-50 rounded-md border border-neutral-200/60">
+                    <p className="text-[10px] text-[#676E85] font-medium">Student ID</p>
+                    <p className="font-mono font-bold text-[#0A1B39] mt-0.5 truncate">{studentDetail.id}</p>
+                  </div>
+                  <div className="p-3 bg-neutral-50 rounded-md border border-neutral-200/60">
+                    <p className="text-[10px] text-[#676E85] font-medium">WhatsApp Contact</p>
+                    <p className="font-bold text-[#0A1B39] mt-0.5">{studentDetail.whatsappNumber || "N/A"}</p>
+                  </div>
+                </div>
+
+                {/* Course Purchases */}
+                <div>
+                  <p className="text-xs font-bold text-[#0A1B39] mb-2 flex items-center gap-1.5">
+                    <BookOpen className="w-4 h-4 text-[#17A546]" /> Course Purchases ({studentDetail.purchases?.length || 0})
+                  </p>
+                  <div className="space-y-1.5 max-h-36 overflow-y-auto">
+                    {studentDetail.purchases && studentDetail.purchases.length > 0 ? (
+                      studentDetail.purchases.map((purchase: any, idx: number) => (
+                        <div key={idx} className="p-2.5 bg-neutral-50 rounded-md border border-neutral-200/60 text-xs flex justify-between items-center">
+                          <span className="font-semibold text-[#0A1B39]">{purchase.course?.title || "Course"}</span>
+                          <span className="text-[10px] font-bold text-[#17A546] bg-[#17A546]/10 px-2 py-0.5 rounded-md">
+                            ₦{purchase.amount}
+                          </span>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-xs text-[#676E85] italic p-2 bg-neutral-50 rounded-md">No course purchases recorded yet.</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Modal Actions */}
+                <div className="pt-2 border-t border-neutral-100 flex items-center justify-end">
+                  <Button
+                    variant="outline"
+                    onClick={() => setSelectedStudentId(null)}
+                    className="rounded-md h-9 px-4 text-xs font-semibold border-neutral-200 text-[#0A1B39]"
+                  >
+                    Close
+                  </Button>
+                </div>
+              </>
+            ) : null}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

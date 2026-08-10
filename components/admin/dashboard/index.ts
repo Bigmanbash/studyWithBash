@@ -6,3 +6,4 @@ export { RecentPayments } from "./RecentPayments";
 export { SupportOverview } from "./SupportOverview";
 export { EnrollmentOverview } from "./EnrollmentOverview";
 export { AdminDashboardSkeleton } from "./AdminDashboardSkeleton";
+export { AdminFilterBar } from "./AdminFilterBar";
