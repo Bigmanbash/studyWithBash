@@ -251,9 +251,8 @@ export default function AdminPaymentsPage() {
                         </p>
                       </td>
                     </tr>
-                  ) : (
-                    filteredPayments.map((payment) => {
-                      const status = statusConfig[payment.status];
+                  ) : filteredPayments.map((payment) => {
+                      const status = (payment.status && statusConfig[payment.status as keyof typeof statusConfig]) || statusConfig.pending;
                       const isSelected = selected?.id === payment.id;
                       const tierKey = payment.tier as TierKey;
                       const hasTier = tierKey && TIERS[tierKey];
@@ -273,37 +272,31 @@ export default function AdminPaymentsPage() {
                               </div>
                               <div className="min-w-0">
                                 <p className="text-xs font-semibold text-[#0A1B39] truncate">
-                                  {payment.student?.name || "Unknown"}
+                                  {payment.student?.name || "Student"}
                                 </p>
                                 <p className="text-[10px] text-[#676E85] truncate">
-                                  {payment.id.split("-")[0].substring(0,8)}...
+                                  {payment.student?.email || "N/A"}
                                 </p>
                               </div>
                             </div>
                           </td>
                           <td className="px-4 py-3 hidden sm:table-cell">
-                            <p className="text-xs font-medium text-[#0A1B39]">{payment.course?.subject || "N/A"}</p>
-                            <p className="text-[10px] text-[#676E85]">{payment.course?.level || "N/A"}</p>
+                            <p className="text-xs font-medium text-[#0A1B39] truncate max-w-[120px]">{payment.course?.subject || "Course"}</p>
+                            <p className="text-[10px] text-[#676E85] truncate max-w-[120px] capitalize">{payment.course?.level || "N/A"}</p>
                           </td>
                           <td className="px-4 py-3">
-                            <div className="flex items-center gap-1.5">
-                              <p className="text-xs font-bold text-[#0A1B39]">
-                                {formatAmount(payment.amount)}
-                              </p>
-                              {hasTier && (
-                                <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-md capitalize ${TIERS[tierKey].badgeBg} ${TIERS[tierKey].badgeText}`}>
-                                  {TIERS[tierKey].label}
-                                </span>
-                              )}
-                            </div>
+                            <p className="text-xs font-bold text-[#17A546]">
+                              {formatAmount(payment.amount)}
+                            </p>
                           </td>
-                          <td className="px-4 py-3">
-                            <span
-                              className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md ${status.color} ${status.bg} border ${status.border}`}
-                            >
-                              <status.icon className="h-3 w-3" />
-                              {status.label}
-                            </span>
+                          <td className="px-4 py-3 hidden md:table-cell">
+                            {hasTier ? (
+                              <span className={`inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-md ${TIERS[tierKey].badgeBg} ${TIERS[tierKey].badgeText}`}>
+                                {TIERS[tierKey].label}
+                              </span>
+                            ) : (
+                              <span className="text-[10px] text-[#676E85] font-mono">Basic</span>
+                            )}
                           </td>
                           <td className="px-4 py-3">
                             <div className="flex items-center justify-end gap-1">
@@ -347,8 +340,7 @@ export default function AdminPaymentsPage() {
                           </td>
                         </tr>
                       );
-                    })
-                  )}
+                    })}
                 </tbody>
               </table>
             </div>
@@ -364,8 +356,8 @@ export default function AdminPaymentsPage() {
                       <span className="text-[10px] font-mono text-[#98A2B3] block">{selected.id}</span>
                       <h3 className="text-sm font-bold text-[#0A1B39]">Payment Details</h3>
                     </div>
-                    <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-md", statusConfig[selected.status].bg, statusConfig[selected.status].color)}>
-                      {statusConfig[selected.status].label}
+                    <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-md", ((selected.status && statusConfig[selected.status as keyof typeof statusConfig]) || statusConfig.pending).bg, ((selected.status && statusConfig[selected.status as keyof typeof statusConfig]) || statusConfig.pending).color)}>
+                      {((selected.status && statusConfig[selected.status as keyof typeof statusConfig]) || statusConfig.pending).label}
                     </span>
                   </div>
 

@@ -1,7 +1,7 @@
 import { ArrowRight, Clock, CheckCircle2, AlertCircle, Receipt } from "lucide-react";
 import type { RecentPaymentData } from "@/app/api/adminUser/dashboard/queries";
 
-const statusConfig = {
+const statusConfig: Record<string, { label: string; icon: any; color: string; bg: string }> = {
   pending: {
     label: "Pending",
     icon: Clock,
@@ -14,7 +14,25 @@ const statusConfig = {
     color: "text-[#0E7B33]",
     bg: "bg-[#E7F6EC]",
   },
+  paid: {
+    label: "Approved",
+    icon: CheckCircle2,
+    color: "text-[#0E7B33]",
+    bg: "bg-[#E7F6EC]",
+  },
+  credited: {
+    label: "Approved",
+    icon: CheckCircle2,
+    color: "text-[#0E7B33]",
+    bg: "bg-[#E7F6EC]",
+  },
   rejected: {
+    label: "Rejected",
+    icon: AlertCircle,
+    color: "text-[#940803]",
+    bg: "bg-[#FBEAE9]",
+  },
+  failed: {
     label: "Rejected",
     icon: AlertCircle,
     color: "text-[#940803]",
@@ -35,15 +53,15 @@ export function RecentPayments({ payments = [] }: { payments?: RecentPaymentData
       <div className="space-y-2">
         {payments.length === 0 ? (
           <div className="py-8 flex flex-col items-center justify-center text-center">
-             <div className="h-10 w-10 rounded-md bg-neutral-50 border border-neutral-200/60 flex items-center justify-center mb-2.5">
-               <Receipt className="h-5 w-5 text-neutral-400" />
-             </div>
-             <p className="text-xs font-semibold text-[#0A1B39]">No payments recorded</p>
-             <p className="text-[11px] text-[#676E85] mt-0.5">Student transaction records will appear here.</p>
+            <div className="h-10 w-10 rounded-md bg-neutral-50 border border-neutral-200/60 flex items-center justify-center mb-2.5">
+              <Receipt className="h-5 w-5 text-neutral-400" />
+            </div>
+            <p className="text-xs font-semibold text-[#0A1B39]">No payments recorded</p>
+            <p className="text-[11px] text-[#676E85] mt-0.5">Student transaction records will appear here.</p>
           </div>
         ) : (
           payments.map((payment, i) => {
-            const config = statusConfig[payment.status];
+            const config = (payment.status && statusConfig[payment.status]) || statusConfig.pending;
             return (
               <div
                 key={i}

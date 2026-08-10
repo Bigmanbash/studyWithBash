@@ -397,8 +397,8 @@ export default function AdminPayoutRequestsPage() {
                       <span className="text-[10px] font-mono text-[#98A2B3] block">{selected.id}</span>
                       <h3 className="text-sm font-bold text-[#0A1B39]">Payout Details</h3>
                     </div>
-                    <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-md", statusConfig[selected.status].bg, statusConfig[selected.status].color)}>
-                      {statusConfig[selected.status].label}
+                    <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-md", (statusConfig[selected.status] || statusConfig.pending).bg, (statusConfig[selected.status] || statusConfig.pending).color)}>
+                      {(statusConfig[selected.status] || statusConfig.pending).label}
                     </span>
                   </div>
 
@@ -467,7 +467,7 @@ export default function AdminPayoutRequestsPage() {
                     </Button>
                   </div>
                 ) : (
-                  <div className={cn("p-2.5 rounded-md text-center text-xs font-semibold border", statusConfig[selected.status].bg, statusConfig[selected.status].color, statusConfig[selected.status].border)}>
+                  <div className={cn("p-2.5 rounded-md text-center text-xs font-semibold border", (statusConfig[selected.status] || statusConfig.pending).bg, (statusConfig[selected.status] || statusConfig.pending).color, (statusConfig[selected.status] || statusConfig.pending).border)}>
                     Request marked as {selected.status}
                   </div>
                 )}
