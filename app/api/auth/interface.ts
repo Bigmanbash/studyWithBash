@@ -3,7 +3,9 @@
 // mutations, and API routes. Derive from Better Auth where possible so changes
 // to the schema automatically propagate here.
 
-export type UserRole = "student" | "admin";
+import type { UserRole } from "@/lib/affiliate-constants";
+
+export type { UserRole } from "@/lib/affiliate-constants";
 
 export interface AuthUser {
   id: string;
@@ -12,6 +14,10 @@ export interface AuthUser {
   role: UserRole;
   whatsappNumber?: string | null;
   image?: string | null;
+  referredBy?: string | null;
+  referralCodeUsed?: string | null;
+  schoolName?: string | null;
+  estimatedStudents?: number | null;
 }
 
 // ── Form payload types ────────────────────────────────────────────────────────
@@ -29,6 +35,12 @@ export interface SignupPayload {
   whatsappNumber: string;
   howDidYouFindUs: string;
   password: string;
+  // Agent-specific fields (only when isAgent = true)
+  isAgent?: boolean;
+  schoolName?: string;
+  estimatedStudents?: number;
+  // Student-specific fields
+  referralCode?: string; // code entered at registration
 }
 
 // ── Mutation result types ─────────────────────────────────────────────────────

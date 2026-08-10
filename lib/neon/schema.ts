@@ -22,9 +22,15 @@ export const user = pgTable("user", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
   // App-specific fields
-  role: text("role", { enum: ["student", "admin"] }).notNull().default("student"),
+  role: text("role", { enum: ["student", "admin", "agent", "pending_agent"] }).notNull().default("student"),
   whatsappNumber: text("whatsapp_number"),
   howDidYouFindUs: text("how_did_you_find_us"),
+  // Affiliate-related fields on user
+  referredBy: text("referred_by"),       // userId of the agent who referred this student
+  referralCodeUsed: text("referral_code_used"), // the code entered at registration
+  schoolName: text("school_name"),       // for pending_agent / agent applications
+  estimatedStudents: integer("estimated_students"), // approximate student count
+  isSuspended: boolean("is_suspended").notNull().default(false), // admin student toggle
 });
 
 export const session = pgTable("session", {
@@ -89,6 +95,32 @@ export const paymentStatusEnum = pgEnum("payment_status", [
   "approved",
   "rejected",
   "failed",
+]);
+
+// ── Affiliate enums ───────────────────────────────────────────────────────────
+
+export const affiliateStatusEnum = pgEnum("affiliate_status", [
+  "pending",
+  "approved",
+  "rejected",
+  "suspended",
+]);
+
+export const commissionTypeEnum = pgEnum("commission_type", [
+  "referral",
+  "proxy",
+]);
+
+export const commissionStatusEnum = pgEnum("commission_status", [
+  "pending",
+  "credited",
+  "paid",
+]);
+
+export const accessCodeStatusEnum = pgEnum("access_code_status", [
+  "unused",
+  "redeemed",
+  "expired",
 ]);
 
 // ── Courses ───────────────────────────────────────────────────────────────────
@@ -222,13 +254,125 @@ export const payments = pgTable("payments", {
   proofPath: text("proof_path"),               // Supabase Storage key for receipt image
   submittedAt: timestamp("submitted_at").notNull().defaultNow(),
   reviewedAt: timestamp("reviewed_at"),
+  // Affiliate-related columns
+  affiliateId: uuid("affiliate_id"),           // set for proxy purchases
+  referralCode: text("referral_code"),         // the referral code active at time of purchase (traced via user.referredBy)
+  isProxy: boolean("is_proxy").notNull().default(false), // true when agent pays on behalf
+  proxyQuantity: integer("proxy_quantity"),     // number of students in a proxy batch
 });
 
+// ── Affiliates ────────────────────────────────────────────────────────────────
+
+/**
+ * One affiliate profile per agent user. Created when a user applies as a teacher/agent.
+ * Status transitions: pending → approved | rejected. Approved can be → suspended.
+ */
+export const affiliates = pgTable(
+  "affiliates",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    referralCode: text("referral_code"),                  // generated on approval
+    commissionRate: integer("commission_rate").notNull().default(20), // percentage 0-100
+    totalEarned: integer("total_earned").notNull().default(0),       // kobo, running total
+    pendingPayout: integer("pending_payout").notNull().default(0),   // kobo, unpaid balance
+    status: affiliateStatusEnum("status").notNull().default("pending"),
+    schoolName: text("school_name"),
+    estimatedStudents: integer("estimated_students"),
+    approvedAt: timestamp("approved_at"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (t) => ({
+    userIdx: uniqueIndex("affiliates_user_id_idx").on(t.userId),
+    referralCodeIdx: uniqueIndex("affiliates_referral_code_idx").on(t.referralCode),
+  })
+);
+
+// ── Commissions ───────────────────────────────────────────────────────────────
+
+/**
+ * Tracks every commission earned by an affiliate.
+ * paymentId has a unique index — the same payment can NEVER generate two commissions.
+ */
+export const commissions = pgTable(
+  "commissions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    affiliateId: uuid("affiliate_id")
+      .notNull()
+      .references(() => affiliates.id, { onDelete: "cascade" }),
+    paymentId: uuid("payment_id")
+      .notNull()
+      .references(() => payments.id, { onDelete: "cascade" }),
+    studentId: text("student_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    courseId: uuid("course_id")
+      .notNull()
+      .references(() => courses.id, { onDelete: "cascade" }),
+    type: commissionTypeEnum("type").notNull(),               // "referral" | "proxy"
+    saleAmount: integer("sale_amount").notNull(),              // kobo — what was paid
+    commissionAmount: integer("commission_amount").notNull(),  // kobo — what affiliate earns
+    status: commissionStatusEnum("status").notNull().default("pending"),
+    paidAt: timestamp("paid_at"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (t) => ({
+    paymentIdx: uniqueIndex("commissions_payment_id_idx").on(t.paymentId),
+  })
+);
+
+// ── Access Codes ──────────────────────────────────────────────────────────────
+
+/**
+ * One-time access codes generated from proxy purchases.
+ * Each code grants one student access to one course at a specific tier.
+ * Code uniqueness enforced at the database level.
+ */
+export const accessCodes = pgTable(
+  "access_codes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    code: text("code").notNull(),                           // e.g. "BSH-MATH-K3P1M7"
+    affiliateId: uuid("affiliate_id")
+      .notNull()
+      .references(() => affiliates.id, { onDelete: "cascade" }),
+    courseId: uuid("course_id")
+      .notNull()
+      .references(() => courses.id, { onDelete: "cascade" }),
+    tier: text("tier").notNull().default("basic"),          // "basic" | "standard" | "premium"
+    paymentId: uuid("payment_id")
+      .notNull()
+      .references(() => payments.id, { onDelete: "cascade" }),
+    status: accessCodeStatusEnum("status").notNull().default("unused"),
+    redeemedBy: text("redeemed_by")
+      .references(() => user.id, { onDelete: "set null" }),
+    redeemedAt: timestamp("redeemed_at"),
+    expiresAt: timestamp("expires_at"),                     // null = no expiry (admin sets when needed)
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (t) => ({
+    codeIdx: uniqueIndex("access_codes_code_idx").on(t.code),
+  })
+);
+
 // ── Relations ─────────────────────────────────────────────────────────────────
+
+export const userRelations = relations(user, ({ many, one }) => ({
+  payments: many(payments),
+  affiliate: one(affiliates, { fields: [user.id], references: [affiliates.userId] }),
+  referrer: one(user, { fields: [user.referredBy], references: [user.id], relationName: "referral" }),
+  referrals: many(user, { relationName: "referral" }),
+}));
 
 export const coursesRelations = relations(courses, ({ many }) => ({
   topics: many(topics),
   payments: many(payments),
+  commissions: many(commissions),
+  accessCodes: many(accessCodes),
 }));
 
 export const topicsRelations = relations(topics, ({ one, many }) => ({
@@ -250,9 +394,32 @@ export const subtopicMaterialsRelations = relations(subtopicMaterials, ({ one })
   subtopic: one(subtopics, { fields: [subtopicMaterials.subtopicId], references: [subtopics.id] }),
 }));
 
-export const paymentsRelations = relations(payments, ({ one }) => ({
+export const paymentsRelations = relations(payments, ({ one, many }) => ({
   user: one(user, { fields: [payments.userId], references: [user.id] }),
   course: one(courses, { fields: [payments.courseId], references: [courses.id] }),
+  affiliate: one(affiliates, { fields: [payments.affiliateId], references: [affiliates.id] }),
+  commission: one(commissions),
+  accessCodes: many(accessCodes),
+}));
+
+export const affiliatesRelations = relations(affiliates, ({ one, many }) => ({
+  user: one(user, { fields: [affiliates.userId], references: [user.id] }),
+  commissions: many(commissions),
+  accessCodes: many(accessCodes),
+}));
+
+export const commissionsRelations = relations(commissions, ({ one }) => ({
+  affiliate: one(affiliates, { fields: [commissions.affiliateId], references: [affiliates.id] }),
+  payment: one(payments, { fields: [commissions.paymentId], references: [payments.id] }),
+  student: one(user, { fields: [commissions.studentId], references: [user.id] }),
+  course: one(courses, { fields: [commissions.courseId], references: [courses.id] }),
+}));
+
+export const accessCodesRelations = relations(accessCodes, ({ one }) => ({
+  affiliate: one(affiliates, { fields: [accessCodes.affiliateId], references: [affiliates.id] }),
+  course: one(courses, { fields: [accessCodes.courseId], references: [courses.id] }),
+  payment: one(payments, { fields: [accessCodes.paymentId], references: [payments.id] }),
+  redeemedByUser: one(user, { fields: [accessCodes.redeemedBy], references: [user.id] }),
 }));
 
 // ── Type exports ──────────────────────────────────────────────────────────────
@@ -270,3 +437,9 @@ export type Subtopic = typeof subtopics.$inferSelect;
 export type NewSubtopic = typeof subtopics.$inferInsert;
 export type SubtopicMaterial = typeof subtopicMaterials.$inferSelect;
 export type NewSubtopicMaterial = typeof subtopicMaterials.$inferInsert;
+export type Affiliate = typeof affiliates.$inferSelect;
+export type NewAffiliate = typeof affiliates.$inferInsert;
+export type Commission = typeof commissions.$inferSelect;
+export type NewCommission = typeof commissions.$inferInsert;
+export type AccessCode = typeof accessCodes.$inferSelect;
+export type NewAccessCode = typeof accessCodes.$inferInsert;

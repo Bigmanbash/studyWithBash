@@ -5,6 +5,23 @@ export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs))
 }
 
+export function formatCurrency(amountKobo: number): string {
+  return new Intl.NumberFormat("en-NG", {
+    style: "currency",
+    currency: "NGN",
+    minimumFractionDigits: 0,
+  }).format(amountKobo / 100);
+}
+
+export function formatDate(date: Date | string | null | undefined): string {
+  if (!date) return "N/A";
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(date));
+}
+
 export function formatCourseMeta(course?: {
   level?: string | null;
   term?: string | null;

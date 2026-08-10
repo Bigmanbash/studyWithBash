@@ -1,7 +1,6 @@
 import React from "react";
 import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button } from "./button";
 
 interface PaginationProps {
   currentPage: number;
@@ -16,7 +15,7 @@ export const Pagination = ({
   onPageChange,
   className,
 }: PaginationProps) => {
-  if (totalPages <= 1) return null;
+  if (totalPages < 1) return null;
 
   const getVisiblePages = () => {
     const pages: (number | "ellipsis")[] = [];
@@ -36,59 +35,63 @@ export const Pagination = ({
     return pages;
   };
 
+  const buttonBaseClass = "flex items-center justify-center h-8 w-8 sm:h-9 sm:w-9 rounded-md text-xs sm:text-sm font-semibold transition-all border shadow-2xs focus:outline-none focus:ring-2 focus:ring-[#17A546]/50 shrink-0";
+  const buttonInactiveClass = "bg-white border-neutral-200/80 text-[#676E85] hover:text-[#0A1B39] hover:bg-neutral-50 hover:border-neutral-300";
+  const buttonActiveClass = "bg-[#17A546] border-[#17A546] text-white hover:bg-[#17A546]/90";
+  const buttonDisabledClass = "bg-neutral-50 border-neutral-200/50 text-neutral-400 cursor-not-allowed shadow-none";
+
   return (
-    <nav className={cn("flex items-center justify-center space-x-1", className)}>
-      <Button
-        variant="outline"
-        size="icon"
-        className="h-8 w-8 rounded-lg"
+    <nav className={cn("flex items-center justify-center gap-1.5 sm:gap-2 overflow-x-auto py-1", className)}>
+      <button
+        type="button"
+        className={cn(buttonBaseClass, currentPage === 1 ? buttonDisabledClass : buttonInactiveClass)}
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
+        aria-label="Previous page"
       >
-        <ChevronLeft className="h-4 w-4" />
-        <span className="sr-only">Previous page</span>
-      </Button>
+        <ChevronLeft className="h-4 w-4 sm:h-4.5 sm:w-4.5" />
+      </button>
 
-      {getVisiblePages().map((page, index) => {
-        if (page === "ellipsis") {
+      <div className="flex items-center gap-1.5 sm:gap-2">
+        {getVisiblePages().map((page, index) => {
+          if (page === "ellipsis") {
+            return (
+              <div
+                key={`ellipsis-${index}`}
+                className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center text-[#98A2B3] shrink-0"
+              >
+                <MoreHorizontal className="h-4 w-4" />
+              </div>
+            );
+          }
+
           return (
-            <div
-              key={`ellipsis-${index}`}
-              className="flex h-8 w-8 items-center justify-center text-neutral-400"
+            <button
+              key={page}
+              type="button"
+              className={cn(
+                buttonBaseClass,
+                currentPage === page ? buttonActiveClass : buttonInactiveClass
+              )}
+              onClick={() => onPageChange(page)}
+              aria-label={`Page ${page}`}
+              aria-current={currentPage === page ? "page" : undefined}
             >
-              <MoreHorizontal className="h-4 w-4" />
-            </div>
+              {page}
+            </button>
           );
-        }
+        })}
+      </div>
 
-        return (
-          <Button
-            key={page}
-            variant={currentPage === page ? "default" : "outline"}
-            size="icon"
-            className={cn(
-              "h-8 w-8 rounded-lg text-sm font-medium",
-              currentPage === page 
-                ? "bg-[#17A546] hover:bg-[#17A546]/90 text-white border-transparent"
-                : "text-[#676E85] border-neutral-200 hover:bg-neutral-50"
-            )}
-            onClick={() => onPageChange(page)}
-          >
-            {page}
-          </Button>
-        );
-      })}
-
-      <Button
-        variant="outline"
-        size="icon"
-        className="h-8 w-8 rounded-lg"
+      <button
+        type="button"
+        className={cn(buttonBaseClass, currentPage === totalPages ? buttonDisabledClass : buttonInactiveClass)}
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
+        aria-label="Next page"
       >
-        <ChevronRight className="h-4 w-4" />
-        <span className="sr-only">Next page</span>
-      </Button>
+        <ChevronRight className="h-4 w-4 sm:h-4.5 sm:w-4.5" />
+      </button>
     </nav>
   );
 };

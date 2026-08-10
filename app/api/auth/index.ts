@@ -3,4 +3,5 @@
 // e.g. import { loginWithEmail, getServerSession } from "@/app/api/auth"
 
 export type { AuthUser, AuthResult, LoginPayload, SignupPayload, UserRole } from "./interface";
-export { loginWithEmail, registerStudent, logout } from "./mutations";
+export { loginWithEmail, registerStudent, registerAsAgent, logout } from "./mutations";
+export { getServerSession, requireServerSession, requireAdminSession, requireAgentSession } from "./queries";

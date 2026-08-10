@@ -6,7 +6,7 @@ export interface StudentListQuery {
   page?: number;
   limit?: number;
   search?: string;
-  // Can add status/active later if we add a status field
+  status?: "all" | "active" | "inactive";
 }
 
 export interface PaginatedStudents {

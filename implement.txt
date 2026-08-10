@@ -1,0 +1,65 @@
+What Problem Are We Solving?
+Most of our target students are in secondary schools. They may not have bank cards, may not be comfortable paying online, and rely on their teachers for guidance. At the same time, teachers and school agents want to earn money by recommending our platform to students they already have relationships with.
+We are building a system that lets teachers earn commission on student purchases whether the student pays themselves using the teacher's referral code, or the teacher collects cash and pays on the student's behalf. We are cherishing simplicity
+
+Who Is This For?
+Students — secondary school students who want to access study materials on their phones.
+Teachers / Agents — teachers, school principals, or community agents who have direct access to students and want to earn money by promoting Bash Academy.
+Admins — the Bash Academy team who approve affiliates, manage commissions, and oversee the platform.
+
+The Two Ways a Teacher Earns
+Way 1 — Referral Code (Student pays themselves)The teacher shares her personal code e.g. NGOZ-K3P1. The student enters it when registering or when buying a course. The system automatically records that this student came from that teacher and credits her commission after the payment is confirmed.
+Best for students who have their own money and can pay online.
+Way 2 — Proxy Purchase (Teacher pays on behalf)The teacher collects cash from students, logs into the app, selects a course, enters how many students, and pays the total. The system generates unique one-time access codes — one per student. The teacher shares these codes with students on WhatsApp or paper. Each student opens the app, creates an account, enters their code, and gets instant access to the course.
+Best for students who are unbanked or too young to pay online.
+In both cases the teacher earns the same commission. The difference is just who initiates the payment.
+
+Teacher / Agent Journey
+Step 1 — ApplyTeacher visits the Bash Academy website and registers. On the registration form she selects "I'm a Teacher / Agent" and fills in her school name and approximate number of students. Her account is created but marked as pending.
+Step 2 — Get ApprovedThe admin reviews her application and approves it. Her account is upgraded to affiliate status and she receives a unique referral code. She is notified via WhatsApp or email.
+Step 3 — Start Earning
+For referrals: she shares her code with students and earns automatically.
+For proxy purchases: she logs in, goes to "Buy for Students", selects a course, enters a quantity, pays, and receives access codes to distribute.
+Step 4 — Track EarningsHer dashboard shows total earned, pending payout, and a log of every commission — which course, which student, how much, and whether it came from a referral or a proxy purchase.
+Step 5 — Get PaidWhen her balance reaches the payout threshold, the admin processes her payout to her bank account.
+
+Student Journey (Proxy)
+Step 1 — Teacher gives student an access code e.g. MATH-X7K2 on WhatsApp or paper.
+Step 2 — Student downloads the app or visits the website and creates a free account.
+Step 3 — Student goes to "Redeem Code", types in the code, and instantly gets access to the course.
+Step 4 — Student reads the material on their phone. No downloading allowed.
+
+Student Journey (Referral)
+Step 1 — Teacher shares her referral code NGOZ-K3P1.
+Step 2 — Student registers and enters the referral code, or enters it when buying a course.
+Step 3 — Student pays normally via card or bank transfer.
+Step 4 — Commission is automatically credited to the teacher.
+
+What the Admin Can Do
+* View and approve or reject affiliate applications
+* Set commission rate per affiliate
+* View all commissions across all affiliates
+* Mark commissions as paid after processing bank transfers
+* See all access codes — which are used, unused, or expired
+* Promote a user to admin
+
+Rules and Guards
+A commission is only credited after Paystack confirms the payment was successful — never before.
+The same payment can never generate two commissions. The system enforces this at the database level.
+An access code can only be redeemed once by one student. Once redeemed it is permanently closed.
+An affiliate cannot earn commission on their own purchase.
+A student who already owns a course cannot redeem an access code for that same course.
+Access codes can have an expiry date set by the admin — for example end of the school term.
+
+What We Are Not Building Yet
+* Automatic bank payouts to affiliates (admin will process these manually for now)
+* Multi-level commission (teacher earns from another teacher's referrals)
+* A public affiliate sign-up landing page (applications come through the registration form for now)
+* Downloading or printing of materials (read-only on device)
+
+Success Metrics
+* Number of active affiliates
+* Number of courses sold through referral vs proxy
+* Average commission earned per affiliate per month
+* Access code redemption rate (codes generated vs codes redeemed)
+* Student accounts created via access code redemption

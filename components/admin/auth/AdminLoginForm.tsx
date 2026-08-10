@@ -9,7 +9,7 @@ import * as z from "zod";
 import { Shield, AlertCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { loginWithEmail, logout } from "@/app/api/auth";
+import { loginWithEmail, logout } from "@/app/api/auth/mutations";
 
 const adminLoginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),

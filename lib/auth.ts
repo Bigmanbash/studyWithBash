@@ -19,8 +19,9 @@ export const auth = betterAuth({
 
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: false, // Enable after email provider is configured
+    requireEmailVerification: false, // TODO: Enable after Resend is configured with a verified domain
     sendResetPassword: async ({ user, url, token }) => {
+      // TODO: Configure Resend API key and verified sender domain before enabling
       // Send the email using our Resend wrapper
       await sendEmail({
         to: user.email,
@@ -38,6 +39,7 @@ export const auth = betterAuth({
   emailVerification: {
     sendOnSignUp: true,
     sendVerificationEmail: async ({ user, url, token }) => {
+      // TODO: Configure Resend API key and verified sender domain before enabling
       // Send the verification email using our Resend wrapper
       await sendEmail({
         to: user.email,
@@ -68,6 +70,26 @@ export const auth = betterAuth({
       },
       howDidYouFindUs: {
         type: "string",
+        required: false,
+        input: true,
+      },
+      referredBy: {
+        type: "string",
+        required: false,
+        input: false, // Set server-side only
+      },
+      referralCodeUsed: {
+        type: "string",
+        required: false,
+        input: false, // Set server-side only
+      },
+      schoolName: {
+        type: "string",
+        required: false,
+        input: true,
+      },
+      estimatedStudents: {
+        type: "number",
         required: false,
         input: true,
       },

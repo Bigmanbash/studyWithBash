@@ -14,24 +14,27 @@ import { TierKey } from "@/lib/tiers";
 export type PaystackStatus = "idle" | "loading" | "success" | "failed";
 
 interface UsePaystackReturn {
-  checkout: (courseId: string, tier?: TierKey) => Promise<void>;
+  checkout: (courseId: string, tier?: TierKey, quantity?: number) => Promise<void>;
   status: PaystackStatus;
   error: string | null;
+  data: any;
   reset: () => void;
 }
 
 export function usePaystack(): UsePaystackReturn {
   const [status, setStatus] = useState<PaystackStatus>("idle");
   const [error, setError] = useState<string | null>(null);
+  const [data, setData] = useState<any>(null);
   const queryClient = useQueryClient();
 
   const reset = useCallback(() => {
     setStatus("idle");
     setError(null);
+    setData(null);
   }, []);
 
   const checkout = useCallback(
-    async (courseId: string, tier: TierKey = "basic") => {
+    async (courseId: string, tier: TierKey = "basic", quantity: number = 1) => {
       setStatus("loading");
       setError(null);
 
@@ -40,7 +43,7 @@ export function usePaystack(): UsePaystackReturn {
         const initRes = await fetch("/api/paystack/initialize", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ courseId, tier }),
+          body: JSON.stringify({ courseId, tier, quantity }),
         });
 
         const initData = await initRes.json();
@@ -70,6 +73,7 @@ export function usePaystack(): UsePaystackReturn {
 
               if (verifyRes.ok && verifyData.status === "approved") {
                 setStatus("success");
+                setData(verifyData);
                 // Invalidate dashboard queries so purchased courses update
                 queryClient.invalidateQueries({ queryKey: ["studentDashboard"] });
                 queryClient.invalidateQueries({ queryKey: ["courseDetails", courseId] });
@@ -98,5 +102,5 @@ export function usePaystack(): UsePaystackReturn {
     [queryClient]
   );
 
-  return { checkout, status, error, reset };
+  return { checkout, status, error, data, reset };
 }

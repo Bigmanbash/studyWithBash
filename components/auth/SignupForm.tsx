@@ -4,14 +4,13 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { User, Mail, Phone, Lock, ChevronDown, AlertCircle, Loader2, CheckCircle2 } from "lucide-react";
+import { User, Mail, Phone, Lock, ChevronDown, AlertCircle, Loader2, CheckCircle2, School, Users, Tag, GraduationCap, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { registerStudent } from "@/app/api/auth/mutations";
+import { registerStudent, registerAsAgent } from "@/app/api/auth/mutations";
 import { useState } from "react";
 
-const signupSchema = z
-  .object({
+const baseSchema = z.object({
     firstName: z.string().min(2, "First name must be at least 2 characters"),
     lastName: z.string().min(2, "Last name must be at least 2 characters"),
     email: z.string().email("Please enter a valid email address"),
@@ -23,13 +22,31 @@ const signupSchema = z
       .regex(/[a-zA-Z]/, "Password must contain at least one letter")
       .regex(/[0-9]/, "Password must contain at least one number"),
     confirmPassword: z.string(),
-  })
+    isAgent: z.boolean(),
+    schoolName: z.string().optional(),
+    estimatedStudents: z.coerce.number().optional(),
+    referralCode: z.string().optional(),
+  });
+
+const signupSchema = baseSchema
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
     path: ["confirmPassword"],
-  });
+  })
+  .refine(
+    (data) => {
+      if (data.isAgent && (!data.schoolName || data.schoolName.trim().length < 2)) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "Please enter your school name",
+      path: ["schoolName"],
+    }
+  );
 
-type SignupFormValues = z.infer<typeof signupSchema>;
+type SignupFormValues = z.infer<typeof baseSchema>;
 
 export function SignupForm() {
   const router = useRouter();
@@ -39,23 +56,47 @@ export function SignupForm() {
   const {
     register,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<SignupFormValues>({
+    // @ts-expect-error Zod refined schemas produce a minor type mismatch with react-hook-form resolver
     resolver: zodResolver(signupSchema),
     mode: "onChange",
+    defaultValues: {
+      isAgent: false,
+    },
   });
+
+  const isAgent = watch("isAgent");
 
   const onSubmit = async (data: SignupFormValues) => {
     setServerError(null);
 
-    const result = await registerStudent({
+    const payload = {
       firstName: data.firstName,
       lastName: data.lastName,
       email: data.email,
       whatsappNumber: data.whatsappNumber,
       howDidYouFindUs: data.howDidYouFindUs,
       password: data.password,
-    });
+    };
+
+    let result;
+
+    if (data.isAgent) {
+      result = await registerAsAgent({
+        ...payload,
+        isAgent: true,
+        schoolName: data.schoolName,
+        estimatedStudents: data.estimatedStudents,
+      });
+    } else {
+      result = await registerStudent({
+        ...payload,
+        referralCode: data.referralCode,
+      });
+    }
 
     if (!result.ok) {
       setServerError(result.error);
@@ -63,12 +104,51 @@ export function SignupForm() {
     }
 
     setIsSuccess(true);
-    // Brief success moment before redirect
-    setTimeout(() => router.push("/dashboard"), 1200);
+
+    if (data.isAgent) {
+      // Agent signup creates a session automatically via Better Auth,
+      // but agents shouldn't be logged in until approved by admin.
+      // Sign them out immediately and show "pending approval" message.
+      const { signOut } = await import("@/lib/auth-client");
+      await signOut();
+      // Don't redirect — the success state shows "pending approval" message
+    } else {
+      // Student signup — redirect to dashboard after brief success animation
+      setTimeout(() => router.push("/dashboard"), 1200);
+    }
   };
 
   // ── Success state ─────────────────────────────────────────────────────────
   if (isSuccess) {
+    if (isAgent) {
+      // Agent: pending approval — no auto-login, show status message
+      return (
+        <div className="flex flex-col items-center justify-center gap-5 py-8 text-center">
+          <div className="h-16 w-16 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center">
+            <svg className="h-8 w-8 text-amber-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+            </svg>
+          </div>
+          <div>
+            <p className="text-lg font-bold text-[#0A1B39]">
+              Application Submitted!
+            </p>
+            <p className="text-sm text-[#676E85] mt-2 max-w-xs mx-auto leading-relaxed">
+              Your teacher/agent profile is currently under review. You&apos;ll be able to log in once an admin approves your account.
+            </p>
+            {/* TODO: Send confirmation email to agent via Resend when approved */}
+          </div>
+          <a
+            href="/login"
+            className="inline-flex items-center gap-2 mt-2 px-5 py-2.5 rounded-md bg-[#17A546] text-white text-sm font-bold hover:bg-[#128a39] transition-colors"
+          >
+            Go to Login
+          </a>
+        </div>
+      );
+    }
+
+    // Student: account created successfully — redirecting
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-8 text-center">
         <div className="h-14 w-14 rounded-full bg-semantic-success-support flex items-center justify-center">
@@ -93,14 +173,49 @@ export function SignupForm() {
 
   // ── Form ──────────────────────────────────────────────────────────────────
   return (
-    <form className="space-y-4 sm:space-y-5" onSubmit={handleSubmit(onSubmit)}>
+    <form className="space-y-4 sm:space-y-5" onSubmit={handleSubmit(onSubmit as any)}>
       {/* Server-level error banner */}
       {serverError && (
-        <div className="flex items-start gap-3 rounded-lg border border-semantic-error-main/20 bg-semantic-error-support p-3">
+        <div className="flex items-start gap-3 rounded-md border border-semantic-error-main/20 bg-semantic-error-support p-3">
           <AlertCircle className="h-4 w-4 text-semantic-error-main mt-0.5 shrink-0" />
           <p className="text-sm text-semantic-error-dark">{serverError}</p>
         </div>
       )}
+
+      {/* ── Role Tab Selector ──────────────────────────────────────── */}
+      <div className="flex rounded-md border border-neutral-200 bg-neutral-50/80 p-1 gap-1">
+        <button
+          type="button"
+          onClick={() => setValue("isAgent", false, { shouldValidate: true })}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-md text-sm font-semibold transition-all duration-200 ${
+            !isAgent
+              ? "bg-white text-[#0A1B39] shadow-sm border border-neutral-200/60"
+              : "text-[#98A2B3] hover:text-[#676E85]"
+          }`}
+        >
+          <GraduationCap className="w-4 h-4" />
+          Student
+        </button>
+        <button
+          type="button"
+          onClick={() => setValue("isAgent", true, { shouldValidate: true })}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-md text-sm font-semibold transition-all duration-200 ${
+            isAgent
+              ? "bg-white text-[#0A1B39] shadow-sm border border-neutral-200/60"
+              : "text-[#98A2B3] hover:text-[#676E85]"
+          }`}
+        >
+          <Briefcase className="w-4 h-4" />
+          Teacher / Agent
+        </button>
+      </div>
+      
+      {/* Context hint */}
+      <p className="text-[11px] text-[#98A2B3] text-center -mt-1 pb-2">
+        {!isAgent
+          ? "Sign up to access your courses and materials."
+          : "Sign up to earn commissions by referring students."}
+      </p>
 
       <div className="space-y-3.5 sm:space-y-4">
         <div className="grid grid-cols-2 gap-3 sm:gap-4">
@@ -151,6 +266,46 @@ export function SignupForm() {
           {...register("whatsappNumber")}
         />
 
+        {/* ── Agent-specific fields ──────────────────────────────────── */}
+        {isAgent && (
+          <>
+            <Input
+              label="School Name"
+              id="schoolName"
+              type="text"
+              placeholder="e.g. Federal Government College Lagos"
+              icon={<School size={18} />}
+              error={!!errors.schoolName}
+              helperText={errors.schoolName?.message}
+              {...register("schoolName")}
+            />
+            <Input
+              label="Approximate Number of Students"
+              id="estimatedStudents"
+              type="number"
+              placeholder="e.g. 50"
+              icon={<Users size={18} />}
+              error={!!errors.estimatedStudents}
+              helperText={errors.estimatedStudents?.message}
+              {...register("estimatedStudents")}
+            />
+          </>
+        )}
+
+        {/* ── Referral code (students only) ──────────────────────────── */}
+        {!isAgent && (
+          <Input
+            label="Referral Code (Optional)"
+            id="referralCode"
+            type="text"
+            placeholder="e.g. BSH-K3P1M7"
+            icon={<Tag size={18} />}
+            error={!!errors.referralCode}
+            helperText={errors.referralCode?.message}
+            {...register("referralCode")}
+          />
+        )}
+
         {/* How did you find us — custom select */}
         <div className="flex flex-col gap-1.5 w-full">
           <label className="text-[13px] sm:text-sm font-medium text-[#485066] uppercase tracking-wide">
@@ -158,16 +313,17 @@ export function SignupForm() {
           </label>
           <div className="relative">
             <select
-              className={`w-full appearance-none rounded-lg border bg-white px-3 py-2 text-[15px] sm:text-base transition-colors focus-visible:outline-none focus-visible:ring-1 h-[42px] sm:h-[44px] cursor-pointer ${
+              className={`w-full appearance-none rounded-md border bg-white px-3 py-2 text-[15px] sm:text-base transition-colors focus-visible:outline-none focus-visible:ring-1 h-[42px] sm:h-[44px] cursor-pointer ${
                 errors.howDidYouFindUs
                   ? "border-semantic-error-main text-semantic-error-main focus-visible:ring-semantic-error-main"
-                  : "border-[#D1D5DB] text-[#070D17] focus-visible:border-[#3B82F6] focus-visible:ring-[#3B82F6]"
+                  : "border-[#D1D5DB] text-[#070D17] focus-visible:border-[#17A546] focus-visible:ring-[#17A546]"
               }`}
               {...register("howDidYouFindUs")}
             >
               <option value="" disabled>Select an option</option>
               <option value="social-media">Social Media (Facebook, Instagram, Twitter)</option>
               <option value="friend">Referred by a friend</option>
+              <option value="teacher">Referred by a teacher</option>
               <option value="search-engine">Search Engine (Google)</option>
               <option value="other">Other</option>
             </select>
@@ -212,41 +368,19 @@ export function SignupForm() {
       <Button
         type="submit"
         disabled={isSubmitting}
-        className="w-full bg-brand-green hover:bg-brand-green/90 text-white rounded-xl h-11 sm:h-12 font-bold text-[14px] sm:text-[15px] shadow-lg shadow-[#17A546]/20 disabled:opacity-70 transition-all"
+        className="w-full bg-brand-green hover:bg-brand-green/90 text-white rounded-md h-11 sm:h-12 font-bold text-[14px] sm:text-[15px] shadow-lg shadow-[#17A546]/20 disabled:opacity-70 transition-all"
       >
         {isSubmitting ? (
           <span className="flex items-center justify-center gap-2">
             <Loader2 className="h-4 w-4 animate-spin" />
-            Creating account...
+            {isAgent ? "Submitting application..." : "Creating account..."}
           </span>
+        ) : isAgent ? (
+          "Apply as Teacher / Agent"
         ) : (
           "Create account"
         )}
       </Button>
-
-      {/* Divider */}
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-neutral-200" />
-        </div>
-        <div className="relative flex justify-center text-xs">
-          <span className="bg-white px-3 text-[#98A2B3]">or continue with</span>
-        </div>
-      </div>
-
-      {/* Social login */}
-      <button
-        type="button"
-        className="w-full h-11 sm:h-12 rounded-xl border border-neutral-200 bg-white text-[13px] sm:text-sm font-medium text-[#0A1B39] hover:bg-neutral-50 transition-colors flex items-center justify-center gap-2.5"
-      >
-        <svg className="h-[18px] w-[18px] sm:h-5 sm:w-5" viewBox="0 0 24 24">
-          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
-          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
-          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
-        </svg>
-        Continue with Google
-      </button>
 
       <p className="text-[11px] sm:text-xs text-center text-[#98A2B3] leading-relaxed">
         By signing up, you agree to our{" "}
