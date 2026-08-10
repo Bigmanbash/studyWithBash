@@ -13,12 +13,14 @@ import {
   X,
   Menu,
   ShieldCheck,
+  Banknote,
+  Send,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { authClient } from "@/lib/auth-client";
-import { logout } from "@/app/api/auth";
-import type { AuthUser } from "@/app/api/auth";
+import { logout } from "@/app/api/auth/mutations";
+import type { AuthUser } from "@/app/api/auth/interface";
 import { useRouter } from "next/navigation";
 
 const navSections = [
@@ -34,6 +36,15 @@ const navSections = [
       { label: "Courses", href: "/admin/dashboard/courses", icon: BookOpen },
       { label: "Students", href: "/admin/dashboard/students", icon: Users },
       { label: "Payments", href: "/admin/dashboard/payments", icon: CreditCard },
+    ],
+  },
+  {
+    title: "Affiliates",
+    items: [
+      { label: "Agents", href: "/admin/dashboard/affiliates", icon: ShieldCheck },
+      { label: "Access Codes", href: "/admin/dashboard/access-codes", icon: LayoutDashboard },
+      { label: "Commission Logs", href: "/admin/dashboard/commission-logs", icon: Banknote },
+      { label: "Payout Requests", href: "/admin/dashboard/payout-requests", icon: Send },
     ],
   },
   {

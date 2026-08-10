@@ -4,145 +4,23 @@ import { useState } from "react";
 import { AdminDashboardHeader, AdminFilterBar } from "@/components/admin/dashboard";
 import {
   CreditCard,
-  Search,
   Clock,
   CheckCircle2,
   XCircle,
-  AlertCircle,
-  Filter,
   Download,
   Eye,
   Check,
   X,
-  ArrowUpRight,
-  ArrowDownRight,
   Banknote,
-  Users,
-  Receipt,
   FileText,
-  ShieldCheck,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { TierKey, TIERS } from "@/lib/tiers";
+import { useAdminPayments, useUpdatePaymentStatus, AdminPaymentData } from "@/app/api/adminUser/payments/client";
 
 type PaymentStatus = "pending" | "approved" | "rejected";
-
-interface Payment {
-  id: string;
-  student: string;
-  initials: string;
-  email: string;
-  course: string;
-  courseLevel: string;
-  amount: string;
-  rawAmount: number;
-  tier?: TierKey;
-  method: string;
-  reference: string;
-  status: PaymentStatus;
-  submittedAt: string;
-  proofUploaded: boolean;
-}
-
-const initialPayments: Payment[] = [
-  {
-    id: "PAY-4821",
-    student: "Adaeze Okonkwo",
-    initials: "AO",
-    email: "adaeze@email.com",
-    course: "Physics",
-    courseLevel: "SS2",
-    amount: "₦15,000",
-    rawAmount: 15000,
-    tier: "premium",
-    method: "Bank Transfer",
-    reference: "TRF-789456123",
-    status: "pending",
-    submittedAt: "2 min ago",
-    proofUploaded: true,
-  },
-  {
-    id: "PAY-4820",
-    student: "Tunde Bakare",
-    initials: "TB",
-    email: "tunde.b@email.com",
-    course: "Mathematics",
-    courseLevel: "SS3",
-    amount: "₦12,000",
-    rawAmount: 12000,
-    tier: "standard",
-    method: "Bank Transfer",
-    reference: "TRF-456789012",
-    status: "pending",
-    submittedAt: "15 min ago",
-    proofUploaded: true,
-  },
-  {
-    id: "PAY-4819",
-    student: "Blessing Eze",
-    initials: "BE",
-    email: "blessing.e@email.com",
-    course: "Chemistry",
-    courseLevel: "SS1",
-    amount: "₦5,000",
-    rawAmount: 5000,
-    tier: "basic",
-    method: "USSD",
-    reference: "USR-321654987",
-    status: "pending",
-    submittedAt: "45 min ago",
-    proofUploaded: false,
-  },
-  {
-    id: "PAY-4818",
-    student: "Emeka Nwosu",
-    initials: "EN",
-    email: "emeka.n@email.com",
-    course: "Biology",
-    courseLevel: "SS2",
-    amount: "₦15,000",
-    rawAmount: 15000,
-    tier: "premium",
-    method: "Bank Transfer",
-    reference: "TRF-654987321",
-    status: "pending",
-    submittedAt: "1 hour ago",
-    proofUploaded: true,
-  },
-  {
-    id: "PAY-4817",
-    student: "Fatima Yusuf",
-    initials: "FY",
-    email: "fatima.y@email.com",
-    course: "English",
-    courseLevel: "SS3",
-    amount: "₦10,000",
-    rawAmount: 10000,
-    tier: "standard",
-    method: "Card",
-    reference: "CRD-147258369",
-    status: "approved",
-    submittedAt: "3 hours ago",
-    proofUploaded: true,
-  },
-  {
-    id: "PAY-4816",
-    student: "Uche Okoro",
-    initials: "UO",
-    email: "uche.o@email.com",
-    course: "Government",
-    courseLevel: "SS2",
-    amount: "₦12,000",
-    rawAmount: 12000,
-    tier: "standard",
-    method: "Bank Transfer",
-    reference: "TRF-258369147",
-    status: "approved",
-    submittedAt: "5 hours ago",
-    proofUploaded: true,
-  },
-];
 
 const statusConfig = {
   pending: {
@@ -168,25 +46,53 @@ const statusConfig = {
   },
 };
 
+function formatAmount(amountKobo: number): string {
+  return `₦${(amountKobo / 100).toLocaleString()}`;
+}
+
+function getInitials(name: string | null | undefined): string {
+  if (!name) return "UK";
+  return name
+    .split(/\s+/)
+    .map((n) => n[0])
+    .join("")
+    .substring(0, 2)
+    .toUpperCase();
+}
+
+function timeAgo(dateString: string): string {
+  const date = new Date(dateString);
+  const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+  let interval = seconds / 31536000;
+  if (interval > 1) return Math.floor(interval) + " years ago";
+  interval = seconds / 2592000;
+  if (interval > 1) return Math.floor(interval) + " months ago";
+  interval = seconds / 86400;
+  if (interval > 1) return Math.floor(interval) + " days ago";
+  interval = seconds / 3600;
+  if (interval > 1) return Math.floor(interval) + " hours ago";
+  interval = seconds / 60;
+  if (interval > 1) return Math.floor(interval) + " minutes ago";
+  return "just now";
+}
+
 export default function AdminPaymentsPage() {
-  const [paymentsList, setPaymentsList] = useState<Payment[]>(initialPayments);
+  const { data: paymentsList = [], isLoading } = useAdminPayments();
+  const updateStatusMutation = useUpdatePaymentStatus();
+  
   const [activeTab, setActiveTab] = useState<"all" | PaymentStatus>("pending");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedPaymentId, setSelectedPaymentId] = useState<string | null>("PAY-4821");
-  const [viewingReceipt, setViewingReceipt] = useState<Payment | null>(null);
+  const [selectedPaymentId, setSelectedPaymentId] = useState<string | null>(null);
+  const [viewingReceipt, setViewingReceipt] = useState<AdminPaymentData | null>(null);
 
   const handleUpdatePaymentStatus = (id: string, newStatus: PaymentStatus) => {
-    setPaymentsList((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, status: newStatus } : p))
-    );
+    updateStatusMutation.mutate({ id, status: newStatus as "approved" | "rejected" });
   };
 
   const filteredPayments = paymentsList.filter((payment) => {
     const matchesTab = activeTab === "all" || payment.status === activeTab;
-    const matchesSearch =
-      payment.student.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      payment.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      payment.reference.toLowerCase().includes(searchQuery.toLowerCase());
+    const searchString = `${payment.student?.name || ""} ${payment.id} ${payment.reference}`.toLowerCase();
+    const matchesSearch = searchString.includes(searchQuery.toLowerCase());
     return matchesTab && matchesSearch;
   });
 
@@ -195,9 +101,17 @@ export default function AdminPaymentsPage() {
   const rejectedCount = paymentsList.filter((p) => p.status === "rejected").length;
   const totalPending = paymentsList
     .filter((p) => p.status === "pending")
-    .reduce((sum, p) => sum + p.rawAmount, 0);
+    .reduce((sum, p) => sum + p.amount, 0);
+    
+  const totalRevenue = paymentsList
+    .filter((p) => p.status === "approved")
+    .reduce((sum, p) => sum + p.amount, 0);
 
-  const selected = paymentsList.find((p) => p.id === selectedPaymentId);
+  // If selected payment is not found in the list (or null), use the first one if available
+  let selected = paymentsList.find((p) => p.id === selectedPaymentId) || null;
+  if (!selected && paymentsList.length > 0) {
+    selected = paymentsList[0];
+  }
 
   return (
     <div className="min-h-screen bg-[#F7F9FC]">
@@ -232,7 +146,7 @@ export default function AdminPaymentsPage() {
               icon: Clock,
               color: "text-[#F5B546]",
               bg: "bg-[#F5B546]/10",
-              sub: `₦${(totalPending / 1000).toFixed(0)}K total`,
+              sub: `${formatAmount(totalPending)} total`,
             },
             {
               label: "Approved",
@@ -252,11 +166,11 @@ export default function AdminPaymentsPage() {
             },
             {
               label: "Total Revenue",
-              value: "₦4.2M",
+              value: formatAmount(totalRevenue),
               icon: Banknote,
               color: "text-[#17A546]",
               bg: "bg-[#17A546]/10",
-              sub: "+23% this month",
+              sub: "All time approved",
             },
           ].map((stat) => (
             <div
@@ -318,113 +232,126 @@ export default function AdminPaymentsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-neutral-100">
-                  {filteredPayments.map((payment) => {
-                    const status = statusConfig[payment.status];
-                    const isSelected = selectedPaymentId === payment.id;
-                    return (
-                      <tr
-                        key={payment.id}
-                        className={cn(
-                          "hover:bg-neutral-50/60 transition-colors cursor-pointer",
-                          isSelected && "bg-[#17A546]/[0.04]"
-                        )}
-                        onClick={() => setSelectedPaymentId(payment.id)}
-                      >
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-2.5">
-                            <div className="h-8 w-8 rounded-full bg-[#17A546]/10 flex items-center justify-center text-[#17A546] font-bold text-xs shrink-0">
-                              {payment.initials}
+                  {isLoading ? (
+                    <tr>
+                      <td colSpan={5} className="py-16 text-center">
+                        <Loader2 className="w-8 h-8 text-[#17A546] animate-spin mx-auto" />
+                        <p className="text-sm font-semibold text-[#0A1B39] mt-3">Loading payments...</p>
+                      </td>
+                    </tr>
+                  ) : filteredPayments.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="text-center py-16">
+                        <CreditCard className="h-10 w-10 text-[#98A2B3] mx-auto mb-3" />
+                        <p className="text-sm font-semibold text-[#0A1B39]">
+                          No payments found
+                        </p>
+                        <p className="text-xs text-[#676E85] mt-1">
+                          Try adjusting your filter selection.
+                        </p>
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredPayments.map((payment) => {
+                      const status = statusConfig[payment.status];
+                      const isSelected = selected?.id === payment.id;
+                      const tierKey = payment.tier as TierKey;
+                      const hasTier = tierKey && TIERS[tierKey];
+                      return (
+                        <tr
+                          key={payment.id}
+                          className={cn(
+                            "hover:bg-neutral-50/60 transition-colors cursor-pointer",
+                            isSelected && "bg-[#17A546]/[0.04]"
+                          )}
+                          onClick={() => setSelectedPaymentId(payment.id)}
+                        >
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-2.5">
+                              <div className="h-8 w-8 rounded-full bg-[#17A546]/10 flex items-center justify-center text-[#17A546] font-bold text-xs shrink-0">
+                                {getInitials(payment.student?.name)}
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-xs font-semibold text-[#0A1B39] truncate">
+                                  {payment.student?.name || "Unknown"}
+                                </p>
+                                <p className="text-[10px] text-[#676E85] truncate">
+                                  {payment.id.split("-")[0].substring(0,8)}...
+                                </p>
+                              </div>
                             </div>
-                            <div className="min-w-0">
-                              <p className="text-xs font-semibold text-[#0A1B39] truncate">
-                                {payment.student}
+                          </td>
+                          <td className="px-4 py-3 hidden sm:table-cell">
+                            <p className="text-xs font-medium text-[#0A1B39]">{payment.course?.subject || "N/A"}</p>
+                            <p className="text-[10px] text-[#676E85]">{payment.course?.level || "N/A"}</p>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-1.5">
+                              <p className="text-xs font-bold text-[#0A1B39]">
+                                {formatAmount(payment.amount)}
                               </p>
-                              <p className="text-[10px] text-[#676E85] truncate">
-                                {payment.id}
-                              </p>
+                              {hasTier && (
+                                <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-md capitalize ${TIERS[tierKey].badgeBg} ${TIERS[tierKey].badgeText}`}>
+                                  {TIERS[tierKey].label}
+                                </span>
+                              )}
                             </div>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 hidden sm:table-cell">
-                          <p className="text-xs font-medium text-[#0A1B39]">{payment.course}</p>
-                          <p className="text-[10px] text-[#676E85]">{payment.courseLevel}</p>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-1.5">
-                            <p className="text-xs font-bold text-[#0A1B39]">
-                              {payment.amount}
-                            </p>
-                            {payment.tier && TIERS[payment.tier] && (
-                              <span className={`text-[9px] font-semibold px-1.5 py-0.2 rounded-md capitalize ${TIERS[payment.tier].badgeBg} ${TIERS[payment.tier].badgeText}`}>
-                                {TIERS[payment.tier].label}
-                              </span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <span
-                            className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md ${status.color} ${status.bg} border ${status.border}`}
-                          >
-                            <status.icon className="h-3 w-3" />
-                            {status.label}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center justify-end gap-1">
-                            {payment.status === "pending" && (
-                              <>
-                                <button
-                                  className="h-7 w-7 rounded-md bg-[#E7F6EC] flex items-center justify-center hover:bg-[#17A546]/20 transition-colors"
-                                  title="Approve Payment"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleUpdatePaymentStatus(payment.id, "approved");
-                                  }}
-                                >
-                                  <Check className="h-3.5 w-3.5 text-[#0E7B33]" />
-                                </button>
-                                <button
-                                  className="h-7 w-7 rounded-md bg-[#FBEAE9] flex items-center justify-center hover:bg-red-100 transition-colors"
-                                  title="Reject Payment"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleUpdatePaymentStatus(payment.id, "rejected");
-                                  }}
-                                >
-                                  <X className="h-3.5 w-3.5 text-[#940803]" />
-                                </button>
-                              </>
-                            )}
-                            <button
-                              className="h-7 w-7 rounded-md bg-neutral-100 flex items-center justify-center hover:bg-neutral-200 text-[#676E85] transition-colors"
-                              title="View Details"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedPaymentId(payment.id);
-                              }}
+                          </td>
+                          <td className="px-4 py-3">
+                            <span
+                              className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md ${status.color} ${status.bg} border ${status.border}`}
                             >
-                              <Eye className="h-3.5 w-3.5" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                              <status.icon className="h-3 w-3" />
+                              {status.label}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center justify-end gap-1">
+                              {payment.status === "pending" && (
+                                <>
+                                  <button
+                                    className="h-7 w-7 rounded-md bg-[#E7F6EC] flex items-center justify-center hover:bg-[#17A546]/20 transition-colors disabled:opacity-50"
+                                    title="Approve Payment"
+                                    disabled={updateStatusMutation.isPending}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleUpdatePaymentStatus(payment.id, "approved");
+                                    }}
+                                  >
+                                    <Check className="h-3.5 w-3.5 text-[#0E7B33]" />
+                                  </button>
+                                  <button
+                                    className="h-7 w-7 rounded-md bg-[#FBEAE9] flex items-center justify-center hover:bg-red-100 transition-colors disabled:opacity-50"
+                                    title="Reject Payment"
+                                    disabled={updateStatusMutation.isPending}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleUpdatePaymentStatus(payment.id, "rejected");
+                                    }}
+                                  >
+                                    <X className="h-3.5 w-3.5 text-[#940803]" />
+                                  </button>
+                                </>
+                              )}
+                              <button
+                                className="h-7 w-7 rounded-md bg-neutral-100 flex items-center justify-center hover:bg-neutral-200 text-[#676E85] transition-colors"
+                                title="View Details"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedPaymentId(payment.id);
+                                }}
+                              >
+                                <Eye className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
                 </tbody>
               </table>
             </div>
-
-            {filteredPayments.length === 0 && (
-              <div className="text-center py-16">
-                <CreditCard className="h-10 w-10 text-[#98A2B3] mx-auto mb-3" />
-                <p className="text-sm font-semibold text-[#0A1B39]">
-                  No payments found
-                </p>
-                <p className="text-xs text-[#676E85] mt-1">
-                  Try adjusting your filter selection.
-                </p>
-              </div>
-            )}
           </div>
 
           {/* Payment Detail Inspector */}
@@ -445,11 +372,11 @@ export default function AdminPaymentsPage() {
                   {/* Student Info */}
                   <div className="flex items-center gap-3 p-3 bg-neutral-50 rounded-md border border-neutral-200/60 mb-4">
                     <div className="h-9 w-9 rounded-full bg-[#17A546]/10 flex items-center justify-center text-[#17A546] font-bold text-xs shrink-0">
-                      {selected.initials}
+                      {getInitials(selected.student?.name)}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-bold text-[#0A1B39] truncate">{selected.student}</p>
-                      <p className="text-[11px] text-[#676E85] truncate">{selected.email}</p>
+                      <p className="text-xs font-bold text-[#0A1B39] truncate">{selected.student?.name || "Unknown"}</p>
+                      <p className="text-[11px] text-[#676E85] truncate">{selected.student?.email || "N/A"}</p>
                     </div>
                   </div>
 
@@ -457,28 +384,35 @@ export default function AdminPaymentsPage() {
                   <div className="space-y-2 text-xs">
                     <div className="flex justify-between py-1.5 border-b border-neutral-100">
                       <span className="text-[#676E85]">Course & Level:</span>
-                      <span className="font-semibold text-[#0A1B39]">{selected.course} ({selected.courseLevel})</span>
+                      <span className="font-semibold text-[#0A1B39]">{selected.course?.subject || "N/A"} ({selected.course?.level || "N/A"})</span>
                     </div>
                     <div className="flex justify-between py-1.5 border-b border-neutral-100">
                       <span className="text-[#676E85]">Amount Paid:</span>
-                      <span className="font-bold text-[#17A546]">{selected.amount}</span>
+                      <span className="font-bold text-[#17A546]">{formatAmount(selected.amount)}</span>
                     </div>
                     <div className="flex justify-between py-1.5 border-b border-neutral-100">
                       <span className="text-[#676E85]">Payment Method:</span>
-                      <span className="font-medium text-[#0A1B39]">{selected.method}</span>
+                      <span className="font-medium text-[#0A1B39] capitalize">{selected.method || "N/A"}</span>
                     </div>
                     <div className="flex justify-between py-1.5 border-b border-neutral-100">
                       <span className="text-[#676E85]">Transaction Ref:</span>
-                      <span className="font-mono text-[#0A1B39]">{selected.reference}</span>
+                      <span className="font-mono text-[#0A1B39]">{selected.reference || "N/A"}</span>
                     </div>
-                    <div className="flex justify-between py-1.5">
+                    <div className="flex justify-between py-1.5 border-b border-neutral-100">
                       <span className="text-[#676E85]">Submitted Time:</span>
-                      <span className="text-[#0A1B39]">{selected.submittedAt}</span>
+                      <span className="text-[#0A1B39]">{timeAgo(selected.submittedAt)}</span>
                     </div>
+                    {/* New Affiliate Information Block */}
+                    {selected.affiliate && (
+                      <div className="flex justify-between py-1.5 bg-[#17A546]/5 px-2 rounded-md border border-[#17A546]/20 mt-2">
+                        <span className="text-[#676E85] flex items-center gap-1.5"><Banknote className="w-3.5 h-3.5 text-[#17A546]" /> Affiliate Link:</span>
+                        <span className="font-bold text-[#0A1B39]">{selected.affiliate.code}</span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Receipt Proof Attachment */}
-                  {selected.proofUploaded && (
+                  {selected.proofUrl && (
                     <div className="mt-4 p-3 rounded-md bg-[#17A546]/5 border border-[#17A546]/20 text-center">
                       <p className="text-xs text-[#0A1B39] font-medium flex items-center justify-center gap-1.5">
                         <FileText className="w-3.5 h-3.5 text-[#17A546]" /> Payment Receipt Attached
@@ -498,16 +432,20 @@ export default function AdminPaymentsPage() {
                   <div className="space-y-2 pt-2 border-t border-neutral-100">
                     <Button
                       onClick={() => handleUpdatePaymentStatus(selected.id, "approved")}
+                      disabled={updateStatusMutation.isPending}
                       className="w-full h-9 rounded-md bg-[#17A546] hover:bg-[#128638] text-white text-xs font-bold shadow-xs flex items-center justify-center gap-1.5"
                     >
-                      <CheckCircle2 className="h-4 w-4" /> Approve & Unlock Access
+                      {updateStatusMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+                      Approve & Unlock Access
                     </Button>
                     <Button
                       onClick={() => handleUpdatePaymentStatus(selected.id, "rejected")}
+                      disabled={updateStatusMutation.isPending}
                       variant="outline"
                       className="w-full h-9 rounded-md bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 text-xs font-semibold flex items-center justify-center gap-1.5"
                     >
-                      <XCircle className="h-4 w-4" /> Reject Payment Proof
+                      {updateStatusMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="h-4 w-4" />}
+                      Reject Payment Proof
                     </Button>
                   </div>
                 ) : (
@@ -539,28 +477,34 @@ export default function AdminPaymentsPage() {
             
             <div>
               <h3 className="text-base font-bold text-[#0A1B39]">Payment Receipt Proof</h3>
-              <p className="text-xs text-[#676E85] mt-0.5">Reference: {viewingReceipt.reference}</p>
+              <p className="text-xs text-[#676E85] mt-0.5">Reference: {viewingReceipt.reference || "N/A"}</p>
             </div>
 
-            {/* Simulated Bank Receipt */}
-            <div className="p-4 bg-neutral-50 rounded-md border border-neutral-200 space-y-3 text-xs font-mono text-[#0A1B39]">
-              <div className="flex justify-between border-b border-neutral-200 pb-2 font-sans font-bold text-[#17A546]">
-                <span>OFFICIAL RECEIPT</span>
-                <span>{viewingReceipt.amount}</span>
+            {/* If it's a real URL, show an image, otherwise show simulated receipt block */}
+            {viewingReceipt.proofUrl?.startsWith("http") ? (
+              <div className="w-full aspect-auto max-h-[60vh] overflow-hidden rounded-md border border-neutral-200">
+                <img src={viewingReceipt.proofUrl} alt="Receipt" className="w-full h-full object-contain" />
               </div>
-              <div className="space-y-1 text-[11px]">
-                <p><span className="text-[#676E85]">Payer:</span> {viewingReceipt.student}</p>
-                <p><span className="text-[#676E85]">Email:</span> {viewingReceipt.email}</p>
-                <p><span className="text-[#676E85]">Bank:</span> Access Bank PLC</p>
-                <p><span className="text-[#676E85]">Account:</span> Bash Academy Course Fee</p>
-                <p><span className="text-[#676E85]">Ref:</span> {viewingReceipt.reference}</p>
-                <p><span className="text-[#676E85]">Status:</span> SUCCESSFUL</p>
+            ) : (
+              <div className="p-4 bg-neutral-50 rounded-md border border-neutral-200 space-y-3 text-xs font-mono text-[#0A1B39]">
+                <div className="flex justify-between border-b border-neutral-200 pb-2 font-sans font-bold text-[#17A546]">
+                  <span>OFFICIAL RECEIPT</span>
+                  <span>{formatAmount(viewingReceipt.amount)}</span>
+                </div>
+                <div className="space-y-1 text-[11px]">
+                  <p><span className="text-[#676E85]">Payer:</span> {viewingReceipt.student?.name || "Unknown"}</p>
+                  <p><span className="text-[#676E85]">Email:</span> {viewingReceipt.student?.email || "Unknown"}</p>
+                  <p><span className="text-[#676E85]">Bank:</span> Access Bank PLC</p>
+                  <p><span className="text-[#676E85]">Account:</span> Bash Academy Course Fee</p>
+                  <p><span className="text-[#676E85]">Ref:</span> {viewingReceipt.reference || "N/A"}</p>
+                  <p><span className="text-[#676E85]">Status:</span> SUCCESSFUL</p>
+                </div>
               </div>
-            </div>
+            )}
 
             <Button
               onClick={() => setViewingReceipt(null)}
-              className="w-full bg-[#17A546] hover:bg-[#128638] text-white rounded-md h-9 text-xs font-bold"
+              className="w-full bg-[#17A546] hover:bg-[#128638] text-white rounded-md h-9 text-xs font-bold shadow-2xs"
             >
               Done Reviewing
             </Button>

@@ -9,7 +9,7 @@ import { Mail, Lock, User, AlertCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { installFirstAdmin } from "@/app/api/adminUser";
-import { loginWithEmail } from "@/app/api/auth";
+import { loginWithEmail } from "@/app/api/auth/mutations";
 
 const installSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),

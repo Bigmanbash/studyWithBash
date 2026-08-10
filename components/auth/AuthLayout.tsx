@@ -109,7 +109,7 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
             </div>
 
             {/* Form card */}
-            <div className="bg-white p-5 sm:p-8 rounded-2xl shadow-xl shadow-[#0A1B39]/5 border border-neutral-100">
+            <div className="bg-white p-5 sm:p-8 rounded-md shadow-xl shadow-[#0A1B39]/5 border border-neutral-100">
               <div className="mb-5 sm:mb-6">
                 <h2 className="text-[22px] sm:text-2xl font-bold tracking-tight text-[#0A1B39] leading-tight">
                   {title}

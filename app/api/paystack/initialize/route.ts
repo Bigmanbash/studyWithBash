@@ -16,6 +16,7 @@ import { db } from "@/lib/neon";
 import { courses, payments } from "@/lib/neon/schema";
 import { eq, and } from "drizzle-orm";
 import { requireServerSession } from "@/app/api/auth/queries";
+import { getAffiliateByUserId } from "@/app/api/affiliates/queries";
 import { TierKey, getTierPrice, getEffectiveTier, TIER_ORDER } from "@/lib/tiers";
 
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY!;
@@ -27,7 +28,11 @@ export async function POST(request: Request) {
 
     // 2. Parse and validate body
     const body = await request.json();
-    const { courseId, tier = "basic" } = body as { courseId?: string; tier?: TierKey };
+    const { courseId, tier = "basic", quantity = 1 } = body as { 
+      courseId?: string; 
+      tier?: TierKey;
+      quantity?: number;
+    };
 
     if (!courseId) {
       return NextResponse.json(
@@ -100,16 +105,39 @@ export async function POST(request: Request) {
       );
     }
 
-    // 5. Calculate upgrade amount (targetTierPrice - currentTierPrice)
+    // 5. Calculate charge amount
     const targetPrice = getTierPrice(course, tier);
-    const currentPrice = currentTier ? getTierPrice(course, currentTier) : 0;
-    const chargeAmount = targetPrice - currentPrice;
+    let chargeAmount = 0;
+    
+    // Determine proxy vs personal purchase
+    const isProxy = user.role === "agent";
 
-    if (chargeAmount <= 0) {
-      return NextResponse.json(
-        { error: "Invalid price calculation for upgrade" },
-        { status: 400 }
-      );
+    if (isProxy) {
+      if (quantity < 1) {
+        return NextResponse.json({ error: "Quantity must be at least 1" }, { status: 400 });
+      }
+      chargeAmount = targetPrice * quantity;
+    } else {
+      // Personal purchase logic (upgrade pricing)
+      const currentPrice = currentTier ? getTierPrice(course, currentTier) : 0;
+      chargeAmount = targetPrice - currentPrice;
+      
+      if (chargeAmount <= 0) {
+        return NextResponse.json(
+          { error: "Invalid price calculation for upgrade" },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Fetch affiliate data if applicable
+    let affiliateId: string | undefined = undefined;
+    if (isProxy) {
+      const profile = await getAffiliateByUserId(user.id);
+      if (!profile || profile.status !== "approved") {
+        return NextResponse.json({ error: "Only approved agents can make proxy purchases" }, { status: 403 });
+      }
+      affiliateId = profile.id;
     }
 
     // 6. Generate a unique reference
@@ -123,6 +151,10 @@ export async function POST(request: Request) {
       tier,
       status: "pending",
       reference,
+      isProxy,
+      proxyQuantity: isProxy ? quantity : null,
+      affiliateId,
+      referralCode: !isProxy && user.referralCodeUsed ? user.referralCodeUsed : null,
     });
 
     // 8. Initialize transaction with Paystack
@@ -141,9 +173,14 @@ export async function POST(request: Request) {
           metadata: {
             course_id: course.id,
             course_title: course.title,
+            course_subject: course.subject,
             user_id: user.id,
             tier,
-            is_upgrade: !!currentTier,
+            is_upgrade: !isProxy && !!currentTier,
+            is_proxy: isProxy,
+            proxy_quantity: isProxy ? quantity : undefined,
+            affiliate_id: affiliateId,
+            referral_code: !isProxy ? user.referralCodeUsed : undefined,
           },
         }),
       }

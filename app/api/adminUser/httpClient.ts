@@ -1,6 +1,6 @@
 import { apiFetch } from "@/app/api/auth/httpClient";
 import type { AdminInstallPayload } from "./interface";
-import type { AuthResult, AuthUser } from "@/app/api/auth";
+import type { AuthResult, AuthUser } from "@/app/api/auth/interface";
 
 export const installFirstAdmin = async (payload: AdminInstallPayload): Promise<AuthResult<AuthUser>> => {
   try {

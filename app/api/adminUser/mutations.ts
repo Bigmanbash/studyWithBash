@@ -1,7 +1,7 @@
 import { signUp } from "@/lib/auth-client";
 import { getAdminCount } from "./queries";
 import type { AdminInstallPayload } from "./interface";
-import type { AuthResult, AuthUser } from "@/app/api/auth";
+import type { AuthResult, AuthUser } from "@/app/api/auth/interface";
 
 /**
  * Creates the first admin user for the system.

@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { AvailableCourses, PageHeader } from "@/components/dashboard";
 import { use, useState, useEffect } from "react";
+import { useSession } from "@/lib/auth-client";
 import { useCourseDetails, useStudentDashboard } from "@/hooks/useStudentDashboard";
 import { usePaystack } from "@/hooks/usePaystack";
 import { PaymentSuccessModal } from "@/components/modals/PaymentSuccessModal";
@@ -25,6 +26,7 @@ export default function CourseDetailsPage({ params }: { params: Promise<{ course
 
   const { data: courseData, isLoading, error } = useCourseDetails(courseId);
   const { data: dashboardData } = useStudentDashboard(1, 10);
+  const { data: session } = useSession();
   const { checkout, status: payStatus, error: payError, reset: payReset } = usePaystack();
 
   const course = courseData?.course;
@@ -33,9 +35,12 @@ export default function CourseDetailsPage({ params }: { params: Promise<{ course
   const otherCourses = dashboardData?.available?.filter((c) => c.id !== courseId).slice(0, 4) || [];
 
   const [selectedTier, setSelectedTier] = useState<TierKey>("basic");
+  const [quantity, setQuantity] = useState(1);
   const [topics, setTopics] = useState<TopicWithSubtopics[]>([]);
   const [topicsLoading, setTopicsLoading] = useState(true);
   const [expandedTopics, setExpandedTopics] = useState<Set<string>>(new Set());
+
+  const isAgent = (session?.user as any)?.role === "agent";
 
   // Auto-select standard/premium tier if basic is default but standard/premium is available
   useEffect(() => {
@@ -69,7 +74,7 @@ export default function CourseDetailsPage({ params }: { params: Promise<{ course
   };
 
   const handlePayNow = async (targetTier?: TierKey) => {
-    await checkout(courseId, targetTier || selectedTier);
+    await checkout(courseId, targetTier || selectedTier, isAgent ? quantity : 1);
   };
 
   if (isLoading) {
@@ -295,19 +300,39 @@ export default function CourseDetailsPage({ params }: { params: Promise<{ course
                   )}
 
                   {/* Checkout & Price Summary */}
-                  <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pt-2">
+                  <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pt-2 border-t border-neutral-100">
                     <div>
                       <p className="text-[10px] text-[#676E85] mb-1 uppercase tracking-wide font-medium">
                         {selectedTier ? `${TIERS[selectedTier].label} Tier · One-time payment` : "One-time payment"}
                       </p>
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-2xl sm:text-3xl font-extrabold text-[#0A1B39]">
-                          ₦{(getTierPrice(course, selectedTier) / 100).toLocaleString()}
-                        </span>
-                        {course.originalPrice && (
-                          <p className="text-[11px] text-[#17A546] font-semibold mt-0.5">
-                            Save ₦{((course.originalPrice - getTierPrice(course, selectedTier)) / 100).toLocaleString()}
-                          </p>
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-2xl sm:text-3xl font-extrabold text-[#0A1B39]">
+                            ₦{((getTierPrice(course, selectedTier) * quantity) / 100).toLocaleString()}
+                          </span>
+                          {course.originalPrice && quantity === 1 && (
+                            <p className="text-[11px] text-[#17A546] font-semibold mt-0.5">
+                              Save ₦{((course.originalPrice - getTierPrice(course, selectedTier)) / 100).toLocaleString()}
+                            </p>
+                          )}
+                        </div>
+                        {isAgent && (
+                          <div className="flex items-center gap-2 mt-2">
+                            <span className="text-xs font-semibold text-[#0A1B39]">Quantity:</span>
+                            <div className="flex items-center border border-neutral-200 rounded-md bg-white overflow-hidden">
+                              <button 
+                                onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                                className="px-2.5 py-1 text-[#676E85] hover:bg-neutral-50 hover:text-[#0A1B39]"
+                              >-</button>
+                              <span className="px-3 py-1 text-sm font-semibold text-[#0A1B39] border-x border-neutral-200 min-w-[40px] text-center">
+                                {quantity}
+                              </span>
+                              <button 
+                                onClick={() => setQuantity(quantity + 1)}
+                                className="px-2.5 py-1 text-[#676E85] hover:bg-neutral-50 hover:text-[#0A1B39]"
+                              >+</button>
+                            </div>
+                          </div>
                         )}
                       </div>
                     </div>

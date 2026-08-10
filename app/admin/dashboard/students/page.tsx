@@ -16,9 +16,10 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
-import { fetchStudents, fetchStudentById } from "@/app/api/students";
+import { fetchStudents, fetchStudentById, toggleStudent } from "@/app/api/students";
 import type { Student } from "@/app/api/students/interface";
 import { Pagination } from "@/components/ui/pagination";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
 
 type StudentStatusTab = "all" | "active" | "inactive";
 
@@ -43,9 +44,7 @@ export default function AdminStudentsPage() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [page, setPage] = useState(1);
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
-
-  // Status map override for toggles locally
-  const [localStatuses, setLocalStatuses] = useState<Record<string, "active" | "inactive">>({});
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -56,8 +55,8 @@ export default function AdminStudentsPage() {
 
   // Fetch real students list using query function from @/app/api/students
   const { data: queryData, isLoading } = useQuery({
-    queryKey: ["admin-students", page, debouncedSearch],
-    queryFn: () => fetchStudents({ page, limit: 10, search: debouncedSearch || undefined }),
+    queryKey: ["admin-students", page, debouncedSearch, activeTab],
+    queryFn: () => fetchStudents({ page, limit: 10, search: debouncedSearch || undefined, status: activeTab }),
   });
 
   // Fetch single student details when modal is opened
@@ -67,39 +66,32 @@ export default function AdminStudentsPage() {
     enabled: !!selectedStudentId,
   });
 
-  const mockFallbackStudents: Student[] = [
-    { id: "STD-1042", name: "Adaeze Okonkwo", email: "adaeze@email.com", whatsappNumber: "+2348012345678", createdAt: "2023-10-12T00:00:00Z" } as any,
-    { id: "STD-1041", name: "Tunde Bakare", email: "tunde.b@email.com", whatsappNumber: "+2348023456789", createdAt: "2023-11-05T00:00:00Z" } as any,
-    { id: "STD-1040", name: "Blessing Eze", email: "blessing.e@email.com", whatsappNumber: "+2348034567890", createdAt: "2023-09-28T00:00:00Z" } as any,
-    { id: "STD-1039", name: "Emeka Nwosu", email: "emeka.n@email.com", whatsappNumber: "+2348045678901", createdAt: "2023-12-01T00:00:00Z" } as any,
-    { id: "STD-1038", name: "Fatima Yusuf", email: "fatima.y@email.com", whatsappNumber: "+2348056789012", createdAt: "2024-01-15T00:00:00Z" } as any,
-  ];
-
-  const fetchedStudents: Student[] = queryData?.data || [];
-  const rawStudentsList = fetchedStudents.length > 0 ? fetchedStudents : (isLoading ? [] : mockFallbackStudents);
-  const totalCount = queryData?.total || rawStudentsList.length;
+  const fetchedStudents = queryData?.data || [];
+  const rawStudentsList = fetchedStudents;
+  const stats = queryData?.stats || { total: 0, active: 0, inactive: 0 };
+  const totalCount = activeTab === "all" ? stats.total : (activeTab === "active" ? stats.active : stats.inactive);
   const totalPages = queryData ? Math.ceil(queryData.total / queryData.limit) : 1;
 
-  // Apply status map override
-  const studentsList = rawStudentsList.map((s) => ({
+  const studentsList = rawStudentsList.map((s: any) => ({
     ...s,
-    status: (localStatuses[s.id] || "active") as "active" | "inactive",
+    status: s.isSuspended ? "inactive" : "active",
   }));
 
-  const toggleStudentStatus = (id: string) => {
-    setLocalStatuses((prev) => {
-      const current = prev[id] || "active";
-      return { ...prev, [id]: current === "active" ? "inactive" : "active" };
-    });
+  const toggleMutation = useMutation({
+    mutationFn: ({ id, isSuspended }: { id: string, isSuspended: boolean }) => toggleStudent(id, isSuspended),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-students"] });
+    }
+  });
+
+  const toggleStudentStatus = (id: string, isSuspended: boolean) => {
+    toggleMutation.mutate({ id, isSuspended: !isSuspended });
   };
 
-  const activeCount = studentsList.filter((s) => s.status === "active").length;
-  const inactiveCount = studentsList.filter((s) => s.status === "inactive").length;
+  const activeCount = stats.active;
+  const inactiveCount = stats.inactive;
 
-  const filteredStudents = studentsList.filter((student) => {
-    if (activeTab === "all") return true;
-    return student.status === activeTab;
-  });
+  const filteredStudents = studentsList;
 
   return (
     <div className="min-h-screen bg-[#F7F9FC]">
@@ -130,7 +122,7 @@ export default function AdminStudentsPage() {
           {[
             {
               label: "Total Registered",
-              value: totalCount.toString(),
+              value: stats.total.toString(),
               icon: Users,
               color: "text-[#17A546]",
               bg: "bg-[#17A546]/10",
@@ -168,9 +160,9 @@ export default function AdminStudentsPage() {
         {/* Unified Filter & Search Bar */}
         <AdminFilterBar
           tabs={[
-            { key: "all", label: "All Students", count: totalCount },
-            { key: "active", label: "Active", count: activeCount },
-            { key: "inactive", label: "Inactive", count: inactiveCount },
+            { key: "all", label: "All Students", count: stats.total },
+            { key: "active", label: "Active", count: stats.active },
+            { key: "inactive", label: "Inactive", count: stats.inactive },
           ]}
           activeTab={activeTab}
           onTabChange={(tab) => {
@@ -215,10 +207,10 @@ export default function AdminStudentsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-neutral-100">
-                  {filteredStudents.map((student) => {
-                    const status = statusConfig[student.status];
+                  {filteredStudents.map((student: any) => {
+                    const status = statusConfig[student.status as "active" | "inactive"];
                     const initials = student.name
-                      ? student.name.split(" ").map((n) => n[0]).join("").substring(0, 2).toUpperCase()
+                      ? student.name.split(" ").map((n: string) => n[0]).join("").substring(0, 2).toUpperCase()
                       : "ST";
                     return (
                       <tr
@@ -269,12 +261,14 @@ export default function AdminStudentsPage() {
                               View
                             </button>
                             <button
-                              onClick={() => toggleStudentStatus(student.id)}
+                              onClick={() => toggleStudentStatus(student.id, student.isSuspended)}
+                              disabled={toggleMutation.isPending}
                               className={cn(
                                 "text-xs font-medium px-2.5 py-1 rounded-md transition-colors",
                                 student.status === "active"
                                   ? "text-red-600 hover:bg-red-50"
-                                  : "text-[#17A546] hover:bg-[#17A546]/10"
+                                  : "text-[#17A546] hover:bg-[#17A546]/10",
+                                toggleMutation.isPending && "opacity-50 cursor-not-allowed"
                               )}
                               title={student.status === "active" ? "Suspend Student" : "Activate Student"}
                             >

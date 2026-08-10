@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   Home, ShoppingBag, BookOpen, GraduationCap, User,
-  Settings, Plus, LogOut, X, Menu, ChevronDown, ChevronRight, Bell
+  Settings, Plus, LogOut, X, Menu, ChevronDown, ChevronRight, Bell, KeyRound, ShieldCheck
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -176,9 +176,19 @@ export function Sidebar() {
           <div>
             <p className="px-3 text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-1.5">Account</p>
             <div className="space-y-0.5">
+              <NavItem href="/dashboard/redeem" icon={KeyRound} label="Redeem Code" />
               <NavItem href="/dashboard/profile" icon={User} label="Profile" />
             </div>
           </div>
+
+          {(session?.user as any)?.role === "agent" && (
+            <div>
+              <p className="px-3 text-[10px] font-bold text-[#17A546] uppercase tracking-widest mb-1.5 mt-4">Agent Panel</p>
+              <div className="space-y-0.5">
+                <NavItem href="/dashboard/affiliate" icon={ShieldCheck} label="Agent Dashboard" />
+              </div>
+            </div>
+          )}
         </nav>
 
         {/* Bottom profile */}

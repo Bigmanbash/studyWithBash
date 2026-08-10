@@ -3,6 +3,7 @@ export { Courses } from "./Courses";
 export { ProblemSolution } from "./ProblemSolution";
 export { HowItWorks } from "./HowItWorks";
 export { Features } from "./Features";
+export { AgentAffiliateSection } from "./AgentAffiliateSection";
 export { Testimonials } from "./Testimonials";
 export { Pricing } from "./Pricing";
 export { CTASection } from "./CTASection";
