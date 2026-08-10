@@ -353,8 +353,8 @@ export function AgentEarningsClient({
                 <tbody className="divide-y divide-neutral-100">
                   {filteredCommissions.map((comm) => (
                     <tr key={comm.id} className="hover:bg-neutral-50/60 transition-colors">
-                      <td className="px-4 sm:px-5 py-3 sm:py-3.5">
-                        <p className="text-xs font-semibold text-[#0A1B39] whitespace-nowrap">
+                      <td className="px-3.5 sm:px-5 py-3 sm:py-3.5 whitespace-nowrap">
+                        <p className="text-xs font-semibold text-[#0A1B39]">
                           {new Date(comm.createdAt).toLocaleDateString("en-GB", {
                             day: "numeric",
                             month: "short",
@@ -365,10 +365,10 @@ export function AgentEarningsClient({
                           {new Date(comm.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                         </p>
                       </td>
-                      <td className="px-4 sm:px-5 py-3 sm:py-3.5">
+                      <td className="px-3.5 sm:px-5 py-3 sm:py-3.5 whitespace-nowrap">
                         <span
                           className={cn(
-                            "inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border whitespace-nowrap",
+                            "inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border whitespace-nowrap",
                             comm.type === "referral"
                               ? "bg-blue-50 border-blue-200 text-blue-600"
                               : "bg-purple-50 border-purple-200 text-purple-600"
@@ -377,26 +377,26 @@ export function AgentEarningsClient({
                           {comm.type === "referral" ? "Direct Referral" : "Proxy Purchase"}
                         </span>
                       </td>
-                      <td className="px-4 sm:px-5 py-3 sm:py-3.5">
-                        <p className="text-xs font-semibold text-[#0A1B39]">
+                      <td className="px-3.5 sm:px-5 py-3 sm:py-3.5 max-w-[120px] sm:max-w-[170px]">
+                        <p className="text-xs font-semibold text-[#0A1B39] truncate" title={comm.student?.name || ""}>
                           {comm.student?.name || "Student"}
                         </p>
-                        <p className="text-[11px] text-[#676E85]">
+                        <p className="text-[10px] sm:text-[11px] text-[#676E85] truncate" title={comm.student?.email || ""}>
                           {comm.student?.email || "N/A"}
                         </p>
                       </td>
-                      <td className="px-4 sm:px-5 py-3 sm:py-3.5">
-                        <p className="text-xs font-medium text-[#0A1B39] truncate">
+                      <td className="px-3.5 sm:px-5 py-3 sm:py-3.5 max-w-[120px] sm:max-w-[170px]">
+                        <p className="text-xs font-medium text-[#0A1B39] truncate" title={comm.course?.title || ""}>
                           {comm.course?.title || "Course"}
                         </p>
-                        <p className="text-[10px] font-semibold text-[#676E85] uppercase">
+                        <p className="text-[10px] font-semibold text-[#676E85] uppercase truncate">
                           {comm.course?.subject || "Subject"}
                         </p>
                       </td>
-                      <td className="px-4 sm:px-5 py-3 sm:py-3.5 text-xs font-semibold text-[#0A1B39]">
+                      <td className="px-3.5 sm:px-5 py-3 sm:py-3.5 text-xs font-semibold text-[#0A1B39] whitespace-nowrap">
                         {formatCurrency(comm.saleAmount)}
                       </td>
-                      <td className="px-4 sm:px-5 py-3 sm:py-3.5">
+                      <td className="px-3.5 sm:px-5 py-3 sm:py-3.5 whitespace-nowrap">
                         <div className="flex items-center gap-1.5">
                           <p className="text-xs font-bold text-[#17A546]">
                             +{formatCurrency(comm.commissionAmount)}
@@ -406,10 +406,10 @@ export function AgentEarningsClient({
                           </span>
                         </div>
                       </td>
-                      <td className="px-4 sm:px-5 py-3 sm:py-3.5">
+                      <td className="px-3.5 sm:px-5 py-3 sm:py-3.5 whitespace-nowrap">
                         <span
                           className={cn(
-                            "inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border whitespace-nowrap",
+                            "inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border whitespace-nowrap",
                             comm.status === "paid"
                               ? "bg-blue-50 border-blue-200 text-blue-600"
                               : comm.status === "credited"
@@ -420,10 +420,10 @@ export function AgentEarningsClient({
                           {comm.status === "credited" ? "Credited (Pending)" : comm.status}
                         </span>
                       </td>
-                      <td className="px-4 sm:px-5 py-3 sm:py-3.5 text-right">
+                      <td className="px-3.5 sm:px-5 py-3 sm:py-3.5 text-right whitespace-nowrap">
                         <button
                           onClick={() => setSelectedCommission(comm)}
-                          className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-md text-[#0A1B39] bg-neutral-100 hover:bg-neutral-200 transition-colors shadow-2xs cursor-pointer active:scale-95"
+                          className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-md text-[#0A1B39] bg-neutral-100 hover:bg-neutral-200 transition-colors shadow-2xs cursor-pointer active:scale-95"
                         >
                           <Eye className="w-3.5 h-3.5 text-[#676E85]" /> View
                         </button>

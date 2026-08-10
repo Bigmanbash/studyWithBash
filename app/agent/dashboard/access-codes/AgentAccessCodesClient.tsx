@@ -297,21 +297,21 @@ export function AgentAccessCodesClient({ initialCodes }: AgentAccessCodesClientP
                             {code.code}
                           </span>
                         </td>
-                        <td className="px-4 sm:px-5 py-3.5">
-                          <div className="font-semibold text-[#0A1B39] text-xs sm:text-sm">{code.course?.title || "Unknown Course"}</div>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#17A546]">
+                        <td className="px-3 sm:px-5 py-3.5 max-w-[130px] sm:max-w-[220px]">
+                          <div className="font-semibold text-[#0A1B39] text-xs sm:text-sm truncate" title={code.course?.title || ""}>{code.course?.title || "Unknown Course"}</div>
+                          <div className="flex items-center gap-2 mt-1 truncate">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#17A546] shrink-0">
                               {code.tier} Tier
                             </span>
                             {code.course?.subject && (
                               <>
                                 <span className="text-[#D1D5DB]">•</span>
-                                <span className="text-[10px] font-medium text-[#676E85]">{code.course.subject}</span>
+                                <span className="text-[10px] font-medium text-[#676E85] truncate">{code.course.subject}</span>
                               </>
                             )}
                           </div>
                         </td>
-                        <td className="px-4 sm:px-5 py-3.5">
+                        <td className="px-3 sm:px-5 py-3.5 whitespace-nowrap">
                           <div className="flex flex-col gap-1">
                             {code.status === "unused" ? (
                               <div>
@@ -341,14 +341,14 @@ export function AgentAccessCodesClient({ initialCodes }: AgentAccessCodesClientP
                             )}
                           </div>
                         </td>
-                        <td className="px-4 sm:px-5 py-3.5">
+                        <td className="px-3 sm:px-5 py-3.5 max-w-[120px] sm:max-w-[180px]">
                           {code.status === "redeemed" && code.redeemedByUser ? (
                             <div>
-                              <div className="font-semibold text-[#0A1B39] text-xs">
+                              <div className="font-semibold text-[#0A1B39] text-xs truncate">
                                 {code.redeemedByUser.name}
-                                {code.redeemedAt && <span className="text-[#676E85] font-normal"> · {formatDate(code.redeemedAt)}</span>}
+                                {code.redeemedAt && <span className="text-[#676E85] font-normal text-[11px]"> · {formatDate(code.redeemedAt)}</span>}
                               </div>
-                              <div className="text-[11px] text-[#676E85] truncate max-w-37.5" title={code.redeemedByUser.email}>{code.redeemedByUser.email}</div>
+                              <div className="text-[11px] text-[#676E85] truncate" title={code.redeemedByUser.email}>{code.redeemedByUser.email}</div>
                             </div>
                           ) : (
                             <span className="text-[#98A2B3] italic text-xs">—</span>
