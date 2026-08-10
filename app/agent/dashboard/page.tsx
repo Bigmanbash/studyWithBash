@@ -178,22 +178,22 @@ export default async function AgentDashboardPage() {
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-left min-w-[500px]">
+                <table className="w-full text-left min-w-[520px]">
                   <thead>
                     <tr className="bg-neutral-50/60 border-b border-neutral-200/80">
-                      <th className="text-left text-[10px] uppercase tracking-wider font-bold text-[#676E85] px-4 sm:px-5 py-3">
+                      <th className="text-left text-[10px] uppercase tracking-wider font-bold text-[#676E85] px-3.5 sm:px-5 py-3">
                         Student & Course
                       </th>
-                      <th className="text-left text-[10px] uppercase tracking-wider font-bold text-[#676E85] px-4 sm:px-5 py-3">
+                      <th className="text-left text-[10px] uppercase tracking-wider font-bold text-[#676E85] px-3.5 sm:px-5 py-3">
                         Type
                       </th>
-                      <th className="text-left text-[10px] uppercase tracking-wider font-bold text-[#676E85] px-4 sm:px-5 py-3">
+                      <th className="text-left text-[10px] uppercase tracking-wider font-bold text-[#676E85] px-3.5 sm:px-5 py-3">
                         Commission
                       </th>
-                      <th className="text-left text-[10px] uppercase tracking-wider font-bold text-[#676E85] px-4 sm:px-5 py-3">
+                      <th className="text-left text-[10px] uppercase tracking-wider font-bold text-[#676E85] px-3.5 sm:px-5 py-3">
                         Status
                       </th>
-                      <th className="text-left text-[10px] uppercase tracking-wider font-bold text-[#676E85] px-4 sm:px-5 py-3">
+                      <th className="text-left text-[10px] uppercase tracking-wider font-bold text-[#676E85] px-3.5 sm:px-5 py-3">
                         Date
                       </th>
                     </tr>
@@ -201,18 +201,18 @@ export default async function AgentDashboardPage() {
                   <tbody className="divide-y divide-neutral-100">
                     {commissions.map((comm) => (
                       <tr key={comm.id} className="hover:bg-neutral-50/60 transition-colors">
-                        <td className="px-4 sm:px-5 py-3 sm:py-3.5">
-                          <p className="text-xs font-semibold text-[#0A1B39]">
+                        <td className="px-3.5 sm:px-5 py-3 max-w-[130px] sm:max-w-[200px]">
+                          <p className="text-xs font-semibold text-[#0A1B39] truncate">
                             {comm.course?.title || "Course"}
                           </p>
-                          <p className="text-[11px] text-[#676E85]">
-                            {comm.student?.name || "Student"} ({comm.student?.email})
+                          <p className="text-[10px] sm:text-[11px] text-[#676E85] truncate" title={comm.student?.email || ""}>
+                            {comm.student?.name || "Student"} {comm.student?.email ? `(${comm.student.email})` : ""}
                           </p>
                         </td>
-                        <td className="px-4 sm:px-5 py-3 sm:py-3.5">
+                        <td className="px-3.5 sm:px-5 py-3 whitespace-nowrap">
                           <span
                             className={cn(
-                              "inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border",
+                              "inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border whitespace-nowrap",
                               comm.type === "referral"
                                 ? "bg-blue-50 border-blue-200 text-blue-600"
                                 : "bg-purple-50 border-purple-200 text-purple-600"
@@ -221,13 +221,13 @@ export default async function AgentDashboardPage() {
                             {comm.type === "referral" ? "Direct Referral" : "Proxy Purchase"}
                           </span>
                         </td>
-                        <td className="px-4 sm:px-5 py-3 sm:py-3.5 font-bold text-[#17A546] text-xs">
+                        <td className="px-3.5 sm:px-5 py-3 font-bold text-[#17A546] text-xs whitespace-nowrap">
                           +{formatCurrency(comm.commissionAmount)}
                         </td>
-                        <td className="px-4 sm:px-5 py-3 sm:py-3.5">
+                        <td className="px-3.5 sm:px-5 py-3 whitespace-nowrap">
                           <span
                             className={cn(
-                              "inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border",
+                              "inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border whitespace-nowrap",
                               comm.status === "paid"
                                 ? "bg-blue-50 border-blue-200 text-blue-600"
                                 : comm.status === "credited"
@@ -238,7 +238,7 @@ export default async function AgentDashboardPage() {
                             {comm.status === "credited" ? "Credited" : comm.status}
                           </span>
                         </td>
-                        <td className="px-4 sm:px-5 py-3 sm:py-3.5 text-[#676E85] text-xs whitespace-nowrap">
+                        <td className="px-3.5 sm:px-5 py-3 text-[#676E85] text-[11px] sm:text-xs whitespace-nowrap">
                           {formatDate(comm.createdAt)}
                         </td>
                       </tr>
