@@ -4,16 +4,12 @@ import * as HomeComponents from "@/components/home";
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-white">
       <Header />
       <main className="flex-1 overflow-x-hidden">
         <HomeComponents.Hero />
         <HomeComponents.Courses />
-        {/* <HomeComponents.ProblemSolution /> */}
-        {/* <HomeComponents.HowItWorks /> */}
-        {/* <HomeComponents.Features /> */}
-        {/* <HomeComponents.Testimonials /> */}
-        {/* <HomeComponents.Pricing /> */}
+        <HomeComponents.AgentAffiliateSection />
         <HomeComponents.CTASection />
       </main>
       <Footer />

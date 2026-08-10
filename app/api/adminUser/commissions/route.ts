@@ -5,6 +5,7 @@ import { eq, desc } from "drizzle-orm";
 import { requireServerSession } from "@/app/api/auth/queries";
 import { alias } from "drizzle-orm/pg-core";
 
+//TODO: Optimize get queries
 export async function GET(request: Request) {
   try {
     const sessionUser = await requireServerSession();
