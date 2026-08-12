@@ -11,22 +11,22 @@ import { registerStudent, registerAsAgent } from "@/app/api/auth/mutations";
 import { useState } from "react";
 
 const baseSchema = z.object({
-    firstName: z.string().min(2, "First name must be at least 2 characters"),
-    lastName: z.string().min(2, "Last name must be at least 2 characters"),
-    email: z.string().email("Please enter a valid email address"),
-    whatsappNumber: z.string().min(10, "Please enter a valid WhatsApp number"),
-    howDidYouFindUs: z.string().min(1, "Please select an option"),
-    password: z
-      .string()
-      .min(8, "Password must be at least 8 characters")
-      .regex(/[a-zA-Z]/, "Password must contain at least one letter")
-      .regex(/[0-9]/, "Password must contain at least one number"),
-    confirmPassword: z.string(),
-    isAgent: z.boolean(),
-    schoolName: z.string().optional(),
-    estimatedStudents: z.coerce.number().optional(),
-    referralCode: z.string().optional(),
-  });
+  firstName: z.string().min(2, "First name must be at least 2 characters"),
+  lastName: z.string().min(2, "Last name must be at least 2 characters"),
+  email: z.string().email("Please enter a valid email address"),
+  whatsappNumber: z.string().min(10, "Please enter a valid WhatsApp number"),
+  howDidYouFindUs: z.string().min(1, "Please select an option"),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(/[a-zA-Z]/, "Password must contain at least one letter")
+    .regex(/[0-9]/, "Password must contain at least one number"),
+  confirmPassword: z.string(),
+  isAgent: z.boolean(),
+  schoolName: z.string().optional(),
+  estimatedStudents: z.coerce.number().optional(),
+  referralCode: z.string().optional(),
+});
 
 const signupSchema = baseSchema
   .refine((data) => data.password === data.confirmPassword, {
@@ -133,7 +133,7 @@ export function SignupForm() {
             <p className="text-lg font-bold text-[#0A1B39]">
               Application Submitted!
             </p>
-            <p className="text-sm text-[#676E85] mt-2 max-w-xs mx-auto leading-relaxed">
+            <p className="text-sm text-[#676E85] mt-2 mx-auto leading-relaxed">
               Your teacher/agent profile is currently under review. You&apos;ll be able to log in once an admin approves your account.
             </p>
             {/* TODO: Send confirmation email to agent via Resend when approved */}
@@ -187,11 +187,10 @@ export function SignupForm() {
         <button
           type="button"
           onClick={() => setValue("isAgent", false, { shouldValidate: true })}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-md text-sm font-semibold transition-all duration-200 ${
-            !isAgent
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-md text-sm font-semibold transition-all duration-200 ${!isAgent
               ? "bg-white text-[#0A1B39] shadow-sm border border-neutral-200/60"
               : "text-[#98A2B3] hover:text-[#676E85]"
-          }`}
+            }`}
         >
           <GraduationCap className="w-4 h-4" />
           Student
@@ -199,17 +198,16 @@ export function SignupForm() {
         <button
           type="button"
           onClick={() => setValue("isAgent", true, { shouldValidate: true })}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-md text-sm font-semibold transition-all duration-200 ${
-            isAgent
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-md text-sm font-semibold transition-all duration-200 ${isAgent
               ? "bg-white text-[#0A1B39] shadow-sm border border-neutral-200/60"
               : "text-[#98A2B3] hover:text-[#676E85]"
-          }`}
+            }`}
         >
           <Briefcase className="w-4 h-4" />
           Teacher / Agent
         </button>
       </div>
-      
+
       {/* Context hint */}
       <p className="text-[11px] text-[#98A2B3] text-center -mt-1 pb-2">
         {!isAgent
@@ -313,11 +311,10 @@ export function SignupForm() {
           </label>
           <div className="relative">
             <select
-              className={`w-full appearance-none rounded-md border bg-white px-3 py-2 text-[15px] sm:text-base transition-colors focus-visible:outline-none focus-visible:ring-1 h-[42px] sm:h-[44px] cursor-pointer ${
-                errors.howDidYouFindUs
+              className={`w-full appearance-none rounded-md border bg-white px-3 py-2 text-[15px] sm:text-base transition-colors focus-visible:outline-none focus-visible:ring-1 h-[42px] sm:h-[44px] cursor-pointer ${errors.howDidYouFindUs
                   ? "border-semantic-error-main text-semantic-error-main focus-visible:ring-semantic-error-main"
                   : "border-[#D1D5DB] text-[#070D17] focus-visible:border-[#17A546] focus-visible:ring-[#17A546]"
-              }`}
+                }`}
               {...register("howDidYouFindUs")}
             >
               <option value="" disabled>Select an option</option>
