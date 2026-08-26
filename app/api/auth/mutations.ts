@@ -34,8 +34,9 @@ export async function loginWithEmail(
         image: result.data.user.image,
       },
     };
-  } catch {
-    return { ok: false, error: "Something went wrong. Please try again." };
+  } catch (err: any) {
+    console.error("loginWithEmail error:", err);
+    return { ok: false, error: err?.message || "Something went wrong. Please try again." };
   }
 }
 
@@ -74,6 +75,7 @@ export async function registerStudent(
     });
 
     if (result.error) {
+      console.error("signUp.email error:", result.error);
       return { ok: false, error: result.error.message ?? "Sign up failed" };
     }
 
@@ -99,8 +101,9 @@ export async function registerStudent(
         role: "student",
       },
     };
-  } catch {
-    return { ok: false, error: "Something went wrong. Please try again." };
+  } catch (err: any) {
+    console.error("registerStudent error:", err);
+    return { ok: false, error: err?.message || "Something went wrong. Please try again." };
   }
 }
 
@@ -125,6 +128,7 @@ export async function registerAsAgent(
     });
 
     if (result.error) {
+      console.error("registerAsAgent signUp error:", result.error);
       return { ok: false, error: result.error.message ?? "Sign up failed" };
     }
 
@@ -148,8 +152,9 @@ export async function registerAsAgent(
         role: "pending_agent",
       },
     };
-  } catch {
-    return { ok: false, error: "Something went wrong. Please try again." };
+  } catch (err: any) {
+    console.error("registerAsAgent error:", err);
+    return { ok: false, error: err?.message || "Something went wrong. Please try again." };
   }
 }
 
@@ -160,7 +165,8 @@ export async function logout(): Promise<AuthResult> {
   try {
     await signOut();
     return { ok: true, data: undefined };
-  } catch {
+  } catch (err: any) {
+    console.error("logout error:", err);
     return { ok: false, error: "Failed to sign out." };
   }
 }

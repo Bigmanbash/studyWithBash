@@ -6,7 +6,10 @@ import { createAuthClient } from "better-auth/react";
  * reading the current session — all without hitting Next.js API routes directly.
  */
 export const authClient = createAuthClient({
-  baseURL: process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
+  baseURL:
+    typeof window !== "undefined"
+      ? window.location.origin
+      : (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
 });
 
 export const {
