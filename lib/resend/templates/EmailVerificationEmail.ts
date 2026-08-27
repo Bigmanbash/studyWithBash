@@ -1,24 +1,30 @@
 import { EmailLayout } from "./EmailLayout";
 
-export function getEmailVerificationHtml(url: string) {
+export function getEmailVerificationHtml(verifyUrl: string) {
   const content = `
-    <h1>Verify Your Email Address</h1>
-    <p>Welcome to Bash Academy! Before you can fully access your account, we just need to quickly verify that this is your email address.</p>
+    <span class="badge">Verify Your Account</span>
+    <h1>Welcome to Bash Academy!</h1>
+    <p>Thank you for joining Bash Academy. Please confirm your email address to complete your registration and secure your student account.</p>
     
-    <div style="text-align: center;">
-      <a href="${url}" class="btn">Verify Email Address</a>
+    <div style="text-align: center; margin: 32px 0;">
+      <a href="${verifyUrl}" class="btn-primary">Verify Email Address</a>
     </div>
-    
-    <p>If you didn't create an account with Bash Academy, you can safely ignore this email.</p>
-    <p style="margin-top: 32px; font-size: 14px; color: #6B7280;">
-      If the button above doesn't work, copy and paste the following link into your browser:<br>
-      <a href="${url}" style="color: #17A546; word-break: break-all;">${url}</a>
+
+    <div class="info-card">
+      <p style="margin: 0; font-size: 13px; color: #64748B;">
+        This verification link will expire in <strong>24 hours</strong>. If you did not create an account on Bash Academy, you can safely disregard this email.
+      </p>
+    </div>
+
+    <p style="margin-top: 24px; font-size: 13px; color: #94A3B8; word-break: break-all;">
+      If the button above does not work, copy and paste this link into your browser:<br>
+      <a href="${verifyUrl}" style="color: #17A546; text-decoration: underline;">${verifyUrl}</a>
     </p>
   `;
 
   return EmailLayout({
-    title: "Verify your email - Bash Academy",
-    previewText: "Please verify your email address to get started.",
+    title: "Verify Your Email - Bash Academy",
+    previewText: "Confirm your email address to activate your Bash Academy account.",
     content,
   });
 }

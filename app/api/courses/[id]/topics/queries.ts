@@ -1,7 +1,7 @@
 import { db } from "@/lib/neon";
 import { topics, subtopics, subtopicMaterials, topicVideos, TopicVideo } from "@/lib/neon/schema";
 import { eq, asc } from "drizzle-orm";
-import { getSignedUrl } from "@/lib/supabase/storage";
+import { getSignedUrl } from "@/lib/r2";
 
 export type TopicWithSubtopics = {
   id: string;

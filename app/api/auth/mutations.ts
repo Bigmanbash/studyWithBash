@@ -8,6 +8,81 @@ import type { AuthResult, LoginPayload, SignupPayload, AuthUser } from "./interf
 import { DEFAULT_COMMISSION_RATE } from "@/lib/affiliate-constants";
 
 /**
+ * Maps raw auth errors into user-friendly, specific messages.
+ */
+function formatAuthError(
+  error: { message?: string; status?: number; code?: string } | null | undefined,
+  fallback = "Authentication failed"
+): string {
+  if (!error) return fallback;
+
+  const rawMessage = (error.message || "").toLowerCase();
+  const code = (error.code || "").toUpperCase();
+
+  // User does not exist
+  if (
+    code === "USER_NOT_FOUND" ||
+    rawMessage.includes("User not found") ||
+    rawMessage.includes("no user found") ||
+    rawMessage.includes("account not found") ||
+    rawMessage.includes("does not exist") ||
+    rawMessage.includes("doesn't exist")
+  ) {
+    return "No account found with this email address. Please check your email or sign up.";
+  }
+
+  // Incorrect password
+  if (
+    code === "INVALID_PASSWORD" ||
+    rawMessage.includes("invalid password") ||
+    rawMessage.includes("incorrect password") ||
+    rawMessage.includes("wrong password")
+  ) {
+    return "Incorrect password. Please try again or click 'Forgot password?' to reset it.";
+  }
+
+  // Invalid email or password general combination
+  if (
+    code === "INVALID_EMAIL_OR_PASSWORD" ||
+    rawMessage.includes("invalid email or password") ||
+    rawMessage.includes("invalid credentials")
+  ) {
+    return "Invalid email or password. Please check your details, sign up if new, or click 'Forgot password?'.";
+  }
+
+  // Account already exists on signup
+  if (
+    code === "USER_ALREADY_EXISTS" ||
+    rawMessage.includes("already exists") ||
+    rawMessage.includes("email already in use") ||
+    rawMessage.includes("duplicate key")
+  ) {
+    return "An account with this email address already exists. Please sign in instead.";
+  }
+
+  // Email verification required
+  if (
+    code === "EMAIL_NOT_VERIFIED" ||
+    rawMessage.includes("email not verified") ||
+    rawMessage.includes("verify your email")
+  ) {
+    return "Please verify your email address before signing in. Check your inbox for the link.";
+  }
+
+  // Rate limiting / Too many attempts
+  if (
+    code === "TOO_MANY_REQUESTS" ||
+    error.status === 429 ||
+    rawMessage.includes("too many") ||
+    rawMessage.includes("rate limit")
+  ) {
+    return "Too many failed attempts. Please wait a few minutes before trying again.";
+  }
+
+  return error.message || fallback;
+}
+
+/**
  * Sign in with email and password.
  * Returns the authenticated user on success, or an error string on failure.
  */
@@ -21,7 +96,7 @@ export async function loginWithEmail(
     });
 
     if (result.error) {
-      return { ok: false, error: result.error.message ?? "Login failed" };
+      return { ok: false, error: formatAuthError(result.error, "Invalid email or password. Please check your credentials or sign up.") };
     }
 
     return {
@@ -35,7 +110,9 @@ export async function loginWithEmail(
       },
     };
   } catch (err: any) {
-    console.error("loginWithEmail error:", err);
+    if (process.env.NODE_ENV === "development") {
+      console.error("loginWithEmail error:", err);
+    }
     return { ok: false, error: err?.message || "Something went wrong. Please try again." };
   }
 }
@@ -75,8 +152,10 @@ export async function registerStudent(
     });
 
     if (result.error) {
-      console.error("signUp.email error:", result.error);
-      return { ok: false, error: result.error.message ?? "Sign up failed" };
+      if (process.env.NODE_ENV === "development") {
+        console.error("signUp.email error:", result.error);
+      }
+      return { ok: false, error: formatAuthError(result.error, "Sign up failed. Please check your details.") };
     }
 
     // If referral code was valid, update user with referredBy server-side
@@ -102,7 +181,9 @@ export async function registerStudent(
       },
     };
   } catch (err: any) {
-    console.error("registerStudent error:", err);
+    if (process.env.NODE_ENV === "development") {
+      console.error("registerStudent error:", err);
+    }
     return { ok: false, error: err?.message || "Something went wrong. Please try again." };
   }
 }
@@ -128,8 +209,10 @@ export async function registerAsAgent(
     });
 
     if (result.error) {
-      console.error("registerAsAgent signUp error:", result.error);
-      return { ok: false, error: result.error.message ?? "Sign up failed" };
+      if (process.env.NODE_ENV === "development") {
+        console.error("registerAsAgent signUp error:", result.error);
+      }
+      return { ok: false, error: formatAuthError(result.error, "Agent registration failed. Please check your details.") };
     }
 
     // Create the affiliate profile and set role to pending_agent server-side
@@ -153,7 +236,9 @@ export async function registerAsAgent(
       },
     };
   } catch (err: any) {
-    console.error("registerAsAgent error:", err);
+    if (process.env.NODE_ENV === "development") {
+      console.error("registerAsAgent error:", err);
+    }
     return { ok: false, error: err?.message || "Something went wrong. Please try again." };
   }
 }

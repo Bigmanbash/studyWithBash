@@ -1,7 +1,7 @@
 import { db } from "@/lib/neon";
 import { topics, subtopics, subtopicMaterials } from "@/lib/neon/schema";
 import { eq, asc } from "drizzle-orm";
-import { deleteFile } from "@/lib/supabase/storage";
+import { deleteFile } from "@/lib/r2";
 
 const slugify = (text: string) =>
   text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");

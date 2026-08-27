@@ -13,7 +13,23 @@ import { r2 } from "./client";
  * Default bucket name — mirrors the Supabase "course-materials" bucket.
  * Override via R2_BUCKET env var if needed.
  */
-const BUCKET = process.env.R2_BUCKET || "course-materials";
+const BUCKET = process.env.R2_BUCKET_NAME || "course-materials";
+
+// ── Environment prefix ────────────────────────────────────────────────────────
+
+/**
+ * Automatically prefix all keys with `prod/` or `staging/` based on NODE_ENV.
+ * This ensures staging objects get cleaned up by the 30-day lifecycle rule
+ * while production objects persist indefinitely.
+ */
+const ENV_PREFIX =
+  process.env.NODE_ENV === "production" ? "prod/" : "staging/";
+
+/**
+ * Prepend the environment prefix to a storage path.
+ * e.g. "courses/cover-123.jpg" → "prod/courses/cover-123.jpg"
+ */
+export const withPrefix = (path: string): string => `${ENV_PREFIX}${path}`;
 
 // ── Type definitions ──────────────────────────────────────────────────────────
 // Matches the branded type from the existing Supabase storage module exactly.
@@ -30,10 +46,13 @@ export const toStoragePath = (path: string): StoragePath =>
 /**
  * Upload a file to the R2 bucket.
  * @param path  e.g. "courses/cover-123.jpg" or "courses/pdf-123.pdf"
+ *              (env prefix is added automatically)
  * @param file  The File/Blob to upload
- * @returns     The storage path (not a URL — generate signed URLs separately)
+ * @returns     The storage path WITH prefix (save this to DB)
  */
 export const uploadFile = async (path: string, file: File | Blob): Promise<StoragePath> => {
+  const prefixedPath = withPrefix(path);
+
   // Read the file into a buffer for the S3 PutObject call
   const arrayBuffer = await file.arrayBuffer();
   const body = new Uint8Array(arrayBuffer);
@@ -41,13 +60,13 @@ export const uploadFile = async (path: string, file: File | Blob): Promise<Stora
   await r2.send(
     new PutObjectCommand({
       Bucket: BUCKET,
-      Key: path,
+      Key: prefixedPath,
       Body: body,
       ContentType: file.type || "application/octet-stream",
     })
   );
 
-  return toStoragePath(path);
+  return toStoragePath(prefixedPath);
 };
 
 /**
@@ -55,11 +74,11 @@ export const uploadFile = async (path: string, file: File | Blob): Promise<Stora
  * Call this from a Server Action or API Route ONLY after verifying
  * that the user has paid for the course.
  * @param path       The stored file path (as saved in DB)
- * @param expiresIn  Seconds until the URL expires (default: 60s)
+ * @param expiresIn  Seconds until the URL expires (default: 300s)
  */
 export const getSignedUrl = async (
   path: string,
-  expiresIn = 60
+  expiresIn = 300
 ): Promise<string> => {
   const url = await s3GetSignedUrl(
     r2,

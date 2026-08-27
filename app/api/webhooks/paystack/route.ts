@@ -14,12 +14,9 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { db } from "@/lib/neon";
-import { payments, courses } from "@/lib/neon/schema";
+import { payments } from "@/lib/neon/schema";
 import { eq } from "drizzle-orm";
-import { creditCommission } from "@/app/api/affiliates/mutations";
-import { generateProxyAccessCodes } from "@/app/api/access-codes/mutations";
-import { getAffiliateByCode } from "@/app/api/affiliates/queries";
-import { DEFAULT_COMMISSION_RATE } from "@/lib/affiliate-constants";
+import { fulfillApprovedPayment } from "@/lib/payments/fulfillment";
 
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY!;
 
@@ -28,6 +25,11 @@ export async function POST(request: Request) {
     // 1. Read raw body for signature verification
     const rawBody = await request.text();
     const signature = request.headers.get("x-paystack-signature");
+
+    if (!PAYSTACK_SECRET_KEY) {
+      console.error("[Paystack Webhook] PAYSTACK_SECRET_KEY is not configured.");
+      return NextResponse.json({ error: "Server misconfiguration" }, { status: 500 });
+    }
 
     if (!signature) {
       return NextResponse.json(
@@ -97,64 +99,22 @@ export async function POST(request: Request) {
     }
 
     // 7. Approve the payment
-    await db
+    const [approvedPayment] = await db
       .update(payments)
       .set({
         status: "approved",
         method: channel || "card",
         reviewedAt: new Date(),
       })
-      .where(eq(payments.reference, reference));
+      .where(eq(payments.reference, reference))
+      .returning();
 
-    // 8. Handle Affiliate Commissions & Access Codes (Robustness backup)
-    try {
-      if (payment.isProxy && payment.affiliateId && payment.proxyQuantity) {
-        const [courseInfo] = await db
-          .select({ subject: courses.subject })
-          .from(courses)
-          .where(eq(courses.id, payment.courseId))
-          .limit(1);
-
-        if (courseInfo) {
-          await generateProxyAccessCodes({
-            affiliateId: payment.affiliateId,
-            courseId: payment.courseId,
-            courseSubject: courseInfo.subject,
-            tier: payment.tier,
-            paymentId: payment.id,
-            quantity: payment.proxyQuantity,
-          });
-        }
-
-        await creditCommission({
-          affiliateId: payment.affiliateId,
-          paymentId: payment.id,
-          studentId: payment.userId, // Webhook might not have user session, so use DB record
-          courseId: payment.courseId,
-          type: "proxy",
-          saleAmount: payment.amount,
-          commissionRate: DEFAULT_COMMISSION_RATE,
-        });
-      } else if (!payment.isProxy && payment.referralCode) {
-        const affiliate = await getAffiliateByCode(payment.referralCode);
-        
-        if (affiliate) {
-          await creditCommission({
-            affiliateId: affiliate.affiliateId,
-            paymentId: payment.id,
-            studentId: payment.userId,
-            courseId: payment.courseId,
-            type: "referral",
-            saleAmount: payment.amount,
-            commissionRate: affiliate.commissionRate,
-          });
-        }
-      }
-    } catch (commissionError) {
-      console.error("[Webhook Affiliate Commission Error]", commissionError);
+    // 8. Handle Fulfillment (Commissions, Access Codes, & Confirmation Emails)
+    if (approvedPayment) {
+      await fulfillApprovedPayment(approvedPayment);
     }
 
-    console.log(`[Paystack Webhook] Payment approved: ${reference}`);
+    console.log(`[Paystack Webhook] Payment approved & fulfilled: ${reference}`);
 
     return NextResponse.json({ received: true });
   } catch (error) {

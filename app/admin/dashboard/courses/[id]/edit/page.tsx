@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, Save, Layout, Palette, Settings2, UploadCloud, File as FileIcon, X, FileText, Image as ImageIcon, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { createCourseRequest, fetchCourseById, updateCourseRequest } from "@/app/api/courses";
-import { uploadFile } from "@/lib/supabase/storage";
+import { uploadFileClient as uploadFile } from "@/lib/r2/client-upload";
 import { useAdminStore } from "@/store/adminStore";
 import { useQuery } from "@tanstack/react-query";
 import { use, useEffect } from "react";

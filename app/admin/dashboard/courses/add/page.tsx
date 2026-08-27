@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { createCourseRequest, updateCourseRequest } from "@/app/api/courses";
-import { uploadFile } from "@/lib/supabase/storage";
+import { uploadFileClient as uploadFile } from "@/lib/r2/client-upload";
 import { useAdminStore } from "@/store/adminStore";
 import { SUBJECT_BRAND_COLORS, SUBJECTS } from "@/lib/constants";
 import { TopicManager } from "@/components/admin/TopicManager";

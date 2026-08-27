@@ -30,29 +30,32 @@ export const auth = betterAuth({
         subject: "Reset your Bash Academy password",
         html: getPasswordResetEmailHtml(url),
       });
-      
-      // Keep logging it to console for local dev convenience
-      console.log(`\n\n=== PASSWORD RESET LINK FOR ${user.email} ===`);
-      console.log(`${url}`);
-      console.log(`=================================================\n\n`);
+
+      // Only log full URL to console in local development mode
+      if (process.env.NODE_ENV === "development") {
+        console.log(`\n\n=== PASSWORD RESET LINK FOR ${user.email} ===`);
+        console.log(`${url}`);
+        console.log(`=================================================\n\n`);
+      }
     },
   },
 
   emailVerification: {
     sendOnSignUp: true,
     sendVerificationEmail: async ({ user, url, token }) => {
-      // TODO: Configure Resend API key and verified sender domain before enabling
       // Send the verification email using our Resend wrapper
       await sendEmail({
         to: user.email,
         subject: "Verify your email - Bash Academy",
         html: getEmailVerificationHtml(url),
       });
-      
-      // Keep logging it to console for local dev convenience
-      console.log(`\n\n=== EMAIL VERIFICATION LINK FOR ${user.email} ===`);
-      console.log(`${url}`);
-      console.log(`=================================================\n\n`);
+
+      // Only log full URL to console in local development mode
+      if (process.env.NODE_ENV === "development") {
+        console.log(`\n\n=== EMAIL VERIFICATION LINK FOR ${user.email} ===`);
+        console.log(`${url}`);
+        console.log(`=================================================\n\n`);
+      }
     },
   },
 
@@ -107,6 +110,8 @@ export const auth = betterAuth({
     "http://localhost:3000",
     "https://studywithbash.online",
     "https://www.studywithbash.online",
+    "https://study-with-bash-academy.vercel.app",
+    "https://www.study-with-bash-academy.vercel.app",
     ...(process.env.BETTER_AUTH_URL ? [process.env.BETTER_AUTH_URL] : []),
     ...(process.env.NEXT_PUBLIC_APP_URL ? [process.env.NEXT_PUBLIC_APP_URL] : []),
   ],

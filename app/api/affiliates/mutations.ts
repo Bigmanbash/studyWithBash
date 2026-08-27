@@ -3,8 +3,10 @@
 
 import { db } from "@/lib/neon";
 import { affiliates, commissions, user } from "@/lib/neon/schema";
-import { eq, and, inArray } from "drizzle-orm";
+import { eq, and, inArray, sql } from "drizzle-orm";
 import { generateReferralCode, DEFAULT_COMMISSION_RATE } from "@/lib/affiliate-constants";
+import { sendEmail } from "@/lib/resend/client";
+import { getAffiliateApprovalEmailHtml, getAffiliatePayoutEmailHtml } from "@/lib/resend/templates";
 
 /**
  * Create an affiliate application. Called after a teacher signs up.
@@ -69,13 +71,34 @@ export async function approveAffiliate(affiliateId: string) {
 
   if (affiliate) {
     // Upgrade user role to "agent"
-    await db
+    const [agentUser] = await db
       .update(user)
       .set({ role: "agent", updatedAt: new Date() })
-      .where(eq(user.id, affiliate.userId));
+      .where(eq(user.id, affiliate.userId))
+      .returning();
 
-    // TODO: Send approval notification email to agent via Resend
-    // Include their referral code and a link to the agent dashboard
+    // Send approval notification email to agent via Resend
+    if (agentUser?.email && referralCode) {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.studywithbash.online";
+      const referralLink = `${appUrl}/signup?ref=${referralCode}`;
+      const dashboardUrl = `${appUrl}/affiliates/dashboard`;
+
+      try {
+        await sendEmail({
+          to: agentUser.email,
+          subject: "Welcome to the Bash Affiliate Partner Program! 🎉",
+          html: getAffiliateApprovalEmailHtml({
+            affiliateName: agentUser.name || "Partner",
+            referralCode,
+            referralLink,
+            commissionRatePercent: Math.round(Number(affiliate.commissionRate || DEFAULT_COMMISSION_RATE) * 100),
+            dashboardUrl,
+          }),
+        });
+      } catch (err) {
+        console.error("[Affiliate Approval Email Error]:", err);
+      }
+    }
   }
 
   return affiliate;
@@ -217,14 +240,14 @@ export async function creditCommission(params: {
       })
       .returning();
 
-    // Update affiliate running totals
+    // Update affiliate running totals safely
     if (commission) {
       await db.execute(
-        `UPDATE affiliates SET 
+        sql`UPDATE affiliates SET 
           total_earned = total_earned + ${commissionAmount},
           pending_payout = pending_payout + ${commissionAmount},
           updated_at = NOW()
-        WHERE id = '${params.affiliateId}'`
+        WHERE id = ${params.affiliateId}`
       );
     }
 
@@ -256,14 +279,48 @@ export async function markCommissionsPaid(commissionIds: string[]) {
     )
     .returning();
 
-  // Reduce pending payout for each affected affiliate
+  // Group by affiliate to calculate total paid per affiliate and send notification
+  const affiliateTotals = new Map<string, number>();
   for (const c of updated) {
+    const current = affiliateTotals.get(c.affiliateId) || 0;
+    affiliateTotals.set(c.affiliateId, current + c.commissionAmount);
+
     await db.execute(
-      `UPDATE affiliates SET 
+      sql`UPDATE affiliates SET 
         pending_payout = GREATEST(pending_payout - ${c.commissionAmount}, 0),
         updated_at = NOW()
-      WHERE id = '${c.affiliateId}'`
+      WHERE id = ${c.affiliateId}`
     );
+  }
+
+  // Send payout notification emails
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.studywithbash.online";
+  for (const [affiliateId, totalKobo] of affiliateTotals.entries()) {
+    try {
+      const [affData] = await db
+        .select({
+          email: user.email,
+          name: user.name,
+        })
+        .from(affiliates)
+        .innerJoin(user, eq(affiliates.userId, user.id))
+        .where(eq(affiliates.id, affiliateId))
+        .limit(1);
+
+      if (affData?.email) {
+        await sendEmail({
+          to: affData.email,
+          subject: "Your Affiliate Commission Payout Has Been Sent! 💸",
+          html: getAffiliatePayoutEmailHtml({
+            affiliateName: affData.name || "Partner",
+            amountFormatted: `₦${(totalKobo / 100).toLocaleString()}`,
+            dashboardUrl: `${appUrl}/affiliates/dashboard`,
+          }),
+        });
+      }
+    } catch (emailErr) {
+      console.error("[Affiliate Payout Email Error]:", emailErr);
+    }
   }
 
   return updated;

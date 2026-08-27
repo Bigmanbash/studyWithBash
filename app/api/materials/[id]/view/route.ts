@@ -3,7 +3,7 @@ import { getServerSession } from "@/app/api/auth/queries";
 import { db } from "@/lib/neon/client";
 import { subtopicMaterials, subtopics, topics, courses, payments } from "@/lib/neon/schema";
 import { eq, and } from "drizzle-orm";
-import { getSignedUrl } from "@/lib/supabase/storage";
+import { getSignedUrl } from "@/lib/r2";
 import { PDFDocument } from "pdf-lib";
 
 export const GET = async (req: Request, { params }: { params: Promise<{ id: string }> }) => {

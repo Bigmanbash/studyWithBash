@@ -2,7 +2,7 @@ import { db } from "@/lib/neon";
 import { courses, payments } from "@/lib/neon/schema";
 import { eq, ilike, and, or, count, sum } from "drizzle-orm";
 import type { CourseListQuery, PaginatedCourses, Course } from "./interface";
-import { getSignedUrl } from "@/lib/supabase/storage";
+import { getSignedUrl } from "@/lib/r2";
 
 async function processCourseUrls(course: Course): Promise<Course> {
   const result = { ...course };

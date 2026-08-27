@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createMaterial, deleteMaterial } from "../../../../mutations";
 import { requireAdminSession } from "@/app/api/auth/queries";
-import { uploadFile } from "@/lib/supabase/storage";
+import { uploadFile } from "@/lib/r2";
 
 // POST — upload a material file to a subtopic
 export const POST = async (

@@ -5,14 +5,12 @@ import { createClient } from "@supabase/supabase-js";
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-if (!SUPABASE_URL) throw new Error("NEXT_PUBLIC_SUPABASE_URL is not set");
-if (!SUPABASE_ANON_KEY) throw new Error("NEXT_PUBLIC_SUPABASE_ANON_KEY is not set");
-
 /**
- * Public anon client — safe to use on the client-side for storage uploads
- * that do not require bypassing Row Level Security.
+ * @deprecated Legacy Supabase Storage client. Active storage is powered by Cloudflare R2 (@/lib/r2).
  */
-export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+export const supabase = SUPABASE_URL && SUPABASE_ANON_KEY
+  ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  : null as any;
 
 // ── Storage helpers ───────────────────────────────────────────────────────────
 // All file operations are funnelled through these helpers to keep storage
@@ -80,8 +78,8 @@ export const getSignedUrls = async (
 
   return Object.fromEntries(
     data
-      .filter((item) => item.signedUrl)
-      .map((item) => [item.path, item.signedUrl])
+      .filter((item: { signedUrl: any; }) => item.signedUrl)
+      .map((item: { path: any; signedUrl: any; }) => [item.path, item.signedUrl])
   );
 };
 
