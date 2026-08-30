@@ -9,6 +9,14 @@ import { eq } from "drizzle-orm";
  * if an admin already exists.
  */
 export async function getAdminCount(): Promise<number> {
-  const result = await db.select({ count: count() }).from(user).where(eq(user.role, "admin"));
-  return result[0].count;
+  try {
+    const result = await db
+      .select({ count: count() })
+      .from(user)
+      .where(eq(user.role, "admin"));
+    return Number(result[0]?.count ?? 0);
+  } catch (error) {
+    console.error("getAdminCount error:", error);
+    return 0;
+  }
 }
