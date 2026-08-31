@@ -4,7 +4,6 @@ import { db } from "@/lib/neon/client";
 import { subtopicMaterials, subtopics, topics, courses, payments } from "@/lib/neon/schema";
 import { eq, and } from "drizzle-orm";
 import { getSignedUrl } from "@/lib/r2";
-import { PDFDocument } from "pdf-lib";
 
 export const dynamic = "force-dynamic";
 
@@ -104,16 +103,8 @@ export const GET = async (req: Request, { params }: { params: Promise<{ id: stri
       return NextResponse.json({ error: "Forbidden - Purchase Required" }, { status: 403 });
     }
 
-    // 5. Generate 3-page preview safely
-    const pdfDoc = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
-    const previewPdfDoc = await PDFDocument.create();
-    const pagesToCopy = Math.min(3, pdfDoc.getPageCount());
-    const pageIndices = Array.from({ length: pagesToCopy }, (_, i) => i);
-    const copiedPages = await previewPdfDoc.copyPages(pdfDoc, pageIndices);
-    copiedPages.forEach((page) => previewPdfDoc.addPage(page));
-    const previewPdfBytes = await previewPdfDoc.save();
-
-    return new NextResponse(Buffer.from(previewPdfBytes), {
+    // 5. Stream intact PDF directly (preserves encryption dictionaries, fonts, and streams)
+    return new NextResponse(Buffer.from(arrayBuffer), {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",

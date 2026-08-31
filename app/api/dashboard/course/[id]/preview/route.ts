@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "@/app/api/auth/queries";
 import { getCourse } from "@/app/api/courses/queries";
-import { PDFDocument } from "pdf-lib";
 
 export const GET = async (req: Request, { params }: { params: Promise<{ id: string }> }) => {
   try {
@@ -25,24 +24,8 @@ export const GET = async (req: Request, { params }: { params: Promise<{ id: stri
     
     const arrayBuffer = await response.arrayBuffer();
 
-    // Load the PDF into pdf-lib
-    const pdfDoc = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
-    
-    // Create a new PDF for the preview
-    const previewPdfDoc = await PDFDocument.create();
-    
-    // Calculate how many pages to copy (max 3)
-    const pagesToCopy = Math.min(3, pdfDoc.getPageCount());
-    const pageIndices = Array.from({ length: pagesToCopy }, (_, i) => i);
-    
-    // Copy the pages and add them to the new PDF
-    const copiedPages = await previewPdfDoc.copyPages(pdfDoc, pageIndices);
-    copiedPages.forEach((page) => previewPdfDoc.addPage(page));
-
-    // Serialize the preview PDF
-    const previewPdfBytes = await previewPdfDoc.save();
-
-    return new NextResponse(Buffer.from(previewPdfBytes), {
+    // Stream intact PDF directly (preserves encryption dictionary and stream integrity)
+    return new NextResponse(Buffer.from(arrayBuffer), {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
