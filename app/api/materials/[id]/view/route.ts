@@ -77,7 +77,7 @@ export const GET = async (req: Request, { params }: { params: Promise<{ id: stri
       });
     }
 
-    // 4. Preview access: Check preview eligibility (first topic, first 2 subtopics)
+    // 4. Preview access: Check preview eligibility (first 2 topics/weeks)
     const allTopics = await db.query.topics.findMany({
       where: eq(topics.courseId, mat.courseId),
       orderBy: (topics, { asc }) => [asc(topics.order)],
@@ -90,9 +90,16 @@ export const GET = async (req: Request, { params }: { params: Promise<{ id: stri
 
     let isEligible = false;
     if (allTopics.length > 0) {
+      // First 2 topics (e.g., Week 1 and Week 2)
+      const firstTwoTopicIds = allTopics.slice(0, 2).map((t) => t.id);
+      if (firstTwoTopicIds.includes(mat.topicId)) {
+        isEligible = true;
+      }
+
+      // Also allow first 2 subtopics of the first topic if organized that way
       const firstTopic = allTopics[0];
-      if (firstTopic.id === mat.topicId) {
-        const subIndex = firstTopic.subtopics.findIndex(s => s.id === mat.subtopicId);
+      if (firstTopic && firstTopic.id === mat.topicId) {
+        const subIndex = firstTopic.subtopics.findIndex((s) => s.id === mat.subtopicId);
         if (subIndex >= 0 && subIndex < 2) {
           isEligible = true;
         }
