@@ -42,15 +42,13 @@ export const GET = async (req: Request, { params }: { params: Promise<{ id: stri
     // Serialize the preview PDF
     const previewPdfBytes = await previewPdfDoc.save();
 
-    return new NextResponse(previewPdfBytes as any, {
+    return new NextResponse(Buffer.from(previewPdfBytes), {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
         "Content-Disposition": `inline; filename="preview-${course.slug}.pdf"`,
         "Cache-Control": "public, max-age=3600",
         "Access-Control-Allow-Origin": "*",
-        "X-Frame-Options": "DENY",
-        "X-Content-Type-Options": "nosniff",
       },
     });
 

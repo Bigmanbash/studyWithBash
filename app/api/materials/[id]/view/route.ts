@@ -6,18 +6,20 @@ import { eq, and } from "drizzle-orm";
 import { getSignedUrl } from "@/lib/r2";
 import { PDFDocument } from "pdf-lib";
 
+export const dynamic = "force-dynamic";
+
 export const GET = async (req: Request, { params }: { params: Promise<{ id: string }> }) => {
   try {
     const { id } = await params;
     
-    // Get material info and its hierarchy
+    // 1. Get material info and hierarchy
     const materialData = await db
       .select({
         filePath: subtopicMaterials.filePath,
         slug: courses.slug,
         courseId: courses.id,
         topicId: topics.id,
-        subtopicId: subtopics.id
+        subtopicId: subtopics.id,
       })
       .from(subtopicMaterials)
       .innerJoin(subtopics, eq(subtopicMaterials.subtopicId, subtopics.id))
@@ -26,7 +28,7 @@ export const GET = async (req: Request, { params }: { params: Promise<{ id: stri
       .where(eq(subtopicMaterials.id, id))
       .limit(1);
 
-    if (!materialData.length) {
+    if (!materialData.length || !materialData[0].filePath) {
       return NextResponse.json({ error: "Material not found" }, { status: 404 });
     }
 
@@ -41,7 +43,7 @@ export const GET = async (req: Request, { params }: { params: Promise<{ id: stri
         isAdmin = true;
       } else {
         const p = await db
-          .select()
+          .select({ id: payments.id })
           .from(payments)
           .where(and(
             eq(payments.userId, session.id), 
@@ -53,23 +55,38 @@ export const GET = async (req: Request, { params }: { params: Promise<{ id: stri
       }
     }
 
-    if (isAdmin || isPurchased) {
-      // Return Signed URL redirect
-      const signedUrl = await getSignedUrl(mat.filePath, 3600);
-      return NextResponse.redirect(signedUrl);
+    // 2. Fetch original PDF securely from R2 on the server
+    const signedUrl = await getSignedUrl(mat.filePath, 300);
+    const response = await fetch(signedUrl);
+    if (!response.ok) {
+      console.error(`[material-view] Failed to fetch from storage (${response.status}): ${signedUrl}`);
+      return NextResponse.json({ error: "Failed to fetch original file from storage" }, { status: 500 });
     }
 
-    // It's a Preview!
-    // We need to check if this subtopic is eligible for preview.
-    // Rule: first topic, first 2 subtopics.
+    const arrayBuffer = await response.arrayBuffer();
+
+    // 3. Full access: Admin or Paid Student
+    if (isAdmin || isPurchased) {
+      return new NextResponse(Buffer.from(arrayBuffer), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/pdf",
+          "Content-Disposition": `inline; filename="material-${mat.slug || 'document'}.pdf"`,
+          "Cache-Control": "private, no-cache, no-store, must-revalidate",
+          "Access-Control-Allow-Origin": "*",
+        },
+      });
+    }
+
+    // 4. Preview access: Check preview eligibility (first topic, first 2 subtopics)
     const allTopics = await db.query.topics.findMany({
       where: eq(topics.courseId, mat.courseId),
       orderBy: (topics, { asc }) => [asc(topics.order)],
       with: {
         subtopics: {
           orderBy: (subtopics, { asc }) => [asc(subtopics.order)],
-        }
-      }
+        },
+      },
     });
 
     let isEligible = false;
@@ -87,14 +104,7 @@ export const GET = async (req: Request, { params }: { params: Promise<{ id: stri
       return NextResponse.json({ error: "Forbidden - Purchase Required" }, { status: 403 });
     }
 
-    // Fetch the original PDF via a quick signed URL
-    const signedUrl = await getSignedUrl(mat.filePath, 60);
-    const response = await fetch(signedUrl);
-    if (!response.ok) {
-      return NextResponse.json({ error: "Failed to fetch original PDF" }, { status: 500 });
-    }
-    
-    const arrayBuffer = await response.arrayBuffer();
+    // 5. Generate 3-page preview safely
     const pdfDoc = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
     const previewPdfDoc = await PDFDocument.create();
     const pagesToCopy = Math.min(3, pdfDoc.getPageCount());
@@ -103,20 +113,18 @@ export const GET = async (req: Request, { params }: { params: Promise<{ id: stri
     copiedPages.forEach((page) => previewPdfDoc.addPage(page));
     const previewPdfBytes = await previewPdfDoc.save();
 
-    return new NextResponse(previewPdfBytes as any, {
+    return new NextResponse(Buffer.from(previewPdfBytes), {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `inline; filename="preview-${mat.slug}.pdf"`,
+        "Content-Disposition": `inline; filename="preview-${mat.slug || 'document'}.pdf"`,
         "Cache-Control": "public, max-age=3600",
         "Access-Control-Allow-Origin": "*",
-        "X-Frame-Options": "DENY",
-        "X-Content-Type-Options": "nosniff",
       },
     });
 
   } catch (error: any) {
     console.error("[material-view-route]", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error.message || "Failed to load document" }, { status: 500 });
   }
 };

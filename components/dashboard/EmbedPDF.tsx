@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 
 // Use CDN worker — avoids all Next.js webpack complexity
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 
 /** Convert any Google Docs / S3 / remote URL to a proxied PDF export URL */
