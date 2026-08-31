@@ -74,11 +74,20 @@ export function EmbedPDF({
   const [animKey, setAnimKey] = useState(0);
   const [pageWidth, setPageWidth] = useState(680);
 
+  const [errorStatus, setErrorStatus] = useState<"locked" | "not_found" | "error" | null>(null);
+
   const containerRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<HTMLDivElement>(null);
   const moreRef = useRef<HTMLDivElement>(null);
 
   const pdfSrc = toPDFSrc(src);
+
+  useEffect(() => {
+    setIsLoading(true);
+    setHasError(false);
+    setErrorStatus(null);
+    setPageNum(1);
+  }, [src]);
 
   // In preview mode, the effective last page is whichever is smaller:
   // the actual doc length or the preview cap
@@ -93,7 +102,6 @@ export function EmbedPDF({
     const el = viewerRef.current;
     if (!el) return;
     const ro = new ResizeObserver(([entry]) => {
-      // subtract 96 px for the two ghost arrows (48px each side)
       const w = Math.max(entry.contentRect.width - 96, 320);
       setPageWidth(Math.min(w, 1100));
     });
@@ -126,7 +134,6 @@ export function EmbedPDF({
     };
     window.addEventListener("keydown", h);
     return () => window.removeEventListener("keydown", h);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pageNum, numPages]);
 
   const prevPage = useCallback(() => {
@@ -158,10 +165,40 @@ export function EmbedPDF({
     }
   }, []);
 
+  const handleDocumentError = async (err: any) => {
+    console.error("[EmbedPDF] Document load error:", err);
+    setIsLoading(false);
+    setHasError(true);
+
+    try {
+      const checkRes = await fetch(pdfSrc, { method: "HEAD" });
+      if (checkRes.status === 403 || checkRes.status === 401) {
+        setErrorStatus("locked");
+        return;
+      }
+      if (checkRes.status === 404) {
+        setErrorStatus("not_found");
+        return;
+      }
+    } catch {
+      // ignore
+    }
+    setErrorStatus("error");
+  };
+
   return (
     <div
       ref={containerRef}
-      style={{ position: "fixed", inset: 0, background: "#F2F2F7", display: "flex", flexDirection: "column" }}
+      style={{
+        position: isFullscreen ? "fixed" : "relative",
+        inset: isFullscreen ? 0 : "auto",
+        width: "100%",
+        height: "100%",
+        background: "#F2F2F7",
+        display: "flex",
+        flexDirection: "column",
+        zIndex: isFullscreen ? 9999 : "auto",
+      }}
     >
       {/* ── READER AREA ─────────────────────────────────────────────── */}
       <div ref={viewerRef} style={{ position: "relative", flex: 1, overflow: "hidden" }}>
@@ -195,13 +232,80 @@ export function EmbedPDF({
           </div>
         )}
 
-        {/* Error state */}
-        {hasError && (
+        {/* Locked / Forbidden Paywall state */}
+        {hasError && errorStatus === "locked" && (
+          <div style={{
+            position: "absolute", inset: 0, zIndex: 10,
+            background: "#FAFAF9",
+            display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 18,
+            padding: 32, textAlign: "center",
+          }}>
+            <div style={{
+              width: 58, height: 58, borderRadius: 18,
+              background: "#FEF3C7", color: "#D97706",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              boxShadow: "0 4px 12px rgba(217, 119, 6, 0.12)",
+            }}>
+              <Lock size={26} />
+            </div>
+            <div style={{ maxWidth: 420 }}>
+              <h3 style={{ fontSize: 18, fontWeight: 700, color: "#0A1B39", margin: "0 0 6px" }}>
+                This Study Material is Locked
+              </h3>
+              <p style={{ fontSize: 13, color: "#676E85", margin: 0, lineHeight: 1.5 }}>
+                Enroll in this course to gain full access to all reading materials, videos, and study resources.
+              </p>
+            </div>
+            {onRequestPurchase && (
+              <button
+                onClick={onRequestPurchase}
+                style={{
+                  display: "flex", alignItems: "center", gap: 8,
+                  padding: "10px 22px", borderRadius: 10,
+                  background: "#17A546", color: "#FFFFFF",
+                  fontSize: 14, fontWeight: 600, border: "none", cursor: "pointer",
+                  boxShadow: "0 4px 12px rgba(23, 165, 70, 0.25)",
+                }}
+              >
+                <ShoppingCart size={16} /> Unlock Full Course
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Not Found state */}
+        {hasError && errorStatus === "not_found" && (
+          <div style={{
+            position: "absolute", inset: 0, zIndex: 10,
+            background: "#FAFAF9",
+            display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16,
+            padding: 32, textAlign: "center",
+          }}>
+            <div style={{
+              width: 52, height: 52, borderRadius: 16,
+              background: "#F3F4F6", color: "#6B7280",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              <AlertCircle size={24} />
+            </div>
+            <div style={{ maxWidth: 380 }}>
+              <h3 style={{ fontSize: 16, fontWeight: 700, color: "#0A1B39", margin: "0 0 4px" }}>
+                Material Not Available
+              </h3>
+              <p style={{ fontSize: 13, color: "#676E85", margin: 0 }}>
+                This study document is not available or has been moved.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Generic Error state */}
+        {hasError && errorStatus !== "locked" && errorStatus !== "not_found" && (
           <div style={{
             position: "absolute", inset: 0, zIndex: 10,
             background: "white",
             display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16,
-            padding: 24,
+            padding: 24, textAlign: "center",
           }}>
             <div style={{
               width: 52, height: 52, borderRadius: 16,
@@ -212,17 +316,24 @@ export function EmbedPDF({
             </div>
             <div style={{ textAlign: "center" }}>
               <p style={{ fontSize: 14, fontWeight: 600, color: "#0A1B39", margin: "0 0 4px" }}>
-                Couldn't load document
+                Unable to load document
               </p>
               <p style={{ fontSize: 12, color: "#9CA3AF", margin: 0 }}>
-                Check your connection and try again.
+                An unexpected error occurred while loading this document.
               </p>
             </div>
-            <button style={{
-              display: "flex", alignItems: "center", gap: 6,
-              fontSize: 12, fontWeight: 600, color: "#17A546",
-              background: "none", border: "none", cursor: "pointer", padding: 0,
-            }}>
+            <button
+              onClick={() => {
+                setIsLoading(true);
+                setHasError(false);
+                setErrorStatus(null);
+              }}
+              style={{
+                display: "flex", alignItems: "center", gap: 6,
+                fontSize: 12, fontWeight: 600, color: "#17A546",
+                background: "none", border: "none", cursor: "pointer", padding: 0,
+              }}
+            >
               <ExternalLink size={13} /> Retry
             </button>
           </div>
@@ -240,7 +351,6 @@ export function EmbedPDF({
             opacity: isLoading || hasError ? 0 : 1,
             transition: "opacity 0.25s ease",
           }}
-          // disable right-click on the PDF area
           onContextMenu={(e) => e.preventDefault()}
         >
           <Document
@@ -249,12 +359,9 @@ export function EmbedPDF({
               setNumPages(n);
               setIsLoading(false);
               setHasError(false);
+              setErrorStatus(null);
             }}
-            onLoadError={(err) => {
-              console.error("[EmbedPDF] Document load error:", err);
-              setIsLoading(false);
-              setHasError(true);
-            }}
+            onLoadError={handleDocumentError}
             loading={null}
             error={null}
           >
@@ -267,13 +374,14 @@ export function EmbedPDF({
                 borderRadius: 6,
                 overflow: "hidden",
                 userSelect: "none",
+                background: "#FFFFFF",
               }}
             >
               <Page
                 pageNumber={pageNum}
                 width={Math.round(pageWidth * (zoom / 100))}
-                renderTextLayer
-                renderAnnotationLayer
+                renderTextLayer={false}
+                renderAnnotationLayer={false}
               />
             </div>
           </Document>
