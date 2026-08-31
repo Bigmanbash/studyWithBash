@@ -22,8 +22,10 @@ import {
   ShoppingCart,
 } from "lucide-react";
 
-// Use CDN worker — avoids all Next.js webpack complexity
-pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+// Use local same-origin worker from public/ to guarantee 0 CORS / CDN worker blocking
+if (typeof window !== "undefined") {
+  pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+}
 
 
 /** Convert any Google Docs / S3 / remote URL to a proxied PDF export URL */
@@ -248,7 +250,8 @@ export function EmbedPDF({
               setIsLoading(false);
               setHasError(false);
             }}
-            onLoadError={() => {
+            onLoadError={(err) => {
+              console.error("[EmbedPDF] Document load error:", err);
               setIsLoading(false);
               setHasError(true);
             }}
