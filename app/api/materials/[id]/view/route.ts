@@ -95,7 +95,7 @@ export const GET = async (req: Request, { params }: { params: Promise<{ id: stri
     }
     
     const arrayBuffer = await response.arrayBuffer();
-    const pdfDoc = await PDFDocument.load(arrayBuffer);
+    const pdfDoc = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
     const previewPdfDoc = await PDFDocument.create();
     const pagesToCopy = Math.min(3, pdfDoc.getPageCount());
     const pageIndices = Array.from({ length: pagesToCopy }, (_, i) => i);

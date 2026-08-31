@@ -26,7 +26,7 @@ export const GET = async (req: Request, { params }: { params: Promise<{ id: stri
     const arrayBuffer = await response.arrayBuffer();
 
     // Load the PDF into pdf-lib
-    const pdfDoc = await PDFDocument.load(arrayBuffer);
+    const pdfDoc = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
     
     // Create a new PDF for the preview
     const previewPdfDoc = await PDFDocument.create();
