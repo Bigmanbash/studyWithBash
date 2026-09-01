@@ -34,3 +34,10 @@
     @apply text-h3 text-[#485066] tracking-tight;
   }
 }
+
+/* Security: Block printing & PDF export */
+@media print {
+  body {
+    display: none !important;
+  }
+}

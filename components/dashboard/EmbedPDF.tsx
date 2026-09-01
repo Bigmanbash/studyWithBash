@@ -20,6 +20,7 @@ import {
   ChevronsRight,
   Lock,
   ShoppingCart,
+  ShieldAlert,
 } from "lucide-react";
 
 // Use local same-origin worker from public/ to guarantee 0 CORS / CDN worker blocking
@@ -52,6 +53,8 @@ interface EmbedPDFProps {
   isPreview?: boolean;
   /** Number of pages the user can see in preview mode (default 3) */
   previewPageLimit?: number;
+  /** Custom watermark text override */
+  watermarkText?: string;
   /** Callback when the user clicks the purchase CTA on the paywall */
   onRequestPurchase?: () => void;
 }
@@ -61,6 +64,7 @@ export function EmbedPDF({
   title = "Course Document",
   isPreview = false,
   previewPageLimit = 3,
+  watermarkText,
   onRequestPurchase,
 }: EmbedPDFProps) {
   const [isLoading, setIsLoading] = useState(true);
@@ -73,6 +77,7 @@ export function EmbedPDF({
   const [slideDir, setSlideDir] = useState<"left" | "right">("left");
   const [animKey, setAnimKey] = useState(0);
   const [pageWidth, setPageWidth] = useState(680);
+  const [isInactive, setIsInactive] = useState(false);
 
   const [errorStatus, setErrorStatus] = useState<"locked" | "not_found" | "error" | null>(null);
 
@@ -81,6 +86,37 @@ export function EmbedPDF({
   const moreRef = useRef<HTMLDivElement>(null);
 
   const pdfSrc = toPDFSrc(src);
+  const watermarkLabel = watermarkText || "Studywithbash.online";
+
+  // Anti-snipping & focus loss blur
+  useEffect(() => {
+    const handleBlur = () => setIsInactive(true);
+    const handleFocus = () => setIsInactive(false);
+    const handleVisibility = () => {
+      if (document.hidden) setIsInactive(true);
+      else setIsInactive(false);
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "PrintScreen" || ((e.ctrlKey || e.metaKey) && e.key === "p")) {
+        e.preventDefault();
+        setIsInactive(true);
+        setTimeout(() => setIsInactive(false), 2000);
+      }
+    };
+
+    window.addEventListener("blur", handleBlur);
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleVisibility);
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("blur", handleBlur);
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleVisibility);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
 
   useEffect(() => {
     setIsLoading(true);
@@ -370,11 +406,14 @@ export function EmbedPDF({
               key={animKey}
               className={`page-slide-${slideDir}`}
               style={{
+                position: "relative",
                 boxShadow: "0 8px 40px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.10)",
                 borderRadius: 6,
                 overflow: "hidden",
                 userSelect: "none",
                 background: "#FFFFFF",
+                filter: isInactive ? "blur(18px)" : "none",
+                transition: "filter 0.2s ease",
               }}
             >
               <Page
@@ -383,8 +422,68 @@ export function EmbedPDF({
                 renderTextLayer={false}
                 renderAnnotationLayer={false}
               />
+
+              {/* Dynamic User Watermark Overlay */}
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  pointerEvents: "none",
+                  userSelect: "none",
+                  overflow: "hidden",
+                  zIndex: 10,
+                  display: "flex",
+                  flexWrap: "wrap",
+                  alignContent: "space-around",
+                  justifyContent: "space-around",
+                  opacity: 0.12,
+                }}
+              >
+                {Array.from({ length: 12 }).map((_, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      transform: "rotate(-25deg)",
+                      fontSize: 13,
+                      fontWeight: 700,
+                      color: "#0A1B39",
+                      padding: "36px 40px",
+                      letterSpacing: "0.06em",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {watermarkLabel}
+                  </div>
+                ))}
+              </div>
             </div>
           </Document>
+
+          {/* Inactive Window / Snipping Protection Warning */}
+          {isInactive && (
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                zIndex: 30,
+                backdropFilter: "blur(20px)",
+                background: "rgba(242, 242, 247, 0.85)",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 12,
+                userSelect: "none",
+                pointerEvents: "none",
+              }}
+            >
+              <div className="w-12 h-12 rounded-2xl bg-[#0A1B39]/10 text-[#0A1B39] flex items-center justify-center shadow-xs">
+                <Lock className="w-6 h-6" />
+              </div>
+              <p className="text-sm font-bold text-[#0A1B39]">Content Protected</p>
+              <p className="text-xs text-[#676E85]">Click inside the window to resume reading</p>
+            </div>
+          )}
 
           {/* Page counter badge — floats below the page */}
           {numPages && (
