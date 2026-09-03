@@ -7,6 +7,9 @@ export const fetchCourses = async (query: CourseListQuery = {}): Promise<Paginat
   if (query.limit) params.append("limit", query.limit.toString());
   if (query.search) params.append("search", query.search);
   if (query.category) params.append("category", query.category);
+  if (query.level) params.append("level", query.level);
+  if (query.term) params.append("term", query.term);
+  if (query.subject) params.append("subject", query.subject);
   if (query.status) params.append("status", query.status);
 
   return apiFetch<PaginatedCourses>(`/api/courses?${params.toString()}`);

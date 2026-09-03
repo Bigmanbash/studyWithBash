@@ -102,8 +102,8 @@ const CourseDetailsPage = ({ params }: { params: Promise<{ id: string }> }) => {
                     {course.title}
                   </h1>
                   <span className={cn(
-                    "inline-flex items-center gap-1.5 text-[10px] md:text-xs font-medium px-2.5 py-1 rounded-full whitespace-nowrap",
-                    course.status === "active" ? "bg-[#17A546]/10 text-[#17A546]" : "bg-neutral-100 text-[#676E85]"
+                    "inline-flex items-center gap-1.5 text-[10px] md:text-xs font-semibold px-2.5 py-1 rounded-md whitespace-nowrap",
+                    course.status === "active" ? "bg-[#17A546]/10 text-[#17A546] border border-[#17A546]/20" : "bg-neutral-100 text-[#676E85] border border-neutral-200"
                   )}>
                     {course.status === "active" ? (
                       <>
@@ -117,6 +117,16 @@ const CourseDetailsPage = ({ params }: { params: Promise<{ id: string }> }) => {
                       "Draft"
                     )}
                   </span>
+                  {course.term && (
+                    <span className="inline-flex items-center text-[10px] md:text-xs font-semibold px-2.5 py-1 rounded-md bg-purple-50 text-purple-700 border border-purple-200">
+                      {course.term === "first" ? "1st Term" : course.term === "second" ? "2nd Term" : course.term === "third" ? "3rd Term" : `${course.term} Term`}
+                    </span>
+                  )}
+                  {course.level && (
+                    <span className="inline-flex items-center text-[10px] md:text-xs font-semibold px-2.5 py-1 rounded-md bg-blue-50 text-blue-700 border border-blue-200">
+                      {course.level.replace(/^(SSS|JSS)(\d)$/i, "$1 $2")}
+                    </span>
+                  )}
                 </div>
                 
                 <div className="flex flex-wrap items-center gap-y-2 gap-x-4 md:gap-x-5 text-xs md:text-sm text-[#676E85] font-medium">
@@ -126,7 +136,9 @@ const CourseDetailsPage = ({ params }: { params: Promise<{ id: string }> }) => {
                   </div>
                   <div className="flex items-center gap-1.5 whitespace-nowrap">
                     <BookOpen className="h-3.5 w-3.5 md:h-4 md:w-4 text-neutral-400" />
-                    <span>{course.subject} • {course.level || "Exam"}</span>
+                    <span>
+                      {course.subject} • {course.level ? course.level.replace(/^(SSS|JSS)(\d)$/i, "$1 $2") : "Exam"} {course.term ? `• ${course.term === "first" ? "1st Term" : course.term === "second" ? "2nd Term" : course.term === "third" ? "3rd Term" : `${course.term} Term`}` : ""}
+                    </span>
                   </div>
                   <div className="flex items-center gap-1.5 whitespace-nowrap">
                     <Clock className="h-3.5 w-3.5 md:h-4 md:w-4 text-neutral-400" />

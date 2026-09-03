@@ -19,6 +19,7 @@ import {
   Trash2,
   Check,
   AlertTriangle,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -30,10 +31,33 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 type CourseStatus = "active" | "draft" | "all";
 
+const COMMON_SUBJECTS = [
+  "Mathematics",
+  "English",
+  "Biology",
+  "Economics",
+  "Chemistry",
+  "Physics",
+  "Literature in English",
+  "Government",
+  "Commerce",
+  "Civic Education",
+  "Agricultural Science",
+  "Further Mathematics",
+  "Accounting",
+  "Geography",
+  "JAMB",
+  "WAEC",
+  "NECO"
+];
+
 const AdminCoursesPage = () => {
   const [activeTab, setActiveTab] = useState<CourseStatus>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [selectedSubject, setSelectedSubject] = useState<string>("all");
+  const [selectedTerm, setSelectedTerm] = useState<"all" | "first" | "second" | "third">("all");
+  const [selectedLevel, setSelectedLevel] = useState<"all" | "SSS1" | "SSS2" | "SSS3">("all");
   const [page, setPage] = useState(1);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isDeleting, setIsDeleting] = useState(false);
@@ -48,18 +72,24 @@ const AdminCoursesPage = () => {
   }, [searchQuery]);
 
   const { data: queryData, isLoading } = useQuery({
-    queryKey: ['admin-courses', page, activeTab, debouncedSearch],
+    queryKey: ['admin-courses', page, activeTab, debouncedSearch, selectedSubject, selectedTerm, selectedLevel],
     queryFn: () => fetchCourses({
       page,
       limit: 10,
       search: debouncedSearch || undefined,
-      status: activeTab === "all" ? undefined : activeTab
+      status: activeTab === "all" ? undefined : activeTab,
+      subject: selectedSubject !== "all" ? selectedSubject : undefined,
+      term: selectedTerm !== "all" ? selectedTerm : undefined,
+      level: selectedLevel !== "all" ? selectedLevel : undefined,
     })
   });
 
   const courses = queryData?.data || [];
   const totalPages = queryData ? Math.ceil(queryData.total / queryData.limit) : 1;
   const totalCount = queryData?.total || 0;
+
+  const courseSubjects = courses.map((c: any) => c.subject).filter(Boolean);
+  const availableSubjects = Array.from(new Set([...COMMON_SUBJECTS, ...courseSubjects])).sort();
 
   const stats = [
     {
@@ -192,6 +222,89 @@ const AdminCoursesPage = () => {
           searchPlaceholder="Search courses..."
         />
 
+        {/* Secondary Filter Controls: Subject, Term, Level */}
+        <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3 rounded-md border border-neutral-200/80 shadow-2xs">
+          <div className="flex flex-wrap items-center gap-2.5 sm:gap-3.5">
+            {/* Filter Icon & Label */}
+            <div className="flex items-center gap-1.5 text-xs font-bold text-[#0A1B39]">
+              <Filter className="w-3.5 h-3.5 text-[#17A546]" />
+              <span className="hidden sm:inline">Filters:</span>
+            </div>
+
+            {/* Subject Dropdown */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-semibold text-[#676E85]">Subject:</span>
+              <select
+                value={selectedSubject}
+                onChange={(e) => {
+                  setSelectedSubject(e.target.value);
+                  setPage(1);
+                }}
+                className="bg-[#F7F9FC] text-xs font-semibold text-[#0A1B39] border border-neutral-200 rounded-md px-2.5 py-1.5 focus:outline-none focus:border-[#17A546] focus:ring-1 focus:ring-[#17A546]/20 transition-all cursor-pointer"
+              >
+                <option value="all">All Subjects</option>
+                {availableSubjects.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Term Dropdown */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-semibold text-[#676E85]">Term:</span>
+              <select
+                value={selectedTerm}
+                onChange={(e) => {
+                  setSelectedTerm(e.target.value as any);
+                  setPage(1);
+                }}
+                className="bg-[#F7F9FC] text-xs font-semibold text-[#0A1B39] border border-neutral-200 rounded-md px-2.5 py-1.5 focus:outline-none focus:border-[#17A546] focus:ring-1 focus:ring-[#17A546]/20 transition-all cursor-pointer"
+              >
+                <option value="all">All Terms</option>
+                <option value="first">First Term</option>
+                <option value="second">Second Term</option>
+                <option value="third">Third Term</option>
+              </select>
+            </div>
+
+            {/* Level Dropdown */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-semibold text-[#676E85]">Level:</span>
+              <select
+                value={selectedLevel}
+                onChange={(e) => {
+                  setSelectedLevel(e.target.value as any);
+                  setPage(1);
+                }}
+                className="bg-[#F7F9FC] text-xs font-semibold text-[#0A1B39] border border-neutral-200 rounded-md px-2.5 py-1.5 focus:outline-none focus:border-[#17A546] focus:ring-1 focus:ring-[#17A546]/20 transition-all cursor-pointer"
+              >
+                <option value="all">All Levels</option>
+                <option value="SSS1">SSS 1</option>
+                <option value="SSS2">SSS 2</option>
+                <option value="SSS3">SSS 3</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Reset Filters CTA */}
+          {(selectedSubject !== "all" || selectedTerm !== "all" || selectedLevel !== "all" || searchQuery) && (
+            <button
+              onClick={() => {
+                setSelectedSubject("all");
+                setSelectedTerm("all");
+                setSelectedLevel("all");
+                setSearchQuery("");
+                setPage(1);
+              }}
+              className="text-xs font-semibold text-red-500 hover:text-red-700 flex items-center gap-1 px-2.5 py-1 rounded-md hover:bg-red-50 transition-colors ml-auto sm:ml-0"
+              title="Reset All Filters"
+            >
+              <X className="w-3.5 h-3.5" />
+              Reset Filters
+            </button>
+          )}
+        </div>
+
         {/* Course Cards Grid */}
         {isLoading ? (
           <div className="py-20 flex justify-center items-center">
@@ -222,6 +335,9 @@ const AdminCoursesPage = () => {
                 const hash = course.id.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
                 const theme = colors[hash % colors.length];
 
+                const termLabel = course.term === "first" ? "1st Term" : course.term === "second" ? "2nd Term" : course.term === "third" ? "3rd Term" : course.term ? `${course.term} Term` : null;
+                const levelLabel = course.level ? course.level.replace(/^(SSS|JSS)(\d)$/i, "$1 $2") : null;
+
                 return (
                   <div
                     key={course.id}
@@ -245,7 +361,7 @@ const AdminCoursesPage = () => {
                               {course.title}
                             </h4>
                             <p className="text-[11px] text-[#676E85] truncate capitalize">
-                              {course.category} {course.level && `· ${course.level}`}
+                              {course.category} {levelLabel && `· ${levelLabel}`} {termLabel && `· ${termLabel}`}
                             </p>
                           </div>
                         </div>
@@ -275,7 +391,17 @@ const AdminCoursesPage = () => {
                             <XCircle className="h-3 w-3" /> Draft
                           </span>
                         )}
-                        <span className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-md bg-blue-50 text-blue-600 border border-blue-200/80">
+                        {termLabel && (
+                          <span className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200/80">
+                            {termLabel}
+                          </span>
+                        )}
+                        {levelLabel && (
+                          <span className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200/80">
+                            {levelLabel}
+                          </span>
+                        )}
+                        <span className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-md bg-neutral-100 text-[#676E85] border border-neutral-200">
                           {[true, !!course.standardPrice, !!course.premiumPrice].filter(Boolean).length} Tiers
                         </span>
                       </div>
