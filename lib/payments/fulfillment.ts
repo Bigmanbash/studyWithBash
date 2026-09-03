@@ -78,7 +78,7 @@ export async function fulfillApprovedPayment(payment: typeof payments.$inferSele
               tier: payment.tier,
               quantity: payment.proxyQuantity,
               codes: generatedCodes.map((c) => c.code),
-              dashboardUrl: `${appUrl}/affiliates/dashboard`,
+              dashboardUrl: `${appUrl}/agent/dashboard`,
             }),
           });
         } catch (emailErr) {

@@ -81,7 +81,9 @@ export async function approveAffiliate(affiliateId: string) {
     if (agentUser?.email && referralCode) {
       const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.studywithbash.online";
       const referralLink = `${appUrl}/signup?ref=${referralCode}`;
-      const dashboardUrl = `${appUrl}/affiliates/dashboard`;
+      const dashboardUrl = `${appUrl}/agent/dashboard`;
+      const rawRate = Number(affiliate.commissionRate ?? DEFAULT_COMMISSION_RATE);
+      const commissionRatePercent = rawRate <= 1 ? Math.round(rawRate * 100) : Math.round(rawRate);
 
       try {
         await sendEmail({
@@ -91,7 +93,7 @@ export async function approveAffiliate(affiliateId: string) {
             affiliateName: agentUser.name || "Partner",
             referralCode,
             referralLink,
-            commissionRatePercent: Math.round(Number(affiliate.commissionRate || DEFAULT_COMMISSION_RATE) * 100),
+            commissionRatePercent,
             dashboardUrl,
           }),
         });
@@ -314,7 +316,7 @@ export async function markCommissionsPaid(commissionIds: string[]) {
           html: getAffiliatePayoutEmailHtml({
             affiliateName: affData.name || "Partner",
             amountFormatted: `₦${(totalKobo / 100).toLocaleString()}`,
-            dashboardUrl: `${appUrl}/affiliates/dashboard`,
+            dashboardUrl: `${appUrl}/agent/dashboard`,
           }),
         });
       }

@@ -4,7 +4,7 @@ export function getAffiliateApprovalEmailHtml({
   affiliateName,
   referralCode,
   referralLink,
-  commissionRatePercent = 10,
+  commissionRatePercent = 20,
   dashboardUrl,
 }: {
   affiliateName: string;
