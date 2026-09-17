@@ -21,18 +21,18 @@ export const TIERS: Record<TierKey, TierConfig> = {
   basic: {
     key: "basic",
     label: "Basic",
-    description: "Essential study materials & comprehensive text notes",
+    description: "Essential study materials, notes & video lectures",
     features: [
       "Full comprehensive topic notes",
       "Printable high-quality PDF format",
+      "Topic introduction video lectures",
       "Lifetime access to course materials",
-      "Standard student community access",
     ],
     badgeBg: "bg-neutral-100",
     badgeText: "text-neutral-600",
     accentColor: "#676E85",
     priceField: "price",
-    videoAccess: false,
+    videoAccess: true,
   },
   standard: {
     key: "standard",
@@ -107,10 +107,11 @@ export function getTierPrice(
 
 /**
  * Checks if a tier grants access to topic video lectures.
+ * All paid tiers (basic, standard, premium) now include video access.
  */
 export function hasVideoAccess(tier: TierKey | null | undefined): boolean {
   if (!tier) return false;
-  return tier === "standard" || tier === "premium";
+  return tier === "basic" || tier === "standard" || tier === "premium";
 }
 
 /**

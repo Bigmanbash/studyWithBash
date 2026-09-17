@@ -16,6 +16,7 @@ import {
 } from "@/app/api/courses/httpClient";
 import { TopicWithSubtopics, SubtopicWithMaterials } from "@/app/api/courses";
 import { EmbedPDF } from "@/components/dashboard/EmbedPDF";
+import { VideoPlayer } from "@/components/dashboard/VideoPlayer";
 
 export function TopicManager({ courseId }: { courseId: string }) {
   const [topics, setTopics] = useState<TopicWithSubtopics[]>([]);
@@ -36,6 +37,8 @@ export function TopicManager({ courseId }: { courseId: string }) {
 
   // Material Preview Modal for Admin
   const [previewMaterial, setPreviewMaterial] = useState<{ id: string; title: string; topicTitle?: string } | null>(null);
+  // Video Preview Modal for Admin
+  const [previewVideo, setPreviewVideo] = useState<{ videoUrl: string; title: string; topicTitle?: string } | null>(null);
 
   // Operational state
   const [isUploading, setIsUploading] = useState<string | null>(null);
@@ -784,12 +787,21 @@ export function TopicManager({ courseId }: { courseId: string }) {
                             <span className="font-semibold text-[11px] sm:text-xs text-[#0A1B39] truncate">{vid.title}</span>
                             <span className="text-neutral-400 truncate text-[9px] sm:text-[10px] hidden sm:inline">{vid.videoUrl}</span>
                           </div>
-                          <button
-                            onClick={() => handleDeleteVideo(topic.id, vid.id)}
-                            className="text-red-500 hover:text-red-700 p-1 shrink-0 rounded hover:bg-red-50 transition-colors"
-                          >
-                            <Trash2 className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                          </button>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button
+                              onClick={() => setPreviewVideo({ videoUrl: vid.videoUrl, title: vid.title, topicTitle: topic.title })}
+                              className="text-blue-500 hover:text-blue-700 p-1 rounded hover:bg-blue-50 transition-colors"
+                              title="Preview Video"
+                            >
+                              <Eye className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteVideo(topic.id, vid.id)}
+                              className="text-red-500 hover:text-red-700 p-1 shrink-0 rounded hover:bg-red-50 transition-colors"
+                            >
+                              <Trash2 className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                            </button>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -886,6 +898,42 @@ export function TopicManager({ courseId }: { courseId: string }) {
               title={previewMaterial.title}
               isPreview={false}
             />
+          </div>
+        </div>
+      )}
+      {/* ── ADMIN VIDEO PREVIEW MODAL ───────────────────────────────── */}
+      {previewVideo && (
+        <div className="fixed inset-0 z-[100] flex flex-col bg-neutral-900/95">
+          <div className="h-14 border-b border-neutral-700 flex items-center justify-between px-4 sm:px-6 bg-neutral-900 shrink-0">
+            <div className="flex items-center gap-2.5 min-w-0 pr-4">
+              <div className="w-8 h-8 rounded-lg bg-[#17A546]/20 text-[#17A546] flex items-center justify-center shrink-0">
+                <Video className="h-4 w-4" />
+              </div>
+              <div className="min-w-0">
+                <h2 className="text-xs sm:text-sm font-bold text-white truncate">
+                  {previewVideo.title}
+                </h2>
+                {previewVideo.topicTitle && (
+                  <p className="text-[10px] sm:text-xs text-neutral-400 truncate">
+                    {previewVideo.topicTitle} • Admin Preview
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <button
+              onClick={() => setPreviewVideo(null)}
+              className="p-2 hover:bg-neutral-800 rounded-full transition-colors text-neutral-400 hover:text-white"
+              title="Close Preview"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+
+          <div className="flex-1 flex items-center justify-center p-4 sm:p-8">
+            <div className="w-full max-w-4xl">
+              <VideoPlayer videoUrl={previewVideo.videoUrl} title={previewVideo.title} />
+            </div>
           </div>
         </div>
       )}

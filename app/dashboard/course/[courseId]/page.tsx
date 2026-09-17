@@ -7,7 +7,7 @@ import {
   ArrowLeft, CheckCircle, FileText, Lock, ShoppingCart,
   Eye, Loader2, BookOpen, Tag, ChevronDown,
   X,
-  Sparkles,
+  Sparkles, Video, Play,
 } from "lucide-react";
 import { AvailableCourses, PageHeader } from "@/components/dashboard";
 import { use, useState, useEffect } from "react";
@@ -106,6 +106,7 @@ export default function CourseDetailsPage({ params }: { params: Promise<{ course
   };
 
   const totalSubtopics = topics.reduce((acc, t) => acc + (t.subtopics?.length ?? 0), 0);
+  const totalVideos = topics.reduce((acc, t) => acc + (t.videos?.length ?? 0), 0);
 
   return (
     <div className="min-h-screen bg-[#F7F9FC]">
@@ -486,7 +487,7 @@ export default function CourseDetailsPage({ params }: { params: Promise<{ course
             </h2>
             {!topicsLoading && topics.length > 0 && (
               <span className="text-[10px] font-medium text-neutral-400">
-                {topics.length} topics · {totalSubtopics} chapters
+                {topics.length} topics · {totalSubtopics} chapters{totalVideos > 0 ? ` · ${totalVideos} videos` : ""}
               </span>
             )}
           </div>
@@ -521,6 +522,13 @@ export default function CourseDetailsPage({ params }: { params: Promise<{ course
                         {topic.title}
                       </span>
 
+                      {topic.videos && topic.videos.length > 0 && (
+                        <span className="inline-flex items-center gap-0.5 text-[9px] font-bold bg-[#17A546]/10 text-[#17A546] border border-[#17A546]/20 px-1.5 py-0.5 rounded-full shrink-0">
+                          <Video className="w-2.5 h-2.5" />
+                          {topic.videos.length}
+                        </span>
+                      )}
+
                       <span className="text-[10px] text-neutral-400 font-medium shrink-0 mr-1 hidden sm:inline">
                         {subtopicCount} {subtopicCount === 1 ? "chapter" : "chapters"}
                       </span>
@@ -533,6 +541,29 @@ export default function CourseDetailsPage({ params }: { params: Promise<{ course
                     {/* Subtopics — animated collapse */}
                     {isOpen && subtopicCount > 0 && (
                       <div className="border-t border-neutral-100 bg-neutral-50/40">
+                        {/* Topic Videos */}
+                        {topic.videos && topic.videos.length > 0 && (
+                          <div className="px-4 sm:px-6 py-2 space-y-1.5 border-b border-neutral-100/80">
+                            {topic.videos.map((vid: any) => (
+                              <div
+                                key={vid.id}
+                                className="flex items-center gap-2 p-2 sm:p-2.5 bg-white rounded-lg border border-[#17A546]/20 hover:border-[#17A546]/40 transition-colors"
+                              >
+                                <div className="p-1 bg-[#17A546]/10 rounded-md shrink-0">
+                                  <Play className="h-3 w-3 text-[#17A546] fill-current" />
+                                </div>
+                                <span className="text-[11px] sm:text-[12px] text-[#0A1B39] font-medium flex-1 truncate">
+                                  {vid.title || "Video Lecture"}
+                                </span>
+                                <span className="text-[9px] font-bold text-[#17A546] bg-[#17A546]/8 px-1.5 py-0.5 rounded-full border border-[#17A546]/15 shrink-0">
+                                  Video
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Subtopics */}
                         {topic.subtopics.map((subtopic, sIndex) => {
                           const isUnlocked = isPurchased || (tIndex === 0 && sIndex < 2);
 

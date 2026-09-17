@@ -32,7 +32,7 @@ export function VideoPlayer({ videoUrl, title }: VideoPlayerProps) {
       <div className="w-full aspect-video rounded-xl bg-neutral-900 flex flex-col items-center justify-center p-6 text-white text-center border border-neutral-200 shadow-sm">
         <Video className="w-10 h-10 text-neutral-500 mb-2" />
         <p className="text-sm font-medium text-neutral-300">Invalid Video Link</p>
-        <p className="text-xs text-neutral-500 mt-1 truncate max-w-md">{videoUrl}</p>
+        <p className="text-xs text-neutral-500 mt-1 truncate">{videoUrl}</p>
       </div>
     );
   }
