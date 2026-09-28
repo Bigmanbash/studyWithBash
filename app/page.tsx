@@ -8,7 +8,9 @@ export default function Home() {
       <Header />
       <main className="flex-1 overflow-x-hidden">
         <HomeComponents.Hero />
+        <HomeComponents.WhyLearning />
         <HomeComponents.Courses />
+        <HomeComponents.Pricing />
         <HomeComponents.AgentAffiliateSection />
         <HomeComponents.CTASection />
       </main>

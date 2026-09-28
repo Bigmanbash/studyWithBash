@@ -1,9 +1,10 @@
 export { Hero } from "./Hero";
+export { WhyLearning } from "./WhyLearning";
 export { Courses } from "./Courses";
+export { Pricing } from "./Pricing";
+export { AgentAffiliateSection } from "./AgentAffiliateSection";
+export { CTASection } from "./CTASection";
 export { ProblemSolution } from "./ProblemSolution";
 export { HowItWorks } from "./HowItWorks";
 export { Features } from "./Features";
-export { AgentAffiliateSection } from "./AgentAffiliateSection";
 export { Testimonials } from "./Testimonials";
-export { Pricing } from "./Pricing";
-export { CTASection } from "./CTASection";
