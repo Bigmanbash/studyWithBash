@@ -50,32 +50,9 @@ export async function GET(request: Request) {
   }
 }
 
-export async function PATCH(request: Request) {
-  try {
-    const sessionUser = await requireServerSession();
-    if (sessionUser.role !== "admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    const body = await request.json();
-    const { id, status } = body;
-
-    if (!id || !status) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
-    }
-
-    if (status !== "approved" && status !== "rejected") {
-      return NextResponse.json({ error: "Invalid status" }, { status: 400 });
-    }
-
-    await db.update(payments).set({ status }).where(eq(payments.id, id));
-
-    return NextResponse.json({ success: true });
-  } catch (error: any) {
-    console.error("Error updating payment status:", error);
-    if (error.message === "UNAUTHORIZED") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
-  }
+export async function PATCH() {
+  return NextResponse.json(
+    { error: "Manual payment status modifications are disabled. Payments are processed and verified automatically via Paystack." },
+    { status: 405 }
+  );
 }

@@ -9,7 +9,6 @@ import {
   XCircle,
   Download,
   Eye,
-  Check,
   X,
   Banknote,
   FileText,
@@ -18,7 +17,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { TierKey, TIERS } from "@/lib/tiers";
-import { useAdminPayments, useUpdatePaymentStatus, AdminPaymentData } from "@/app/api/adminUser/payments/client";
+import { useAdminPayments, AdminPaymentData } from "@/app/api/adminUser/payments/client";
 
 type PaymentStatus = "pending" | "approved" | "rejected";
 
@@ -78,16 +77,11 @@ function timeAgo(dateString: string): string {
 
 export default function AdminPaymentsPage() {
   const { data: paymentsList = [], isLoading } = useAdminPayments();
-  const updateStatusMutation = useUpdatePaymentStatus();
   
-  const [activeTab, setActiveTab] = useState<"all" | PaymentStatus>("pending");
+  const [activeTab, setActiveTab] = useState<"all" | PaymentStatus>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPaymentId, setSelectedPaymentId] = useState<string | null>(null);
   const [viewingReceipt, setViewingReceipt] = useState<AdminPaymentData | null>(null);
-
-  const handleUpdatePaymentStatus = (id: string, newStatus: PaymentStatus) => {
-    updateStatusMutation.mutate({ id, status: newStatus as "approved" | "rejected" });
-  };
 
   const filteredPayments = paymentsList.filter((payment) => {
     const matchesTab = activeTab === "all" || payment.status === activeTab;
@@ -122,10 +116,10 @@ export default function AdminPaymentsPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-[#0A1B39]">
-              Payments & Approvals
+              Payment Transactions
             </h1>
             <p className="text-xs sm:text-sm text-[#676E85] mt-1 font-normal">
-              Review transaction receipts, approve bank transfers, and grant course access.
+              Monitor student payments and real-time Paystack automated transaction confirmations.
             </p>
           </div>
           <Button
@@ -141,28 +135,28 @@ export default function AdminPaymentsPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
             {
-              label: "Pending Review",
+              label: "Pending Payments",
               value: pendingCount.toString(),
               icon: Clock,
               color: "text-[#F5B546]",
               bg: "bg-[#F5B546]/10",
-              sub: `${formatAmount(totalPending)} total`,
+              sub: `${formatAmount(totalPending)} unconfirmed`,
             },
             {
-              label: "Approved",
+              label: "Approved & Enrolled",
               value: approvedCount.toString(),
               icon: CheckCircle2,
               color: "text-[#0E7B33]",
               bg: "bg-[#0E7B33]/10",
-              sub: "Verified access",
+              sub: "Automated via Paystack",
             },
             {
-              label: "Rejected",
+              label: "Failed / Incomplete",
               value: rejectedCount.toString(),
               icon: XCircle,
               color: "text-[#940803]",
               bg: "bg-[#940803]/10",
-              sub: "Decline notice",
+              sub: "Cancelled / abandoned",
             },
             {
               label: "Total Revenue",
@@ -194,10 +188,10 @@ export default function AdminPaymentsPage() {
         {/* Unified Filter & Search Bar */}
         <AdminFilterBar
           tabs={[
-            { key: "pending", label: "Pending Review", count: pendingCount },
             { key: "all", label: "All Payments", count: paymentsList.length },
             { key: "approved", label: "Approved", count: approvedCount },
-            { key: "rejected", label: "Rejected", count: rejectedCount },
+            { key: "pending", label: "Pending", count: pendingCount },
+            { key: "rejected", label: "Failed / Rejected", count: rejectedCount },
           ]}
           activeTab={activeTab}
           onTabChange={(tab) => setActiveTab(tab)}
@@ -299,33 +293,7 @@ export default function AdminPaymentsPage() {
                             )}
                           </td>
                           <td className="px-4 py-3">
-                            <div className="flex items-center justify-end gap-1">
-                              {payment.status === "pending" && (
-                                <>
-                                  <button
-                                    className="h-7 w-7 rounded-md bg-[#E7F6EC] flex items-center justify-center hover:bg-[#17A546]/20 transition-colors disabled:opacity-50"
-                                    title="Approve Payment"
-                                    disabled={updateStatusMutation.isPending}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleUpdatePaymentStatus(payment.id, "approved");
-                                    }}
-                                  >
-                                    <Check className="h-3.5 w-3.5 text-[#0E7B33]" />
-                                  </button>
-                                  <button
-                                    className="h-7 w-7 rounded-md bg-[#FBEAE9] flex items-center justify-center hover:bg-red-100 transition-colors disabled:opacity-50"
-                                    title="Reject Payment"
-                                    disabled={updateStatusMutation.isPending}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleUpdatePaymentStatus(payment.id, "rejected");
-                                    }}
-                                  >
-                                    <X className="h-3.5 w-3.5 text-[#940803]" />
-                                  </button>
-                                </>
-                              )}
+                            <div className="flex items-center justify-end">
                               <button
                                 className="h-7 w-7 rounded-md bg-neutral-100 flex items-center justify-center hover:bg-neutral-200 text-[#676E85] transition-colors"
                                 title="View Details"
@@ -419,32 +387,43 @@ export default function AdminPaymentsPage() {
                   )}
                 </div>
 
-                {/* Approve / Reject Actions */}
-                {selected.status === "pending" ? (
-                  <div className="space-y-2 pt-2 border-t border-neutral-100">
-                    <Button
-                      onClick={() => handleUpdatePaymentStatus(selected.id, "approved")}
-                      disabled={updateStatusMutation.isPending}
-                      className="w-full h-9 rounded-md bg-[#17A546] hover:bg-[#128638] text-white text-xs font-bold shadow-xs flex items-center justify-center gap-1.5"
-                    >
-                      {updateStatusMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-                      Approve & Unlock Access
-                    </Button>
-                    <Button
-                      onClick={() => handleUpdatePaymentStatus(selected.id, "rejected")}
-                      disabled={updateStatusMutation.isPending}
-                      variant="outline"
-                      className="w-full h-9 rounded-md bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 text-xs font-semibold flex items-center justify-center gap-1.5"
-                    >
-                      {updateStatusMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="h-4 w-4" />}
-                      Reject Payment Proof
-                    </Button>
+                {/* Automated Processing Status Notice */}
+                <div className="pt-3 border-t border-neutral-100">
+                  <div
+                    className={cn(
+                      "p-3 rounded-md text-xs font-medium border flex items-center gap-2.5",
+                      ((selected.status && statusConfig[selected.status as keyof typeof statusConfig]) || statusConfig.pending).bg,
+                      ((selected.status && statusConfig[selected.status as keyof typeof statusConfig]) || statusConfig.pending).color,
+                      ((selected.status && statusConfig[selected.status as keyof typeof statusConfig]) || statusConfig.pending).border
+                    )}
+                  >
+                    {selected.status === "approved" ? (
+                      <>
+                        <CheckCircle2 className="w-4 h-4 shrink-0 text-[#0E7B33]" />
+                        <div>
+                          <p className="font-semibold text-[#0E7B33]">Verified & Enrolled</p>
+                          <p className="text-[11px] text-[#0E7B33]/80 mt-0.5">Payment confirmed automatically via Paystack.</p>
+                        </div>
+                      </>
+                    ) : selected.status === "pending" ? (
+                      <>
+                        <Clock className="w-4 h-4 shrink-0 text-[#F5B546]" />
+                        <div>
+                          <p className="font-semibold text-[#8C5D07]">Payment Pending</p>
+                          <p className="text-[11px] text-[#8C5D07]/80 mt-0.5">Awaiting completion on Paystack checkout by student.</p>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <XCircle className="w-4 h-4 shrink-0 text-[#940803]" />
+                        <div>
+                          <p className="font-semibold text-[#940803]">Incomplete / Failed</p>
+                          <p className="text-[11px] text-[#940803]/80 mt-0.5">Transaction was abandoned or failed on gateway.</p>
+                        </div>
+                      </>
+                    )}
                   </div>
-                ) : (
-                  <div className={cn("p-2.5 rounded-md text-center text-xs font-semibold border", statusConfig[selected.status].bg, statusConfig[selected.status].color, statusConfig[selected.status].border)}>
-                    Payment marked as {selected.status}
-                  </div>
-                )}
+                </div>
               </div>
             ) : (
               <div className="text-center py-16 text-[#676E85]">

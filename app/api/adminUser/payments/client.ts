@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
 export interface AdminPaymentData {
   id: string;
@@ -36,26 +36,3 @@ export function useAdminPayments() {
   });
 }
 
-export function useUpdatePaymentStatus() {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: "approved" | "rejected" }) => {
-      const res = await fetch("/api/adminUser/payments", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, status }),
-      });
-      if (!res.ok) {
-        throw new Error("Failed to update payment status");
-      }
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-payments"] });
-      // Also invalidate dashboard stats
-      queryClient.invalidateQueries({ queryKey: ["dashboardStats"] });
-      queryClient.invalidateQueries({ queryKey: ["dashboardRecentPayments"] });
-    },
-  });
-}
