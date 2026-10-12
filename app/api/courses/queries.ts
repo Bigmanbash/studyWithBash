@@ -1,6 +1,6 @@
 import { db } from "@/lib/neon";
 import { courses, payments } from "@/lib/neon/schema";
-import { eq, ilike, and, or, count, sum } from "drizzle-orm";
+import { eq, ilike, and, or, count, sum, desc } from "drizzle-orm";
 import type { CourseListQuery, PaginatedCourses, Course } from "./interface";
 import { getSignedUrl } from "@/lib/r2";
 
@@ -43,7 +43,21 @@ export async function listCourses(query: CourseListQuery = {}): Promise<Paginate
   }
   
   if (level) {
-    conditions.push(eq(courses.level, level));
+    const upperLevel = level.trim().toUpperCase();
+    if (["SSS1", "SSS2", "SSS3"].includes(upperLevel)) {
+      conditions.push(eq(courses.level, upperLevel as any));
+    } else {
+      // Any exam category: WAEC, JAMB, NECO, POST-UTME, etc.
+      conditions.push(
+        and(
+          eq(courses.category, "exam"),
+          or(
+            ilike(courses.subject, `%${upperLevel}%`),
+            ilike(courses.title, `%${upperLevel}%`)
+          )
+        )
+      );
+    }
   }
   
   if (term) {
@@ -51,7 +65,13 @@ export async function listCourses(query: CourseListQuery = {}): Promise<Paginate
   }
   
   if (subject) {
-    conditions.push(ilike(courses.subject, subject));
+    conditions.push(
+      or(
+        ilike(courses.subject, subject),
+        ilike(courses.subject, `%${subject}%`),
+        ilike(courses.title, `%${subject}%`)
+      )
+    );
   }
 
   if (status) {
@@ -71,6 +91,7 @@ export async function listCourses(query: CourseListQuery = {}): Promise<Paginate
       .leftJoin(payments, and(eq(payments.courseId, courses.id), eq(payments.status, "approved")))
       .where(whereClause)
       .groupBy(courses.id)
+      .orderBy(desc(courses.createdAt))
       .limit(limit)
       .offset(offset),
     db.select({ count: count() }).from(courses).where(whereClause),

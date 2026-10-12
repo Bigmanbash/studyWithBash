@@ -11,7 +11,7 @@ export const GET = async (req: Request) => {
     const limit = parseInt(searchParams.get("limit") || "10", 10);
     const search = searchParams.get("search") || undefined;
     const category = searchParams.get("category") as "school" | "exam" | undefined;
-    const level = searchParams.get("level") as "SSS1" | "SSS2" | "SSS3" | undefined;
+    const level = searchParams.get("level") || undefined;
     const term = searchParams.get("term") as "first" | "second" | "third" | undefined;
     const subject = searchParams.get("subject") || undefined;
     const status = searchParams.get("status") as "active" | "draft" | undefined;

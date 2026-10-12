@@ -57,7 +57,7 @@ const AdminCoursesPage = () => {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedSubject, setSelectedSubject] = useState<string>("all");
   const [selectedTerm, setSelectedTerm] = useState<"all" | "first" | "second" | "third">("all");
-  const [selectedLevel, setSelectedLevel] = useState<"all" | "SSS1" | "SSS2" | "SSS3">("all");
+  const [selectedLevel, setSelectedLevel] = useState<string>("all");
   const [page, setPage] = useState(1);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isDeleting, setIsDeleting] = useState(false);
@@ -273,15 +273,18 @@ const AdminCoursesPage = () => {
               <select
                 value={selectedLevel}
                 onChange={(e) => {
-                  setSelectedLevel(e.target.value as any);
+                  setSelectedLevel(e.target.value);
                   setPage(1);
                 }}
                 className="bg-[#F7F9FC] text-xs font-semibold text-[#0A1B39] border border-neutral-200 rounded-md px-2.5 py-1.5 focus:outline-none focus:border-[#17A546] focus:ring-1 focus:ring-[#17A546]/20 transition-all cursor-pointer"
               >
-                <option value="all">All Levels</option>
+                <option value="all">All Levels & Exams</option>
                 <option value="SSS1">SSS 1</option>
                 <option value="SSS2">SSS 2</option>
                 <option value="SSS3">SSS 3</option>
+                <option value="WAEC">WAEC</option>
+                <option value="JAMB">JAMB</option>
+                <option value="NECO">NECO</option>
               </select>
             </div>
           </div>
@@ -336,7 +339,11 @@ const AdminCoursesPage = () => {
                 const theme = colors[hash % colors.length];
 
                 const termLabel = course.term === "first" ? "1st Term" : course.term === "second" ? "2nd Term" : course.term === "third" ? "3rd Term" : course.term ? `${course.term} Term` : null;
-                const levelLabel = course.level ? course.level.replace(/^(SSS|JSS)(\d)$/i, "$1 $2") : null;
+                const isExamCourse = course.category === "exam";
+                const examType = isExamCourse 
+                  ? (course.subject.includes("WAEC") ? "WAEC" : course.subject.includes("JAMB") ? "JAMB" : course.subject.includes("NECO") ? "NECO" : "Exam Prep")
+                  : null;
+                const levelLabel = course.level ? course.level.replace(/^(SSS|JSS)(\d)$/i, "$1 $2") : examType;
 
                 return (
                   <div
@@ -397,7 +404,12 @@ const AdminCoursesPage = () => {
                           </span>
                         )}
                         {levelLabel && (
-                          <span className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200/80">
+                          <span className={cn(
+                            "inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-md border",
+                            isExamCourse 
+                              ? "bg-amber-50 text-amber-700 border-amber-200/80" 
+                              : "bg-blue-50 text-blue-700 border-blue-200/80"
+                          )}>
                             {levelLabel}
                           </span>
                         )}

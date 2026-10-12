@@ -29,7 +29,7 @@ export interface CourseListQuery {
   limit?: number;
   search?: string;
   category?: "school" | "exam";
-  level?: "SSS1" | "SSS2" | "SSS3";
+  level?: "SSS1" | "SSS2" | "SSS3" | "WAEC" | "NECO" | "JAMB" | string;
   term?: "first" | "second" | "third";
   subject?: string;
   status?: "active" | "draft";
